@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="id" data-tema="terang">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Wingman Clutch</title>
+    <meta
+      name="description"
+      content="Wingman Clutch: tim dua orang dari Indonesia yang bikin aplikasi web buat urusan sehari-hari. Setiap proyek mulai dari coretan di buku catatan."
+    />
+    <meta name="theme-color" content="#f7f6f1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-TiYOeANLpFbHEvwJuvO9AofrJF4D5wXdOG/9nA/l1Pk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Wingman Clutch" />
+    <meta property="og:title" content="Wingman Clutch" />
+    <meta
+      property="og:description"
+      content="Two is enough to win. Empat aplikasi web, dua orang, satu buku catatan."
+    />
+    <meta property="og:image" content="/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/ikon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      // Pilih kertas terang atau gelap sebelum halaman pertama kali dicat.
+      ;(function () {
+        var t = null
+        try {
+          t = localStorage.getItem('wc-tema')
+        } catch (e) {}
+        if (t !== 'terang' && t !== 'gelap')
+          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang'
+        document.documentElement.dataset.tema = t
+        if (t === 'gelap') document.querySelector('meta[name="theme-color"]').content = '#161922'
+      })()
+    </script>
+  </head>
+  <body>
+    <h1 class="sr">Wingman Clutch, tim dua orang yang bikin aplikasi web</h1>
+    <div id="app">
+      <canvas id="kertas" aria-hidden="true"></canvas>
+      <canvas id="noda" aria-hidden="true"></canvas>
+      <canvas id="hujan" aria-hidden="true"></canvas>
+      <div id="papan" role="group" aria-label="Halaman buku catatan"></div>
+      <canvas id="coretan" aria-label="Area coretan"></canvas>
+      <canvas id="remah" aria-hidden="true"></canvas>
+      <div id="baki">
+        <button type="button" id="penghapus" aria-label="Hapus halaman lalu gambar ulang">
+          <span class="badan"></span>
+        </button>
+        <p id="kaki">
+          © 2026 Wingman Clutch · setiap proyek mulai dari coretan<span class="tautan"
+            ><span class="pisah" aria-hidden="true"> · </span
+            ><a href="https://github.com/Wingman-Clutch" target="_blank" rel="noopener">GitHub</a
+            ><span class="pisah" aria-hidden="true"> · </span
+            ><a href="https://sociabuzz.com/wingmanclutch/tribe" target="_blank" rel="noopener"
+              >Traktir kopi</a
+            ></span
+          >
+        </p>
+      </div>
+    </div>
+
+    <div id="lipatan" aria-hidden="true">
+      <div class="bawah"><canvas class="hujan-sudut"></canvas></div>
+      <div class="bayang"><div class="balik"></div></div>
+    </div>
+    <button type="button" id="sudut" aria-label="Kupas sudut halaman"></button>
+
+    <div id="bar-coret" hidden>
+      <span>Lagi corat-coret pakai <b class="nama-pensil">pensil grafit</b></span>
+      <button type="button" id="coret-selesai">selesai</button>
+    </div>
+
+    <dialog class="lembar" id="dlg-proyek" aria-labelledby="pr-nama">
+      <form method="dialog" class="tutup-form">
+        <button class="tutup" aria-label="Tutup">✕</button>
+      </form>
+      <div class="selotip kiri" aria-hidden="true"></div>
+      <div class="selotip kanan" aria-hidden="true"></div>
+      <header>
+        <canvas class="judul-sketsa" aria-hidden="true"></canvas>
+        <h2 id="pr-nama" class="sr"></h2>
+        <p class="slogan" id="pr-slogan"></p>
+      </header>
+      <ul class="fitur" id="pr-fitur"></ul>
+      <p id="pr-deskripsi"></p>
+      <p class="peran" id="pr-peran"></p>
+      <ul class="tumpukan" id="pr-tumpukan" aria-label="Dibuat dengan"></ul>
+      <p class="statistik" id="pr-statistik" hidden></p>
+      <div class="aksi">
+        <a class="btn utama" id="pr-buka" target="_blank" rel="noopener">buka aplikasinya →</a>
+        <a class="btn" id="pr-repo" target="_blank" rel="noopener">lihat kodenya →</a>
+      </div>
+    </dialog>
+
+    <dialog class="kartu" id="dlg-tentang" aria-labelledby="tt-judul">
+      <form method="dialog" class="tutup-form">
+        <button class="tutup" aria-label="Tutup">✕</button>
+      </form>
+      <div class="selotip tengah" aria-hidden="true"></div>
+      <header>
+        <canvas class="judul-sketsa" aria-hidden="true" data-judul="tentang kami"></canvas>
+        <h2 id="tt-judul" class="sr">Tentang kami</h2>
+      </header>
+      <p>
+        Wingman Clutch itu tim dua orang dari Indonesia. Kami bikin aplikasi web buat urusan
+        sehari-hari: semuanya PWA, langsung jalan di browser HP, tanpa akun.
+      </p>
+      <ol class="langkah">
+        <li><mark>Coret dulu.</mark> Setiap ide mulai dari buku catatan, kasar dan cepat.</li>
+        <li>
+          <mark>Bagi dua.</mark> Satu pegang frontend, satu pegang backend, kontraknya disepakati
+          duluan.
+        </li>
+        <li><mark>Kirim.</mark> Lalu dipoles sampai enak dipakai setiap hari.</li>
+      </ol>
+      <div class="aksi">
+        <button type="button" class="btn" data-buka="tim">kenalan sama tim →</button>
+        <button type="button" class="btn utama" data-buka="kontak">sapa kami →</button>
+      </div>
+    </dialog>
+
+    <dialog class="lembar" id="dlg-tim" aria-labelledby="tm-judul">
+      <form method="dialog" class="tutup-form">
+        <button class="tutup" aria-label="Tutup">✕</button>
+      </form>
+      <div class="selotip kiri" aria-hidden="true"></div>
+      <div class="selotip kanan" aria-hidden="true"></div>
+      <header>
+        <canvas class="judul-sketsa" aria-hidden="true" data-judul="tim kami"></canvas>
+        <h2 id="tm-judul" class="sr">Tim kami</h2>
+        <p class="slogan">Two is enough to win. Dua orang, empat aplikasi.</p>
+      </header>
+      <ul class="polaroid" id="tm-daftar"></ul>
+      <div class="aksi">
+        <form method="dialog"><button class="btn">kembali ke halaman</button></form>
+        <button type="button" class="btn utama" data-buka="kontak">ajak kerja bareng →</button>
+      </div>
+    </dialog>
+
+    <dialog class="kartu" id="dlg-kontak" aria-labelledby="kt-judul">
+      <form method="dialog" class="tutup-form">
+        <button class="tutup" aria-label="Tutup">✕</button>
+      </form>
+      <div class="selotip tengah" aria-hidden="true"></div>
+      <header>
+        <canvas class="judul-sketsa" aria-hidden="true" data-judul="let's clutch it!"></canvas>
+        <h2 id="kt-judul" class="sr">Hubungi Wingman Clutch</h2>
+      </header>
+      <p>Punya ide, brief, atau coretan setengah jadi? Ceritain aja, nanti kami balas.</p>
+      <form id="form-kontak" novalidate>
+        <label>
+          <span>nama kamu</span>
+          <input
+            name="nama"
+            autocomplete="name"
+            maxlength="80"
+            required
+            placeholder="Sari Wulandari"
+          />
+        </label>
+        <label>
+          <span>email kamu</span>
+          <input
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            placeholder="sari@contoh.com"
+          />
+        </label>
+        <label>
+          <span>mau bikin apa?</span>
+          <textarea
+            name="pesan"
+            rows="4"
+            minlength="10"
+            maxlength="2000"
+            required
+            placeholder="aplikasi yang…"
+          ></textarea>
+        </label>
+        <label class="madu" aria-hidden="true">
+          <span>kosongkan kolom ini</span>
+          <input name="situs" tabindex="-1" autocomplete="off" />
+        </label>
+        <p class="galat" id="kt-galat" role="alert" hidden></p>
+        <button type="submit" class="btn utama">kirim →</button>
+      </form>
+      <div id="kt-terkirim" hidden>
+        <p class="sukses" role="status">Terkirim! Kami balas ke email kamu secepatnya.</p>
+      </div>
+      <div id="kt-cadangan" hidden>
+        <p class="galat" role="alert">
+          Belum bisa terkirim dari sini. Kirim lewat email aja, catatannya sudah kami siapkan:
+        </p>
+        <p class="aksi">
+          <a class="btn utama" id="kt-mailto">buka email →</a>
+          <button type="button" class="btn" id="kt-salin-catatan">salin catatan</button>
+        </p>
+      </div>
+      <p class="email">
+        atau email
+        <a id="kt-email" href="mailto:wingmanclutch@gmail.com">wingmanclutch@gmail.com</a>
+        <button type="button" class="btn kecil" id="kt-salin-email">salin</button>
+      </p>
+      <nav class="sosial" aria-label="Tautan Wingman Clutch">
+        <a href="https://github.com/Wingman-Clutch" target="_blank" rel="noopener">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://sociabuzz.com/wingmanclutch/tribe" target="_blank" rel="noopener"
+          >Traktir kopi</a
+        >
+      </nav>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

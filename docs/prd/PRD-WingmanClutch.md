@@ -5,7 +5,7 @@
 | Pemilik produk | Kall dan Bintang |
 | Frontend | Kall ([@HaikalFaruq](https://github.com/HaikalFaruq)) |
 | Backend | Bintang ([@bintangfabian](https://github.com/bintangfabian)) |
-| Status | Rilis 1 dimulai. Frontend dan backend dikerjakan bersamaan mengikuti kontrak API |
+| Status | Rilis 1 dalam pengerjaan. Halaman frontend sudah jalan dengan mock API; backend belum dimulai |
 | Referensi | [kracked.studio](https://kracked.studio), catatan di [docs/referensi/kracked-studio.md](../referensi/kracked-studio.md) |
 | Terakhir diubah | 30 Oktober 2026 |
 
