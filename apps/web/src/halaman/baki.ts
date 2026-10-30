@@ -26,6 +26,17 @@ function rona(hex: string, f: number) {
 
 const TEBAL = 18
 
+/**
+ * Tulisan cetak di batang pensil sebagai <image> kecil berisi SVG, bukan <text>: sebagai teks,
+ * axe menganggapnya isi tombol yang tidak ada di labelnya (label-content-name-mismatch). Kotaknya
+ * hanya seukuran tulisan, jadi pensil tetap bukan kandidat Largest Contentful Paint.
+ */
+function cetak(teks: string, x: number, lebar: number) {
+  const kotak = `${x} -3.2 ${lebar} 6.4`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${kotak}">${teks}</svg>`
+  return `<image x="${x}" y="-3.2" width="${lebar}" height="6.4" href="data:image/svg+xml,${encodeURIComponent(svg)}"/>`
+}
+
 /** pensil heksagonal dilihat dari samping, ujung runcing di kanan */
 export function svgPensil(c: Pensil['c'], panjang: number) {
   const h = TEBAL
@@ -43,8 +54,9 @@ export function svgPensil(c: Pensil['c'], panjang: number) {
     `<linearGradient id="${id}-${k}" x1="0" y1="0" x2="0" y2="1">${stop.map(([o, w]) => `<stop offset="${o}" stop-color="${w}"/>`).join('')}</linearGradient>`
   const tepi = (y0: number, y1: number, d: number) => `Q${cat - d} ${(y0 + y1) / 2} ${cat} ${y1}`
   const lr = (r * ujung) / kerucut
+  const teks = `<text x="${ring + 14}" y="1.7" font-size="4.8" font-weight="700" letter-spacing=".7" font-family="ui-sans-serif, system-ui, sans-serif" fill="${grafit ? '#2b2e37' : '#fbefc4'}" opacity="${grafit ? 0.55 : 0.85}">WINGMAN CLUTCH · ${grafit ? 'HB' : 'WARNA'}</text>`
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${-r - 1} ${panjang} ${h + 2}"><defs>` +
+    `<svg viewBox="0 ${-r - 1} ${panjang} ${h + 2}" aria-hidden="true" focusable="false"><defs>` +
     gradasi('b', [
       [0, rona(badan, 0.32)],
       [0.3, rona(badan, 0.12)],
@@ -88,7 +100,7 @@ export function svgPensil(c: Pensil['c'], panjang: number) {
       ? ''
       : `<rect x="0" y="${-r}" width="1.6" height="${h}" rx=".8" fill="${rona(badan, -0.3)}"/>`) +
     `<path d="M${ring + 1} ${-r / 2}H${cat - 1}M${ring + 1} ${r / 2}H${cat - 1}" stroke="rgba(0,0,0,.15)" stroke-width=".45"/>` +
-    `<text x="${ring + 14}" y="1.7" font-size="4.8" font-weight="700" letter-spacing=".7" font-family="ui-sans-serif, system-ui, sans-serif" fill="${grafit ? '#2b2e37' : '#fbefc4'}" opacity="${grafit ? 0.55 : 0.85}">WINGMAN CLUTCH · ${grafit ? 'HB' : 'WARNA'}</text>` +
+    cetak(teks, ring + 13, cat - ring - 15) +
     `<path d="M${cat} ${-r}${tepi(-r, -r / 2, 3)}${tepi(-r / 2, r / 2, 6)}${tepi(r / 2, r, 3)}L${panjang} .5L${panjang} -.5Z" fill="url(#${id}-k)"/>` +
     `<path d="M${cat + 2} -3.6L${panjang - ujung} ${-lr * 0.5}M${cat + 3} 2.8L${panjang - ujung} ${lr * 0.4}" stroke="rgba(150,96,46,.3)" stroke-width=".35" fill="none"/>` +
     `<path d="M${panjang - ujung} ${-lr}Q${panjang - ujung - 1.3} 0 ${panjang - ujung} ${lr}L${panjang} .5L${panjang} -.5Z" fill="url(#${id}-i)"/>` +
@@ -198,12 +210,7 @@ export class Baki {
       b.style.setProperty('--sx', (2.6 * Math.cos(a) - 4.6 * Math.sin(a)).toFixed(2))
       b.style.setProperty('--sy', (2.6 * Math.sin(a) + 4.6 * Math.cos(a)).toFixed(2))
       if (b.dataset.panjang !== String(P.panjang)) {
-        // Dipasang sebagai gambar latar, bukan SVG di DOM: tulisan WINGMAN CLUTCH di batang
-        // pensil cuma hiasan, jadi tidak boleh terbaca sebagai teks tombol yang berbeda dari
-        // labelnya (axe label-content-name-mismatch).
-        const tampak = b.firstElementChild as HTMLElement
-        tampak.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svgPensil(P.c, P.panjang))}")`
-        tampak.style.aspectRatio = `${P.panjang} / ${TEBAL + 2}`
+        b.firstElementChild!.innerHTML = svgPensil(P.c, P.panjang)
         b.dataset.panjang = String(P.panjang)
       }
     })
