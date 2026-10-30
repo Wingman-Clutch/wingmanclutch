@@ -15,8 +15,15 @@ export interface Pembatas {
   cek(kunci: string): Promise<HasilBatas>
 }
 
+let sudahDiperingatkan = false
+
 /** kunci batas kirim: IP tidak pernah dipakai atau disimpan mentah */
 export function kunciIp(ip: string, garam = process.env.GARAM_IP ?? '') {
+  // tanpa garam, hash IPv4 bisa ditebak balik dengan mencoba semua alamat
+  if (!garam && process.env.VERCEL_ENV === 'production' && !sudahDiperingatkan) {
+    sudahDiperingatkan = true
+    console.warn('GARAM_IP kosong di production: hash IP batas kirim mudah ditebak balik')
+  }
   return createHash('sha256')
     .update(garam + ip)
     .digest('hex')
