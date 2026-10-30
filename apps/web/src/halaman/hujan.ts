@@ -17,8 +17,12 @@ export class Hujan {
     this.ctx = kanvas.getContext('2d')!
   }
 
-  /** siapkan kolom sesuai ukuran kanvas */
-  atur(ukuranHuruf = 16) {
+  /**
+   * Siapkan kolom sesuai ukuran kanvas, lalu gambar bagian yang sedang terlihat: kotak selebar
+   * `pojok` piksel di pojok kanan atas (sudut yang terlipat), atau tidak sama sekali kalau 0.
+   * Menggambar seluruh layar di sini termasuk kerja paling berat saat halaman dibuka.
+   */
+  atur(ukuranHuruf = 16, pojok = Infinity) {
     const dpr = DPR()
     const w = this.kanvas.clientWidth
     const h = this.kanvas.clientHeight
@@ -31,25 +35,28 @@ export class Hujan {
       v: 6 + Math.random() * 12,
       panjang: 8 + Math.floor(Math.random() * 18),
     }))
-    this.gambar()
+    if (pojok > 0) this.gambar(pojok)
   }
 
-  private gambar() {
+  private gambar(pojok = Infinity) {
     const g = this.ctx
     const dpr = DPR()
     const s = this.ukuranHuruf
+    const w = this.kanvas.clientWidth
     const h = this.kanvas.clientHeight
+    const bawah = Math.min(h, pojok)
     g.setTransform(dpr, 0, 0, dpr, 0, 0)
-    g.clearRect(0, 0, this.kanvas.clientWidth, h)
+    g.clearRect(0, 0, w, h)
     g.font = `${s * 0.86}px ui-monospace, "SFMono-Regular", Menlo, monospace`
     g.textAlign = 'center'
     this.kolom.forEach((k, i) => {
       const x = i * s + s / 2
+      if (x < w - pojok - s) return
       const kepala = Math.floor(k.y)
       for (let j = 0; j < k.panjang; j++) {
         const baris = kepala - j
         const y = baris * s
-        if (y < -s || y > h + s) continue
+        if (y < -s || y > bawah + s) continue
         const kunci = (i * 31 + baris * 17) % HURUF.length
         const ganti =
           Math.random() < 0.03 ? Math.floor(Math.random() * HURUF.length) : Math.abs(kunci)
@@ -63,7 +70,12 @@ export class Hujan {
   }
 
   mulai() {
-    if (this.jalan || GERAK_DIKURANGI) return
+    // gerak dikurangi: cukup satu gambar diam
+    if (GERAK_DIKURANGI) {
+      this.gambar()
+      return
+    }
+    if (this.jalan) return
     this.jalan = true
     this.lalu = 0
     kaitkan((t, dt) => {

@@ -102,7 +102,7 @@ dialog::backdrop {
 }
 
 .tutup:hover {
-  color: var(--merah);
+  color: var(--merah-teks);
 }
 
 dialog header {
@@ -160,7 +160,7 @@ mark {
   place-items: center;
   border: 1.5px solid var(--merah);
   border-radius: 50% 46% 52% 48%;
-  color: var(--merah);
+  color: var(--merah-teks);
   font-size: 14px;
 }
 
@@ -199,7 +199,7 @@ mark {
 }
 
 .btn.utama {
-  color: var(--merah);
+  color: var(--merah-teks);
   border-color: var(--merah);
   box-shadow: 2px 2px 0 color-mix(in srgb, var(--merah) 30%, transparent);
 }
@@ -280,7 +280,7 @@ dialog :focus-visible {
 }
 
 .statistik[data-status='online'] {
-  color: var(--hijau);
+  color: var(--hijau-teks);
 }
 
 @media (max-width: 560px) {
@@ -427,12 +427,12 @@ dialog :focus-visible {
 }
 
 .galat {
-  color: var(--merah);
+  color: var(--merah-teks);
   font-size: 14px;
 }
 
 .sukses {
-  color: var(--hijau);
+  color: var(--hijau-teks);
   font-size: 16px;
 }
 
@@ -442,7 +442,7 @@ dialog :focus-visible {
 
 .email a,
 .sosial a {
-  color: var(--biru);
+  color: var(--biru-teks);
 }
 
 .sosial {

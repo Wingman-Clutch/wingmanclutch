@@ -61,6 +61,8 @@ function ubin(warna: string): HTMLCanvasElement {
   c.width = c.height = UBIN
   const g = c.getContext('2d')!
   const img = g.createImageData(UBIN, UBIN)
+  // img.data adalah getter, jadi dibaca sekali di luar loop
+  const d = img.data
   const acak = buatAcak(7)
   const kasar = new Float32Array(16 * 16)
   for (let i = 0; i < kasar.length; i++) kasar[i] = acak()
@@ -83,10 +85,10 @@ function ubin(warna: string): HTMLCanvasElement {
       const n = v * 0.45 + acak() * 0.75
       const alfa = Math.max(0, Math.min(1, (n - 0.2) * 1.9))
       const k = (y * UBIN + x) * 4
-      img.data[k] = r
-      img.data[k + 1] = gr
-      img.data[k + 2] = b
-      img.data[k + 3] = alfa * 255
+      d[k] = r
+      d[k + 1] = gr
+      d[k + 2] = b
+      d[k + 3] = alfa * 255
     }
   }
   g.putImageData(img, 0, 0)

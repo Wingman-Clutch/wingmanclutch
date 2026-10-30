@@ -16,6 +16,7 @@
     "foto-tim": "node scripts/buat-foto-tim.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@fontsource/bungee": "^5.3.0",
     "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.1",

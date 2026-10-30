@@ -10,7 +10,7 @@ import { gambarKertas, KERTAS, ubinButiran } from './halaman/kertas'
 import { pasangKontak } from './halaman/kontak'
 import { Lipatan } from './halaman/lipatan'
 import { Papan } from './halaman/papan'
-import { hitungUkuran, type Ukuran } from './halaman/tata-letak'
+import { atasKaki, hitungUkuran, type Ukuran } from './halaman/tata-letak'
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T
 const akar = document.documentElement
@@ -23,7 +23,10 @@ let matrix = false
 const tema = (): Tema => (matrix ? 'matrix' : kertas)
 let ukuran: Ukuran
 
-akar.style.setProperty('--butiran', `url(${ubinButiran()})`)
+// butiran kertas tidak dibutuhkan untuk lukisan pertama, jadi dibuat saat browser senggang
+const pasangButiran = () => akar.style.setProperty('--butiran', `url(${ubinButiran()})`)
+if ('requestIdleCallback' in window) requestIdleCallback(pasangButiran, { timeout: 1000 })
+else setTimeout(pasangButiran, 300)
 
 const dialog = new Dialog(tema)
 const hujan = new Hujan($<HTMLCanvasElement>('#hujan'))
@@ -94,10 +97,12 @@ function tata() {
   ukuran = hitungUkuran(app.clientWidth, app.clientHeight)
   akar.dataset.tata = ukuran.kunci
   akar.style.setProperty('--u', ukuran.k + 'px')
+  akar.style.setProperty('--kaki', atasKaki(ukuran) + 'px')
   gambarKertas(kanvasKertas, ukuran, tema())
   papan.atur(ukuran, tema())
   baki.atur(ukuran, tema())
-  hujan.atur(Math.max(12, 18 * ukuran.k))
+  // hujan di belakang sketsa hanya terlihat di tema matrix
+  hujan.atur(Math.max(12, 18 * ukuran.k), tema() === 'matrix' ? Infinity : 0)
   lipatan.atur()
 }
 

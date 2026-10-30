@@ -44,7 +44,7 @@ export function svgPensil(c: Pensil['c'], panjang: number) {
   const tepi = (y0: number, y1: number, d: number) => `Q${cat - d} ${(y0 + y1) / 2} ${cat} ${y1}`
   const lr = (r * ujung) / kerucut
   return (
-    `<svg viewBox="0 ${-r - 1} ${panjang} ${h + 2}" aria-hidden="true" focusable="false"><defs>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${-r - 1} ${panjang} ${h + 2}"><defs>` +
     gradasi('b', [
       [0, rona(badan, 0.32)],
       [0.3, rona(badan, 0.12)],
@@ -149,7 +149,7 @@ export class Baki {
   menghapus = false
 
   constructor(
-    private baki: HTMLElement,
+    baki: HTMLElement,
     private kanvasCoret: HTMLCanvasElement,
     private kanvasNoda: HTMLCanvasElement,
     private kanvasRemah: HTMLCanvasElement,
@@ -198,7 +198,12 @@ export class Baki {
       b.style.setProperty('--sx', (2.6 * Math.cos(a) - 4.6 * Math.sin(a)).toFixed(2))
       b.style.setProperty('--sy', (2.6 * Math.sin(a) + 4.6 * Math.cos(a)).toFixed(2))
       if (b.dataset.panjang !== String(P.panjang)) {
-        b.firstElementChild!.innerHTML = svgPensil(P.c, P.panjang)
+        // Dipasang sebagai gambar latar, bukan SVG di DOM: tulisan WINGMAN CLUTCH di batang
+        // pensil cuma hiasan, jadi tidak boleh terbaca sebagai teks tombol yang berbeda dari
+        // labelnya (axe label-content-name-mismatch).
+        const tampak = b.firstElementChild as HTMLElement
+        tampak.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svgPensil(P.c, P.panjang))}")`
+        tampak.style.aspectRatio = `${P.panjang} / ${TEBAL + 2}`
         b.dataset.panjang = String(P.panjang)
       }
     })
@@ -210,8 +215,6 @@ export class Baki {
       height: E.h * k + 'px',
       rotate: E.r + 'deg',
     })
-    const kaki = this.baki.querySelector<HTMLElement>('#kaki')!
-    kaki.style.top = atas + (L.kaki - 14) * k + 'px'
     for (const c of [this.kanvasCoret, this.kanvasNoda, this.kanvasRemah]) {
       const dpr = DPR()
       const w = Math.ceil(c.clientWidth * dpr)

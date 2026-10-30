@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { batasGoresan, kompilasi } from '../src/engine/goresan'
 import { daftarDef } from '../src/halaman/papan'
-import { atasItem, hitungUkuran, pilihTata, TATA } from '../src/halaman/tata-letak'
+import { atasItem, atasKaki, hitungUkuran, pilihTata, TATA } from '../src/halaman/tata-letak'
 
 const defs = daftarDef()
 
@@ -77,6 +78,48 @@ describe('tata letak', () => {
               : 0
           expect.soft(tumpang, `${a} dan ${b}`).toBeLessThan(0.04)
         }
+    })
+  }
+})
+
+/** jalankan skrip di <head> index.html untuk satu ukuran layar; kembalikan yang dipasangnya */
+function skripAwal(lebar: number, tinggi: number) {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+  const skrip = html.match(/<script>([\s\S]*?)<\/script>/)![1]
+  const gaya = new Map<string, string>()
+  const akar = {
+    dataset: {} as Record<string, string>,
+    style: { setProperty: (k: string, v: string) => gaya.set(k, v) },
+  }
+  new Function('document', 'innerWidth', 'innerHeight', 'localStorage', 'matchMedia', skrip)(
+    { documentElement: akar, querySelector: () => ({}) },
+    lebar,
+    tinggi,
+    { getItem: () => null },
+    () => ({ matches: false }),
+  )
+  return { tata: akar.dataset.tata, u: gaya.get('--u')!, kaki: gaya.get('--kaki')! }
+}
+
+describe('tata letak sebelum skrip utama jalan', () => {
+  // termasuk tepat di batas potret/lanskap (lebar/tinggi = 0,92)
+  for (const [w, h] of [
+    [320, 568],
+    [390, 844],
+    [412, 915],
+    [919, 1000],
+    [920, 1000],
+    [768, 1024],
+    [1280, 720],
+    [1440, 900],
+    [1920, 1080],
+  ]) {
+    it(`skrip di <head> sama dengan hitungUkuran dan atasKaki (${w}x${h})`, () => {
+      const u = hitungUkuran(w, h)
+      const awal = skripAwal(w, h)
+      expect(awal.tata).toBe(u.kunci)
+      expect(parseFloat(awal.u)).toBeCloseTo(u.k, 9)
+      expect(parseFloat(awal.kaki)).toBeCloseTo(atasKaki(u), 9)
     })
   }
 })

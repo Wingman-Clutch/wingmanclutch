@@ -9,6 +9,10 @@
   --biru: #2f74d0;
   --hijau: #2f9a52;
   --kuning: #efb21a;
+  /* warna aksen untuk teks kecil: sedikit lebih gelap supaya kontrasnya 4,5:1 di atas kertas */
+  --merah-teks: #c33d2b;
+  --hijau-teks: #267b42;
+  --biru-teks: #2c6cc2;
   --kartu: #fbfaf6;
   --kartu-kotak: rgba(52, 64, 96, 0.1);
   --selotip: rgba(236, 222, 170, 0.78);
@@ -30,6 +34,9 @@
   --merah: #ea6450;
   --biru: #5b97e6;
   --hijau: #4cb86c;
+  --merah-teks: var(--merah);
+  --hijau-teks: var(--hijau);
+  --biru-teks: var(--biru);
   --kartu: #1c2029;
   --kartu-kotak: rgba(214, 222, 240, 0.06);
   --selotip: rgba(214, 200, 150, 0.55);
@@ -48,6 +55,9 @@
   --merah: #5fff9a;
   --biru: #3ddc7c;
   --hijau: #22c55e;
+  --merah-teks: var(--merah);
+  --hijau-teks: var(--hijau);
+  --biru-teks: var(--biru);
   --kartu: #04120a;
   --kartu-kotak: rgba(60, 255, 140, 0.06);
   --selotip: rgba(60, 255, 140, 0.25);
@@ -325,18 +335,16 @@ button.sketsa:active {
   transition: translate 0.25s ease;
 }
 
+/* gambar pensil (SVG) dipasang baki.ts sebagai background-image dan aspect-ratio */
 .pensil .tampak {
   display: block;
   width: 100%;
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   filter: drop-shadow(
     calc(var(--sx, 2) * var(--u)) calc(var(--sy, 4) * var(--u)) calc(var(--u) * 3) var(--bayang)
   );
-}
-
-.pensil .tampak svg {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 .pensil:hover,
@@ -409,9 +417,11 @@ button.sketsa:active {
     rotate 0.5s ease;
 }
 
+/* --kaki dipasang skrip di <head> sebelum dicat pertama, lalu diperbarui main.ts saat ukuran berubah */
 #kaki {
   position: absolute;
   margin: 0;
+  top: var(--kaki);
   left: 0;
   right: 0;
   text-align: center;
@@ -429,7 +439,7 @@ button.sketsa:active {
 }
 
 #kaki a:hover {
-  color: var(--merah);
+  color: var(--merah-teks);
 }
 
 /* di potret, tautan pindah ke baris kedua */

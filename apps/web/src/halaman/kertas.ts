@@ -131,15 +131,15 @@ export function ubinButiran(): string {
   c.width = c.height = N
   const g = c.getContext('2d')!
   const img = g.createImageData(N, N)
+  // img.data adalah getter; dibaca sekali saja karena loop ini jalan 36 ribu kali
+  const d = img.data
   const acak = buatAcak(42)
   for (let i = 0; i < N * N; i++) {
     const v = acak()
-    const terang = v > 0.5
+    const nilai = v > 0.5 ? 255 : 0
     const kuat = Math.abs(v - 0.5) * 2
-    img.data[i * 4] = terang ? 255 : 0
-    img.data[i * 4 + 1] = terang ? 255 : 0
-    img.data[i * 4 + 2] = terang ? 255 : 0
-    img.data[i * 4 + 3] = Math.round(kuat * kuat * 26)
+    d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = nilai
+    d[i * 4 + 3] = Math.round(kuat * kuat * 26)
   }
   g.putImageData(img, 0, 0)
   // serat kertas

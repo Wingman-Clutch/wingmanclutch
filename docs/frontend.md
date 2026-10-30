@@ -49,11 +49,11 @@ data/              isi halaman (proyek.ts), font.json dan logo.json hasil skrip
 Sketsa adalah fungsi yang mengembalikan daftar `Op`:
 
 ```ts
-G(d, warna, lebar, opsi)    // goresan pensil mengikuti path d
-A(d, warna, opsi)           // arsiran di dalam bentuk d (opsi.kurang = lubang)
-grup(ops, matriks)          // geser, putar, skala
-tulis(teks, x, y, ukuran)   // tulisan tangan (ukuran = tinggi huruf kapital)
-judul(teks, x, y, ukuran)   // judul tebal berarsir dengan bayangan warna
+G(d, warna, lebar, opsi) // goresan pensil mengikuti path d
+A(d, warna, opsi) // arsiran di dalam bentuk d (opsi.kurang = lubang)
+grup(ops, matriks) // geser, putar, skala
+tulis(teks, x, y, ukuran) // tulisan tangan (ukuran = tinggi huruf kapital)
+judul(teks, x, y, ukuran) // judul tebal berarsir dengan bayangan warna
 ```
 
 Warna memakai kode pensil: `w` grafit, `k` hitam, `e` warna kertas, `y` kuning, `p` pink, `b` biru, `g` hijau, `o` oranye, `r` merah, `n` cokelat. Warnanya berubah sendiri mengikuti tema (`engine/kuas.ts`), jadi sketsa tidak pernah menulis kode warna CSS.
@@ -70,10 +70,10 @@ Goyangan tangan memakai benih dari id sketsa, jadi gambarnya sama setiap kali di
 
 ### Skrip
 
-| Perintah | Kapan |
-| --- | --- |
-| `pnpm --filter @wingmanclutch/web font` | Daftar karakter atau sumber font berubah |
-| `node apps/web/scripts/buat-logo.mjs` | Logo brand di `docs/brand/` berubah |
+| Perintah                                | Kapan                                                       |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `pnpm --filter @wingmanclutch/web font` | Daftar karakter atau sumber font berubah                    |
+| `node apps/web/scripts/buat-logo.mjs`   | Logo brand di `docs/brand/` berubah                         |
 | `node apps/web/scripts/buat-gambar.mjs` | Tampilan berubah dan gambar README atau OG perlu diperbarui |
 
 ### Diagram arsitektur
@@ -87,10 +87,10 @@ Diagram dibuat dengan [Archify](https://github.com/tt-a1i/archify) dari [`arsite
 
 ## Test
 
-| Perintah | Isi |
-| --- | --- |
-| `pnpm test` | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih), kontrak (mock divalidasi dengan skema `openapi.yaml`) |
-| `pnpm test:e2e` | Build produksi dengan mock API di Chrome desktop, Pixel 7, dan iPhone 15 (WebKit): semua sketsa tergambar, tanpa scroll, lembar setiap aplikasi, tentang ke tim ke kontak, form kontak (galat, terkirim, cadangan email), tema tersimpan, Matrix, kepakan logo, keyboard, corat-coret dan penghapus, gerak dikurangi |
+| Perintah        | Isi                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`     | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih), kontrak (mock divalidasi dengan skema `openapi.yaml`), skrip tata letak di `<head>` sama dengan `hitungUkuran`, `cicil`                                                                                                                                                   |
+| `pnpm test:e2e` | Build produksi dengan mock API di Chrome desktop, Pixel 7, dan iPhone 15 (WebKit): semua sketsa tergambar, tanpa scroll, lembar setiap aplikasi, tentang ke tim ke kontak, form kontak (galat, terkirim, cadangan email), tema tersimpan, Matrix, kepakan logo, keyboard, corat-coret dan penghapus, gerak dikurangi, axe 0 pelanggaran di halaman (terang, gelap, Matrix) dan semua dialog |
 
 Sketsa yang sedang bergerak diam (melayang, mengayun) membuat Playwright menganggapnya "tidak stabil", jadi E2E mengetuknya dengan `click({ force: true })`.
 
@@ -100,7 +100,7 @@ Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build
 
 Kalau perlu memakai Vercel CLI, jalankan `vercel link` di folder sementara, karena perintah itu menulis `.env.local` berisi token. Sebelum `api/` ada, `/api/*` di produksi menjawab 404: lembar detail menyembunyikan statistik, dan form kontak langsung menawarkan email.
 
-Baseline Lighthouse mobile produksi pada 30 Oktober 2026: Performa 91, Aksesibilitas 100, Best Practices 96, SEO 100. Yang menahan Performa adalah Total Blocking Time 340 ms (kompilasi dan gambar sketsa di main thread); Best Practices turun karena teks kaki halaman dan tulisan kecil di HP di bawah 12 px.
+Lighthouse mobile 30 Oktober 2026 (Lighthouse 13.6, build produksi lokal, CPU diperlambat 9x supaya setara mesin PageSpeed Insights): sebelum PR `feat/lighthouse-axe` Performa 88–97 (TBT 200–450 ms, CLS 0,044), sesudahnya Performa 99–100 (TBT 60–110 ms, CLS 0). Aksesibilitas dan Best Practices 100, SEO produksi 100 (di `vite preview` lokal 92 karena `/robots.txt` dijawab `index.html`). Yang dulu menahan Performa: semua sketsa dikompilasi di satu tugas pembuka, hujan Matrix digambar penuh walau belum terlihat, dan ubin butiran. Sekarang `Sketsa` baru dikompilasi saat dibutuhkan dan `Papan` mencicilnya per tugas (`cicil` di `engine/animasi.ts`), hujan hanya digambar di bagian yang terlihat, dan butiran dibuat saat browser senggang. Skrip di `<head>` menghitung tata letak sebelum dicat supaya kaki halaman tidak melompat; kalau skrip itu diubah, hash di CSP ikut diganti (`test/csp.test.ts` memberi hash barunya).
 
 ## Checklist
 
@@ -119,6 +119,6 @@ Baseline Lighthouse mobile produksi pada 30 Oktober 2026: Performa 91, Aksesibil
 - [x] Unit test dan E2E di tiga perangkat
 - [x] Gambar README, gambar OG, dan diagram arsitektur Archify
 - [x] Deploy halaman ke Vercel (`wingmanclutch.vercel.app`), terhubung ke repo
-- [ ] Lighthouse mobile ≥ 95 di keempat kategori (baseline di bagian Deploy), axe 0 pelanggaran di halaman dan semua dialog
+- [x] Lighthouse mobile ≥ 95 di keempat kategori (baseline di bagian Deploy), axe 0 pelanggaran di halaman dan semua dialog
 - [ ] Cek alur kontak dan statistik di produksi bersama Bintang, setelah `api/` jadi
 - [ ] Ganti mock dengan backend sungguhan di E2E produksi (smoke test), setelah `api/` jadi
