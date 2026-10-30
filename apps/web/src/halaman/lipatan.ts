@@ -58,6 +58,14 @@ const keCss = (p: Titik[]) =>
     ? 'polygon(100% 0, 100% 0, 100% 0)'
     : `polygon(${p.map((q) => `${q[0].toFixed(1)}px ${q[1].toFixed(1)}px`).join(',')})`
 
+/**
+ * Seberapa jauh sudut ditarik saat diam, dalam piksel. Lipatan dan punggungnya tetap di dalam
+ * persegi sebesar ini di pojok kanan atas layar.
+ */
+export function sudutIstirahat(lebar: number, tinggi: number) {
+  return batasi(0.06 * Math.min(lebar, tinggi), 30, 58)
+}
+
 export class Lipatan {
   private P: Titik = [0, 0]
   private bawah: HTMLElement
@@ -96,9 +104,8 @@ export class Lipatan {
     return innerHeight
   }
 
-  /** seberapa jauh sudut ditarik saat diam, dalam piksel */
   private istirahat() {
-    return batasi(0.06 * Math.min(this.W, this.H), 30, 58)
+    return sudutIstirahat(this.W, this.H)
   }
 
   private posisiIstirahat(): Titik {

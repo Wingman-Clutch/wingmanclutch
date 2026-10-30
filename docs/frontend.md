@@ -65,7 +65,7 @@ Goyangan tangan memakai benih dari id sketsa, jadi gambarnya sama setiap kali di
 1. Teks, tautan, tumpukan teknologi, dan keterangan fitur: `src/data/proyek.ts`.
 2. Gambar perangkat dan layarnya: satu file di `src/sketsa/`. Setiap layar mengisi area layar perangkat dan punya satu keterangan di `fitur`.
 3. Posisi: `src/halaman/tata-letak.ts` untuk potret dan lanskap.
-4. Jalankan `pnpm test`. Test tata letak gagal kalau ada sketsa yang keluar halaman atau menindih logo, aplikasi lain, kontak, atau tim.
+4. Jalankan `pnpm test`. Test tata letak gagal kalau ada sketsa yang keluar halaman atau menindih logo, aplikasi lain, kontak, atau tim. Test yang sama juga gagal kalau kepakan logo menimpa kolom tanggal atau saklar tema, atau kalau sudut yang terlipat menutupi keduanya.
 5. Kalau id aplikasi baru, ubah juga enum `id` di `docs/api/openapi.yaml` dan mock-nya (bilang Bintang di PR).
 
 ### Skrip
@@ -89,7 +89,7 @@ Diagram dibuat dengan [Archify](https://github.com/tt-a1i/archify) dari [`arsite
 
 | Perintah        | Isi                                                                                                                                                                                                                                                                                                                                                                                         |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm test`     | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih), kontrak (mock divalidasi dengan skema `openapi.yaml`), skrip tata letak di `<head>` sama dengan `hitungUkuran`, `cicil`                                                                                                                                                   |
+| `pnpm test`     | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih, kolom tanggal tidak tertimpa kepakan logo atau sudut terlipat), kontrak (mock divalidasi dengan skema `openapi.yaml`), skrip tata letak di `<head>` sama dengan `hitungUkuran`, `cicil`                                                                                    |
 | `pnpm test:e2e` | Build produksi dengan mock API di Chrome desktop, Pixel 7, dan iPhone 15 (WebKit): semua sketsa tergambar, tanpa scroll, lembar setiap aplikasi, tentang ke tim ke kontak, form kontak (galat, terkirim, cadangan email), tema tersimpan, Matrix, kepakan logo, keyboard, corat-coret dan penghapus, gerak dikurangi, axe 0 pelanggaran di halaman (terang, gelap, Matrix) dan semua dialog |
 
 Sketsa yang sedang bergerak diam (melayang, mengayun) membuat Playwright menganggapnya "tidak stabil", jadi E2E mengetuknya dengan `click({ force: true })`.

@@ -86,7 +86,9 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
     W: 1700,
     H: 1000,
     garis0: 120,
-    tanggal: { x0: 1112, x1: 1430, y: 74 },
+    // kolom tanggal dan saklar sengaja jauh di kanan supaya kepakan logo yang terakhir tidak
+    // menimpa tulisan TANGGAL; saklar tetap di luar sudut yang terlipat
+    tanggal: { x0: 1204, x1: 1494, y: 74 },
     noda: [[1562, 908, 60, 7]],
     kaki: 958,
     tebalPensil: 60,
@@ -94,8 +96,8 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
     penghapus: { x: 866, y: 880, w: 196, h: 84, r: -6 },
     item: {
       tentang: { x: 352, y: 22, s: 0.72, r: -6 },
-      tanggal: { x: 1150, y: 74, s: 0.8 },
-      saklar: { x: 1462, y: 6, s: 0.72 },
+      tanggal: { x: 1242, y: 74, s: 0.8 },
+      saklar: { x: 1506, y: 6, s: 0.72 },
       logo: { x: 636, baris: 5.5, s: 0.49 },
       petunjukSamping: { x: 850, baris: 7.2, s: 0.88 },
       postpocket: { x: 92, baris: 7, s: 1.3, r: -3 },
