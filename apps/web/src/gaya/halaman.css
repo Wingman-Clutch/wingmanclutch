@@ -335,16 +335,18 @@ button.sketsa:active {
   transition: translate 0.25s ease;
 }
 
-/* gambar pensil (SVG) dipasang baki.ts sebagai background-image dan aspect-ratio */
 .pensil .tampak {
   display: block;
   width: 100%;
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
   filter: drop-shadow(
     calc(var(--sx, 2) * var(--u)) calc(var(--sy, 4) * var(--u)) calc(var(--u) * 3) var(--bayang)
   );
+}
+
+.pensil .tampak svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .pensil:hover,
