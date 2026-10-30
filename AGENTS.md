@@ -111,7 +111,7 @@ Butuh Node 24 (`.nvmrc`) dan pnpm 9. Semua perintah dijalankan dari root repo.
 | `pnpm test:e2e` | E2E Playwright di build produksi (desktop, Android, iPhone) |
 | `pnpm check` | `lint`, `typecheck`, dan `test` sekaligus |
 | `pnpm --filter @wingmanclutch/web font` | Buat ulang data font pensil (`src/data/font.json`) |
-| `node apps/web/scripts/buat-logo.mjs` | Buat ulang logo pensil dari `docs/brand/wingman-clutch-logo.svg` |
+| `node apps/web/scripts/buat-logo.mjs` | Buat ulang data logo (tulisan WINGMAN CLUTCH di halaman, lambang di kartu nama) dari `docs/brand/wingman-clutch-logo.svg` |
 | `pnpm --filter @wingmanclutch/web figur` | Buat ulang halaman figur dan gambar diamnya di `apps/web/public/figur/` dari `apps/web/figur/` (butuh `python3` dan Chrome Playwright) |
 | `node apps/web/scripts/buat-gambar.mjs` | Buat ulang gambar README dan gambar OG dari build produksi (butuh Chrome Playwright) |
 | `scripts/check-no-ai.sh --revs origin/main..HEAD` | Cek atribusi AI di commit yang belum masuk `main` |
@@ -136,9 +136,9 @@ Perintah backend (dipakai setelah `api/` dibuat, lihat [docs/backend.md](docs/ba
 apps/web/               halaman buku catatan (Vite + TypeScript tanpa framework), dipegang Kall
   src/engine/           mesin pensil: path SVG, goyangan tangan, arsiran, kuas, sketsa, animasi
   src/sketsa/           logo, catatan kecil, dan letak figur di halaman
-  src/halaman/          tata letak, kertas, papan, baki pensil, tema, lipatan sudut, dialog, kontak
+  src/halaman/          tata letak, kertas, papan, baki pensil, lampu, layar pembuka, lipatan sudut, dialog, kontak
   src/data/             isi halaman (proyek.ts) dan data font, logo, serta ukuran figur hasil skrip
-  figur/                sumber lima figur, penyesuaian lembar detail, dan engine Colorfigures
+  figur/                sumber figur (aplikasi, tim, lambang, lampu, kopi), penyesuaian lembar detail, dan engine Colorfigures
   public/figur/         hasil skrip: halaman figur interaktif dan gambar diam, di-commit
   mock/                 mock /api sesuai kontrak (hanya development dan E2E)
   test/, e2e/           unit test Vitest dan skenario Playwright
@@ -160,11 +160,11 @@ scripts/                cek atribusi AI dan rahasia (dipakai hook dan CI) besert
 
 ## 8. Aturan produk
 
-- **Tiru dulu, poles nanti.** Untuk rilis 1, tata letak, urutan menggambar, dan interaksi dibuat semirip mungkin dengan [kracked.studio](https://kracked.studio) (catatan lengkap di [docs/referensi/kracked-studio.md](docs/referensi/kracked-studio.md)). Isinya milik Wingman Clutch: logo, empat aplikasi, tim, dan teks berbahasa Indonesia.
+- **Buku catatan berisi figur.** Tata letak dan urutan menggambar berangkat dari [kracked.studio](https://kracked.studio) (catatan di [docs/referensi/kracked-studio.md](docs/referensi/kracked-studio.md)). Sejak 31 Oktober 2026 Kall dan Bintang sepakat semua benda di halaman digambar sebagai figur Colorfigures (empat aplikasi, tim, lambang, lampu, kopi), halaman dibuka dengan layar pembuka, dan tema diganti lewat tali lampu. Tulisan, catatan, dan coretan tetap digambar mesin pensil. Isinya milik Wingman Clutch: logo, empat aplikasi, tim, dan teks berbahasa Indonesia.
 - Kode, gambar, logo, dan foto dari web referensi tidak boleh disalin ke repo. Kita menulis ulang mesin pensil dan menggambar sketsa sendiri; yang ditiru hanya cara kerja dan rasanya. Catat sumber dan lisensi setiap aset di `docs/assets.md`.
 - Isi halaman (nama aplikasi, teks, tautan, tim) ada di `apps/web/src/data/proyek.ts`, bukan di dalam sketsa atau komponen.
 - Warna pensil dan kertas per tema ada di `apps/web/src/engine/kuas.ts` dan `apps/web/src/halaman/kertas.ts`. Jangan menulis warna baru langsung di sketsa; pakai kode warna pensil (`w`, `k`, `e`, `y`, `p`, `b`, `g`, `o`, `r`, `n`).
-- Figur aplikasi dan tim dimodelkan di `apps/web/figur/`. Setelah mengubahnya, jalankan `pnpm --filter @wingmanclutch/web figur` dan commit hasilnya, karena build produksi tidak menjalankan Python. Engine di `figur/colorfigures/` tidak diubah langsung; penyesuaian masuk `figur/sematan.css` dan `figur/sematan.js`.
+- Semua figur dimodelkan di `apps/web/figur/`. Setelah mengubahnya, jalankan `pnpm --filter @wingmanclutch/web figur` dan commit hasilnya, karena build produksi tidak menjalankan Python. Engine di `figur/colorfigures/` tidak diubah langsung; penyesuaian masuk `figur/sematan.css` dan `figur/sematan.js`.
 - Halaman harus muat di satu layar tanpa scroll, dari HP 320 px sampai desktop lebar. Unit test tata letak menjaga semua sketsa tetap di dalam halaman dan tidak saling tindih.
 - Bukan target rilis 1: CMS, blog, multi-bahasa, analitik pihak ketiga, akun pengunjung.
 

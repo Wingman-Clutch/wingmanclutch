@@ -27,6 +27,7 @@ Catatan cara kerja [kracked.studio](https://kracked.studio) yang ditiru di rilis
 ## Yang kami ubah
 
 - Isi seluruhnya milik Wingman Clutch dan berbahasa Indonesia.
-- Empat kategori menjadi empat aplikasi, dan lembar detailnya menampilkan tiga fitur bergambar per aplikasi, bukan daftar proyek.
+- Empat kategori menjadi empat aplikasi, dan lembar detailnya menampilkan figur yang bisa dicoba dan tiga fitur per aplikasi, bukan daftar proyek.
 - Logo tidak retak tetapi mengepakkan sayap, sesuai lambang Wingman Clutch.
 - Ditambah `GET /api/proyek` untuk statistik hidup di lembar detail.
+- Sejak 31 Oktober 2026 (keputusan Kall dan Bintang): semua benda di halaman jadi figur Colorfigures, termasuk lambang, lampu, dan mug kopi; halaman dibuka dengan layar pembuka berisi lambang yang mengepak; bulan dan matahari diganti lampu gantung yang talinya ditarik untuk mematikan dan menyalakan lampu.

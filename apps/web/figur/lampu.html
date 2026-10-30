@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lampu gantung</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Lampu gantung enamel di pojok halaman: kabel dari atas, kap kubah kuning, dan bohlam yang menyembul di bawah bibir
+   kap. Tali tariknya digambar halaman sendiri (src/halaman/lampu.ts) supaya bisa ditarik; figur ini hanya punya cincin
+   tempat tali itu tergantung. Dua gambar diam: nyala (tema terang) dan mati (tema gelap).
+   Cara kerja: kabel listrik turun lewat fitting di puncak kap ke dudukan bohlam. Saklar tarik ada di dudukan; talinya
+   keluar lewat cincin di bibir kap. Setiap tarikan memutar saklar satu langkah: nyala, mati, nyala.
+   x, y = mendatar, z = tinggi, pusat kap di (0, 0). Satuan kira-kira milimeter dibagi dua.
+   Bagian:
+   KABEL   kabel kain gelap dari atas ke fitting
+   FITTING tabung kuningan di puncak kap, dengan cincin kecil di bawahnya
+   KAP     kubah enamel kuning, bibirnya digulung putih
+   BOHLAM  kaca bening (mati) atau menyala kuning dengan pendar (nyala)
+   CINCIN  mata kuningan di bibir kap sisi depan, tempat tali tarik keluar */
+const LP_KAP = [[9, 100], [19, 97], [29, 91], [38, 83], [45, 74], [50, 66], [52.5, 61]];   // [jari-jari, z] dari puncak ke bibir
+const LP_BIBIR = 61, LP_BOHLAM = [0, 0, 47], LP_R_BOHLAM = 16;
+const LP_FITTING = [100, 113], LP_ATAS = 150;                // z fitting, z ujung atas kabel di figur
+const LP_ENAMEL = { l:'#f6c33c', m:'#e0a828', d:'#a2741a' };
+const LP_KUNINGAN = { l:'#ecd08a', m:'#c9a24f', d:'#8a6a2a' };
+const LP_KAIN = { l:'#5d5650', m:'#463f3a', d:'#2c2724' };
+const LP_SUDUT_CINCIN = 112;                                  // arah cincin di bibir kap (derajat dari +x), menghadap pemirsa
+const lpRing = (r, z, n = 40) => on(PZ(z), ellUV(0, 0, r, r, n));
+const lpCincin = () => { const a = LP_SUDUT_CINCIN * Math.PI / 180; return [Math.cos(a) * 53.5, Math.sin(a) * 53.5, LP_BIBIR - 1]; };
+
+function lpBohlam(nyala){
+  const c = P(...LP_BOHLAM), r = LP_R_BOHLAM * 1.2247;
+  let s = '';
+  if (nyala) s += `<circle cx="${f(c[0])}" cy="${f(c[1])}" r="${f(r * 3.1)}" fill="#ffe58a" opacity=".22"/>`
+    + `<circle cx="${f(c[0])}" cy="${f(c[1])}" r="${f(r * 2)}" fill="#ffe58a" opacity=".45"/>`;
+  s += `<circle cx="${f(c[0])}" cy="${f(c[1])}" r="${f(r)}" fill="${nyala ? '#fff7cf' : '#e6ebe6'}" stroke="${INK}" stroke-width="1.2"/>`;
+  // kilap kaca
+  s += `<path d="M${f(c[0] - r * .5)} ${f(c[1] + r * .1)}A${f(r * .62)} ${f(r * .62)} 0 0 1 ${f(c[0] - r * .05)} ${f(c[1] - r * .55)}" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="${nyala ? .9 : .7}"/>`;
+  if (!nyala) s += `<path d="M${f(c[0] - 4)} ${f(c[1] + 3)}Q${f(c[0])} ${f(c[1] - 6)} ${f(c[0] + 4)} ${f(c[1] + 3)}" fill="none" stroke="#9aa39c" stroke-width="1.2"/>`;   // filamen padam
+  return s;
+}
+
+function scene(st){
+  const nyala = !!st.nyala;
+  let s = lpBohlam(nyala);
+  // kap: kubah dari cincin-cincin, hanya sisi luar (mulutnya menghadap ke bawah, jauh dari pemirsa)
+  const rings = LP_KAP.map(([r, z]) => lpRing(r, z));
+  for (let i = 0; i < rings.length - 1; i++) s += loft(rings[i], rings[i + 1], n => tone(n, LP_ENAMEL));
+  if (facing([0, 0, 1])) s += fill(pd(rings[0]), tone([0, 0, 1], LP_ENAMEL));
+  // kilap enamel di sisi yang terkena cahaya
+  const kilap = [[0.62, 92], [0.7, 84], [0.76, 76]].map(([k, z]) => { const r = LP_KAP.find(([, zz]) => zz <= z)[0] * k; return P(Math.cos(.35) * r, Math.sin(.35) * -r, z); });
+  s += `<path d="M${kilap.map(q => f(q[0]) + ' ' + f(q[1])).join('L')}" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" opacity=".42"/>`;
+  // bibir kap digulung: pita putih tipis di tepi bawah
+  const bibir = lpRing(52.5, LP_BIBIR), bibirBawah = lpRing(52.5, LP_BIBIR - 2.4);
+  s += loft(bibirBawah, bibir, n => toneI(n, CERAMIC)) + hullInk([...rings.flat(), ...bibirBawah], 2.6);
+  // fitting kuningan dan cincin di bawahnya, lalu kabel
+  s += cyl(0, 0, LP_FITTING[0] - 2, LP_FITTING[0], 11, LP_KUNINGAN, tone, 1.2, 28);
+  s += cyl(0, 0, LP_FITTING[0], LP_FITTING[1], 7.5, LP_KUNINGAN, tone, 1.4, 28);
+  s += rod([0, 0, LP_FITTING[1]], [0, 0, LP_ATAS], 2.1, LP_KAIN, tone, 1.1);
+  // cincin tali tarik di bibir kap
+  const [cx, cy, cz] = lpCincin(), q = P(cx, cy, cz);
+  s += `<circle cx="${f(q[0])}" cy="${f(q[1] + 3.2)}" r="3.4" fill="none" stroke="${LP_KUNINGAN.d}" stroke-width="2.2"/>`
+    + `<circle cx="${f(q[0])}" cy="${f(q[1] + 3.2)}" r="3.4" fill="none" stroke="${INK}" stroke-width=".7"/>`;
+  return s;
+}
+
+/* titik untuk halaman (koordinat SVG): ujung atas kabel dan lubang cincin tempat tali tarik keluar */
+window.titikSambung = () => { const [x, y, z] = lpCincin(), q = P(x, y, z); return { kabel: P(0, 0, LP_ATAS), tali: [q[0], q[1] + 6.6] }; };
+
+mountFigure({
+  fig:'07', turn:'full', credit:false, title:'Lampu gantung',
+  size:[110, 110, LP_ATAS + 12], center:[0, 0], palette:'mustard',
+  state:{ nyala: true }, scene,
+  params(st, q){ if (q.has('nyala')) st.nyala = q.get('nyala') === '1'; },
+});
+</script></body></html>

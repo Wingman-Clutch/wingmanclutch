@@ -8,9 +8,12 @@ import { Dialog } from './halaman/dialog'
 import { Hujan } from './halaman/hujan'
 import { gambarKertas, KERTAS, ubinButiran } from './halaman/kertas'
 import { pasangKontak } from './halaman/kontak'
+import { Lampu } from './halaman/lampu'
 import { Lipatan } from './halaman/lipatan'
 import { Papan } from './halaman/papan'
+import { Pembuka } from './halaman/pembuka'
 import { atasKaki, hitungUkuran, type Ukuran } from './halaman/tata-letak'
+import { kepakkan } from './sketsa/logo'
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T
 const akar = document.documentElement
@@ -32,11 +35,12 @@ const dialog = new Dialog(tema)
 const hujan = new Hujan($<HTMLCanvasElement>('#hujan'))
 
 const papan = new Papan($('#papan'), (a, sumber) => {
-  if (a.jenis === 'tema') gantiKertas()
-  else if (a.jenis === 'logo') ketukLogo()
+  if (a.jenis === 'logo') ketukLogo()
   else if (a.jenis === 'proyek') dialog.buka('proyek', sumber, a.id)
   else dialog.buka(a.jenis, sumber)
 })
+
+const lampu = new Lampu($('#lampu'), () => gantiKertas())
 
 const baki = new Baki(
   $('#baki'),
@@ -68,6 +72,7 @@ function ketukLogo() {
     el.classList.add('kepak-gerak')
   }
   papan.kepak()
+  if (!GERAK_DIKURANGI) void kepakkan((p) => logo.pose(p))
 }
 
 function terapkanTema() {
@@ -77,6 +82,7 @@ function terapkanTema() {
   gambarKertas(kanvasKertas, ukuran, t)
   papan.warnai(t)
   baki.warnai(t)
+  lampu.warnai(kertas === 'terang')
   dialog.warnai()
   if (t === 'matrix') hujan.mulai()
   else hujan.berhenti()
@@ -101,6 +107,7 @@ function tata() {
   gambarKertas(kanvasKertas, ukuran, tema())
   papan.atur(ukuran, tema())
   baki.atur(ukuran, tema())
+  lampu.atur(ukuran)
   // hujan di belakang sketsa hanya terlihat di tema matrix
   hujan.atur(Math.max(12, 18 * ukuran.k), tema() === 'matrix' ? Infinity : 0)
   lipatan.atur()
@@ -108,8 +115,20 @@ function tata() {
 
 pasangKontak()
 tata()
-papan.pembukaan()
+lampu.warnai(kertas === 'terang')
 if (GERAK_DIKURANGI) akar.classList.add('gerak-dikurangi')
+
+// layar pembuka (kalau skrip di <head> memutuskan tampil): lambang mendarat dulu, baru sketsa jalan
+if (akar.classList.contains('pembuka')) {
+  const pembuka = new Pembuka($('#pembuka'))
+  const logo = papan.sketsa.get('logo')!
+  void pembuka
+    .jalan(() => logo.kanvas.getBoundingClientRect())
+    .then(() => {
+      papan.pembukaan({ logoSiap: true })
+      requestAnimationFrame(() => pembuka.tutup())
+    })
+} else papan.pembukaan()
 
 let jeda = 0
 addEventListener('resize', () => {

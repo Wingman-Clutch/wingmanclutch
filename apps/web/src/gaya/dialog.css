@@ -125,45 +125,6 @@ dialog p {
   margin: 0 0 12px;
 }
 
-mark {
-  background: linear-gradient(
-    transparent 58%,
-    color-mix(in srgb, var(--kuning) 70%, transparent) 58% 88%,
-    transparent 88%
-  );
-  color: inherit;
-  padding: 0 1px;
-}
-
-.langkah {
-  list-style: none;
-  counter-reset: langkah;
-  padding: 0;
-  margin: 0 0 16px;
-}
-
-.langkah li {
-  counter-increment: langkah;
-  position: relative;
-  padding-left: 40px;
-  margin-bottom: 10px;
-}
-
-.langkah li::before {
-  content: counter(langkah);
-  position: absolute;
-  left: 0;
-  top: -2px;
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid var(--merah);
-  border-radius: 50% 46% 52% 48%;
-  color: var(--merah-teks);
-  font-size: 14px;
-}
-
 .aksi {
   display: flex;
   flex-wrap: wrap;

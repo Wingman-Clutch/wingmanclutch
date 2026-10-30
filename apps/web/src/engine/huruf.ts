@@ -35,11 +35,67 @@ export interface OpsiTulis {
   a?: number
 }
 
+/** tepi kiri dan kanan tinta glyph tangan dalam satuan font; null untuk glyph tanpa tinta (spasi) */
+const tepi = new Map<string, [number, number] | null>()
+function tepiTinta(k: string) {
+  if (!tepi.has(k)) {
+    let a = Infinity
+    let b = -Infinity
+    for (const p of glyph(TANGAN, 't', k)[1])
+      for (const [x] of p) {
+        a = Math.min(a, x)
+        b = Math.max(b, x)
+      }
+    tepi.set(k, a <= b ? [a, b] : null)
+  }
+  return tepi.get(k)!
+}
+
+/** glyph yang tintanya lebih sempit dari ini (I, titik dua, tanda seru) diberi celah minimal */
+const SEMPIT = 150
+/** celah tinta minimal di samping glyph sempit, dalam satuan font */
+const CELAH_SEMPIT = 170
+
+/**
+ * Posisi pena setiap huruf dan lebar total, dalam satuan font. Jarak huruf mengikuti lebar maju
+ * glyph dikali `jarak`, kecuali di samping glyph sempit: "I" hanya satu garis tegak, jadi tanpa
+ * celah minimal "WIN" terbaca "WN".
+ */
+function susun(teks: string, jarak: number) {
+  const x: number[] = []
+  let pena = 0
+  /** tepi kanan tinta huruf sebelumnya, null setelah spasi */
+  let kanan: number | null = null
+  let sempit = false
+  for (const k of teks) {
+    const t = tepiTinta(k)
+    if (t && kanan !== null && (sempit || t[1] - t[0] < SEMPIT)) {
+      const celah = pena + t[0] - kanan
+      if (celah < CELAH_SEMPIT * jarak) pena += CELAH_SEMPIT * jarak - celah
+    }
+    x.push(pena)
+    kanan = t ? pena + t[1] : null
+    sempit = t ? t[1] - t[0] < SEMPIT : false
+    pena += glyph(TANGAN, 't', k)[0] * jarak
+  }
+  return { x, lebar: pena }
+}
+
 export function lebarTulisan(teks: string, ukuran: number, jarak = 1.08) {
-  const s = ukuran / KAPITAL_TANGAN
-  let l = 0
-  for (const k of teks) l += glyph(TANGAN, 't', k)[0] * s * jarak
-  return l
+  return susun(teks, jarak).lebar * (ukuran / KAPITAL_TANGAN)
+}
+
+/** celah tinta antara huruf yang bersebelahan (tidak melewati spasi), dalam satuan gambar */
+export function celahTinta(teks: string, ukuran: number, jarak = 1.08) {
+  const { x } = susun(teks, jarak)
+  const huruf = [...teks]
+  const celah: number[] = []
+  for (let i = 1; i < huruf.length; i++) {
+    const a = tepiTinta(huruf[i - 1])
+    const b = tepiTinta(huruf[i])
+    if (a && b) celah.push((x[i] + b[0] - (x[i - 1] + a[1])) * (ukuran / KAPITAL_TANGAN))
+  }
+  return celah
 }
 
 /** tulisan tangan dengan garis dasar di y; ukuran = tinggi huruf kapital */
@@ -52,15 +108,14 @@ export function tulis(
   o: OpsiTulis = {},
 ): Op {
   const s = ukuran / KAPITAL_TANGAN
-  const jarak = o.jarak ?? 1.08
-  const lebar = lebarTulisan(teks, ukuran, jarak)
-  let kx = o.rata === 'c' ? x - lebar / 2 : o.rata === 'r' ? x - lebar : x
+  const { x: pena, lebar } = susun(teks, o.jarak ?? 1.08)
+  const x0 = o.rata === 'c' ? x - (lebar * s) / 2 : o.rata === 'r' ? x - lebar * s : x
   const garis: Garis[] = []
-  for (const k of teks) {
-    const [maju, g] = glyph(TANGAN, 't', k)
-    for (const p of g) garis.push(p.map(([gx, gy]) => [kx + gx * s, y + gy * s]))
-    kx += maju * s * jarak
-  }
+  ;[...teks].forEach((k, i) => {
+    const kx = x0 + pena[i] * s
+    for (const p of glyph(TANGAN, 't', k)[1])
+      garis.push(p.map(([gx, gy]) => [kx + gx * s, y + gy * s]))
+  })
   return G(garis, c, o.w ?? Math.max(1.8, ukuran * 0.15), {
     lintasan: 1,
     amp: ukuran * 0.012,

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { batasGoresan, kompilasi } from '../src/engine/goresan'
+import { jangkauanLampu } from '../src/halaman/lampu'
 import { sudutIstirahat } from '../src/halaman/lipatan'
 import { daftarDef } from '../src/halaman/papan'
 import { atasItem, atasKaki, hitungUkuran, pilihTata, TATA } from '../src/halaman/tata-letak'
@@ -16,16 +17,17 @@ interface Kotak {
 
 const tindih = (a: Kotak, b: Kotak) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
 
-/** kolom TANGGAL tercetak (label, garis, tulisan) dan saklar tema di sampingnya */
+/** kolom TANGGAL tercetak (label, garis, tulisan) dan lampu gantung di dekatnya */
 function kolomTanggal(kunci: 'potret' | 'lanskap'): [string, Kotak][] {
   const T = TATA[kunci].tanggal
+  const lampu = jangkauanLampu(TATA[kunci].lampu)
   // label digambar kertas.ts rata kanan 10 satuan sebelum garis; 82 = lebar terburuk di font sistem
   return [
     ['label TANGGAL', { x0: T.x0 - 10 - 82, y0: T.y - 14, x1: T.x0 - 10, y1: T.y + 4 }],
     ['garis tanggal', { x0: T.x0, y0: T.y - 2, x1: T.x1, y1: T.y + 4 }],
     ['tulisan tanggal', kotakDi(kunci, 'tanggal')!],
-    ['bulan', kotakDi(kunci, 'saklar-bulan')!],
-    ['matahari', kotakDi(kunci, 'saklar-matahari')!],
+    ['lampu', lampu.gambar],
+    ['tali lampu', lampu.tali],
   ]
 }
 
@@ -103,7 +105,20 @@ describe('tata letak', () => {
         }
     })
 
-    it(`logo dan semua kepakannya tidak menimpa kolom tanggal dan saklar (${kunci})`, () => {
+    it(`lampu dan talinya sampai tarikan penuh tidak menimpa sketsa mana pun (${kunci})`, () => {
+      const L = TATA[kunci]
+      const lampu = jangkauanLampu(L.lampu)
+      expect(lampu.gambar.x1).toBeLessThan(L.W)
+      expect(lampu.tali.x1).toBeLessThan(L.W)
+      for (const d of defs) {
+        const k = kotakDi(kunci, d.id)
+        if (!k) continue
+        expect.soft(tindih(lampu.gambar, k), `lampu dan ${d.id}`).toBe(false)
+        expect.soft(tindih(lampu.tali, k), `tali lampu dan ${d.id}`).toBe(false)
+      }
+    })
+
+    it(`logo dan semua kepakannya tidak menimpa kolom tanggal dan lampu (${kunci})`, () => {
       const sayap = defs.filter((d) => (d.tempat ?? d.id) === 'logo')
       expect(sayap.length).toBeGreaterThan(2)
       for (const d of sayap)
@@ -126,7 +141,7 @@ describe('sudut terlipat saat diam', () => {
     [1920, 1080],
     [2560, 1080],
   ]) {
-    it(`tidak menutupi kolom tanggal dan saklar (${w}x${h})`, () => {
+    it(`tidak menutupi kolom tanggal dan lampu (${w}x${h})`, () => {
       const u = hitungUkuran(w, h)
       const a = sudutIstirahat(w, h)
       const sudut = { x0: w - a, y0: 0, x1: w, y1: a }
@@ -144,23 +159,57 @@ describe('sudut terlipat saat diam', () => {
 })
 
 /** jalankan skrip di <head> index.html untuk satu ukuran layar; kembalikan yang dipasangnya */
-function skripAwal(lebar: number, tinggi: number) {
+function skripAwal(
+  lebar: number,
+  tinggi: number,
+  { sesi = null as string | null, kurangi = false } = {},
+) {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
   const skrip = html.match(/<script>([\s\S]*?)<\/script>/)![1]
   const gaya = new Map<string, string>()
+  const kelas = new Set<string>()
   const akar = {
     dataset: {} as Record<string, string>,
     style: { setProperty: (k: string, v: string) => gaya.set(k, v) },
+    classList: { add: (k: string) => kelas.add(k) },
   }
-  new Function('document', 'innerWidth', 'innerHeight', 'localStorage', 'matchMedia', skrip)(
+  new Function(
+    'document',
+    'innerWidth',
+    'innerHeight',
+    'localStorage',
+    'sessionStorage',
+    'matchMedia',
+    skrip,
+  )(
     { documentElement: akar, querySelector: () => ({}) },
     lebar,
     tinggi,
     { getItem: () => null },
-    () => ({ matches: false }),
+    { getItem: () => sesi },
+    (q: string) => ({ matches: kurangi && q.includes('reduced-motion') }),
   )
-  return { tata: akar.dataset.tata, u: gaya.get('--u')!, kaki: gaya.get('--kaki')! }
+  return {
+    tata: akar.dataset.tata,
+    u: gaya.get('--u')!,
+    kaki: gaya.get('--kaki')!,
+    pembuka: kelas.has('pembuka'),
+  }
 }
+
+describe('layar pembuka', () => {
+  it('tampil di kunjungan pertama sebuah sesi', () => {
+    expect(skripAwal(1440, 900).pembuka).toBe(true)
+  })
+
+  it('tidak tampil lagi di sesi yang sama', () => {
+    expect(skripAwal(1440, 900, { sesi: '1' }).pembuka).toBe(false)
+  })
+
+  it('tidak pernah tampil kalau pengguna memilih gerak dikurangi', () => {
+    expect(skripAwal(390, 844, { kurangi: true }).pembuka).toBe(false)
+  })
+})
 
 describe('tata letak sebelum skrip utama jalan', () => {
   // termasuk tepat di batas potret/lanskap (lebar/tinggi = 0,92)

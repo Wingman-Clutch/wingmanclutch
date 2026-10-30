@@ -4,7 +4,7 @@
 <script src="core.js"></script>
 <script>
 /* goRute: halte TransJakarta. Papan rute di tiang halte, bus koridor 1 yang datang, pintunya membuka ke halte.
-   Cara kerja nyatanya: penumpang mencari rute (papan menyalakan jalur dan halte transit), menunggu bus di halte
+   Cara kerja nyatanya: penumpang mencari rute (papan menyalakan jalur koridor 1 dari Blok M ke Kota), menunggu bus di halte
    yang lantainya setinggi pintu bus, bus berhenti sejajar ubin peringatan kuning, lalu pintu geser terbuka.
    x = panjang bus (depan di x besar), y = lebar (halte di sisi +y), z = tinggi. Satuan kira-kira 10 cm.
    Bagian:
@@ -19,7 +19,7 @@ const GR_DOOR = [28, 44];                                        // pintu di sis
 const GR_BLUE = { l:'#5b97e6', m:'#2f74d0', d:'#1c3f73' }, GR_GLASS = { l:'#5f7d96', m:'#3d5a73', d:'#243848' };
 const GR_TIRE = { l:'#55504a', m:'#3d3935', d:'#272421' }, GR_CON = { l:'#e6e2d8', m:'#cbc5b7', d:'#a59e8e' };
 const GR_YEL = '#efb21a', GR_SCREEN = '#1d2a26';
-const GR_STOPS = [['BLOK M', 0], ['', .2], ['', .4], ['TRANSIT', .58], ['', .8], ['KOTA', 1]];
+const GR_STOPS = [['BLOK M', 0], ['', .2], ['', .4], ['BUNDARAN HI', .58], ['', .8], ['KOTA', 1]];   // koridor 1, langsung tanpa transit
 
 const grBoxOf = pts => [[0,1,2].map(i => Math.min(...pts.map(p => p[i]))), [0,1,2].map(i => Math.max(...pts.map(p => p[i])))];
 
@@ -42,7 +42,7 @@ function grBus(st, dx){
     s += shape(on(PX(X(GR_BL) + .1), rrUV(3, 23, 27, 40, 3)), GR_GLASS.m, 1.2);                   // kaca depan
     s += fill(pd(on(PX(X(GR_BL) + .2), rrUV(5, 33, 9, 39, 1))), '#ffffff', 'opacity=".35"');
     s += shape(on(PX(X(GR_BL) + .15), rectUV(7, 40.5, 23, 43.2)), '#151413', .7);                  // papan tujuan
-    s += tx(X(GR_BL) + .25, 15, 41.2, '1 BLOK M', 1.9, '#f59447', 800);
+    s += tx(X(GR_BL) + .25, 15, 41.2, '1 KOTA', 1.9, '#f59447', 800);
     for (const y of [5, 25]) s += shape(on(PX(X(GR_BL) + .15), ellUV(y, 13, 2.2, 1.8, 12)), '#fff4d6', .7);
     s += shape(on(PX(X(GR_BL) + .12), rectUV(2, 17, 28, 19)), GR_YEL, .5);
     s += ink(pd(on(PX(X(GR_BL)), GR_PROF)), 2);
@@ -98,16 +98,13 @@ function grSign(st){
     s += shape(on(PX(x), rectUV(GR_SY0 + 1.5, GR_SZ0 + 1.5, GR_SY1 - 1.5, GR_SZ1 - 1.5)), GR_SCREEN, 1);
     s += shape(on(PX(x + .05), rectUV(GR_SY0 + 1.5, GR_SZ1 - 6.5, GR_SY1 - 1.5, GR_SZ1 - 1.5)), '#2f74d0', .8);
     s += tx(x + .1, (GR_SY0 + GR_SY1) / 2, GR_SZ1 - 5.2, 'BLOK M - KOTA', 2.4, '#ffffff', 800);
-    // jalur dua koridor: menyala sedikit demi sedikit saat rute dicari
+    // jalur koridor 1: menyala sedikit demi sedikit saat rute dicari
     const zl = 56, k = st.rute;
     s += `<path d="${pd([[x + .1, ly(0), zl], [x + .1, ly(1), zl]], false)}" stroke="#3d4a47" stroke-width="1.4" fill="none"/>`;
-    if (k > 0){
-      s += `<path d="${pd([[x + .12, ly(0), zl], [x + .12, ly(Math.min(k, .58)), zl]], false)}" stroke="#5b97e6" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
-      if (k > .58) s += `<path d="${pd([[x + .12, ly(.58), zl], [x + .12, ly(k), zl]], false)}" stroke="#f59447" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
-    }
+    if (k > 0) s += `<path d="${pd([[x + .12, ly(0), zl], [x + .12, ly(k), zl]], false)}" stroke="#5b97e6" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
     for (const [name, p] of GR_STOPS){
       const lit = k >= p - .001, big = name !== '';
-      s += shape(on(PX(x + .15), ellUV(ly(p), zl, big ? 1.3 : .9, big ? 1.3 : .9, 12)), lit ? (p > .58 ? '#f59447' : p === .58 ? '#ffffff' : '#5b97e6') : '#56635f', .4);
+      s += shape(on(PX(x + .15), ellUV(ly(p), zl, big ? 1.3 : .9, big ? 1.3 : .9, 12)), lit ? (p === .58 ? '#ffffff' : '#5b97e6') : '#56635f', .4);
       if (big) s += tx(x + .15, ly(p), p === .58 ? zl + 2.6 : zl - 4, name, 1.7, lit ? '#8af0ae' : '#6d7a76', 700);
     }
     // waktu tiba bus
@@ -156,7 +153,7 @@ function grRun(key, ms, done){
 }
 // tombol yang ditekan di luar urutan menjalankan langkah yang kurang dulu, lalu lanjut sendiri
 function cariRute(st, lanjut){
-  if (st.rute >= 1) return lanjut ? lanjut() : ui.flash('Rutenya sudah ketemu: Blok M ke Kota, transit sekali');
+  if (st.rute >= 1) return lanjut ? lanjut() : ui.flash('Rutenya ketemu: Blok M ke Kota, langsung naik koridor 1');
   grRun('rute', 1400, lanjut);
 }
 function panggilBus(st, lanjut){

@@ -100,6 +100,8 @@ export class Sketsa {
   private figurCtx?: CanvasRenderingContext2D
   /** terisi setelah gambar figur selesai dimuat */
   private figurGambar?: HTMLImageElement
+  /** pose lain sebingkai yang sedang ditampilkan menggantikan gambar figur (kepakan sayap logo) */
+  private figurPose?: HTMLImageElement
   private krayon: Garis = []
   tempat: Penempatan = { x: 0, y: 0, skala: 1, r: 0 }
   progres = 0
@@ -217,11 +219,17 @@ export class Sketsa {
     this.gambarFigur()
   }
 
+  /** tampilkan pose lain figur ini (sebingkai dengan gambar aslinya), atau kembali ke aslinya dengan null */
+  pose(img: HTMLImageElement | null) {
+    this.figurPose = img ?? undefined
+    this.gambarFigur()
+  }
+
   /** figur sebanyak progres: krayon digoreskan dulu, lalu gambarnya mengisi bagian yang tercoret */
   private gambarFigur() {
     const g = this.figurCtx
     const f = this.figur
-    const img = this.figurGambar
+    const img = this.figurPose ?? this.figurGambar
     if (!g || !f || !img || !this.progres) return
     const k = this.tempat.skala * DPR()
     const x = (f.x - this.kotak.x) * k

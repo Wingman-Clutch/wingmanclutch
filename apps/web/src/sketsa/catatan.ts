@@ -1,13 +1,14 @@
-// Catatan kecil di halaman: kertas tempel Tentang kami, judul Tim kami, kopi hari ini,
-// petunjuk, kotak kontak, rumus, kilau, bulan dan matahari, serta tanggal hari ini.
+// Catatan kecil di halaman: kertas tempel Tentang kami, judul Tim kami, kopi hari ini, petunjuk,
+// kotak kontak, rumus, kilau, dan tanggal hari ini.
 
 import { A, G, grup, type Op } from '../engine/goresan'
 import { judul, lebarJudul, lebarTulisan, tulis } from '../engine/huruf'
-import { geser, gelombang, kepalaPanah, kilau, kotak, lingkaran } from '../engine/jalur'
+import { geser, gelombang, kepalaPanah, kilau, kotak } from '../engine/jalur'
 import { hati } from './bantu'
-import { bingkai, KOTAK_TIM, letakFigur } from './figur'
+import { bingkai, KOTAK_KOPI, KOTAK_TIM, letakFigur } from './figur'
 
 export const FIGUR_TIM = letakFigur('tim', KOTAK_TIM)
+export const FIGUR_KOPI = letakFigur('kopi', KOTAK_KOPI)
 
 export function tentang(): Op[] {
   const w = lebarJudul('tentang', 30)
@@ -17,7 +18,7 @@ export function tentang(): Op[] {
     ...judul('tentang', 110, 92, 30, { rata: 'c' }),
     ...judul('kami', 110, 132, 30, { rata: 'c' }),
     G(gelombang(110 - w / 2, 110 + w / 2 + 6, 146, 2.6, 16), 'r', 4.2, { lintasan: 1, amp: 0.5 }),
-    tulis('SIAPA KAMI?', 110, 184, 20, 'w', { rata: 'c', jarak: 1.1 }),
+    tulis('KALL & BINTANG', 110, 184, 15, 'w', { rata: 'c', jarak: 1.08 }),
     G(kilau(190, 34, 8), 'o', 3.4, { lintasan: 1, amp: 0.3 }),
   ]
 }
@@ -32,13 +33,12 @@ export function tim(): Op[] {
   ]
 }
 
+/** mug figur, uap pensil di atasnya, dan hitungan kopi hari ini */
 export function kopi(): Op[] {
   return [
-    G(kotak(8, 36, 44, 46, 7), 'w', 5),
-    G('M52 46 C68 46 68 70 52 70', 'w', 4.6, { lintasan: 1 }),
-    A(kotak(12, 46, 36, 32, 5), 'n', { jarak: 4.2, sudut: -30, a: 0.6 }),
-    G('M20 28 C14 20 26 14 20 4 M36 28 C30 20 42 14 36 4', 'w', 3.4, { lintasan: 1, lebih: 0 }),
-    tulis('HARI INI:', 80, 30, 22, 'w', { jarak: 1.08 }),
+    bingkai(FIGUR_KOPI),
+    G('M18 14 C12 6 24 0 18 -10 M32 14 C26 6 38 0 32 -10', 'w', 3.4, { lintasan: 1, lebih: 0 }),
+    tulis('KOPI HARI INI:', 80, 30, 22, 'w', { jarak: 1.08 }),
     G('M84 44 L84 80 M96 44 L96 80 M108 44 L108 80 M120 44 L120 80', 'w', 4.6, {
       lintasan: 1,
       lebih: 1.5,
@@ -53,14 +53,14 @@ export function kopi(): Op[] {
 export function petunjukKetuk(arah: 'bawah' | 'samping'): Op[] {
   if (arah === 'bawah') {
     return [
-      tulis('KETUK SKETSANYA!', 0, 32, 28, 'b', { jarak: 1.08 }),
+      tulis('KETUK GAMBARNYA!', 0, 32, 28, 'b', { jarak: 1.08 }),
       G('M-8 22 C-40 28 -54 52 -48 84', 'b', 4.4, { lintasan: 1 }),
       G(kepalaPanah(-48, 84, 96, 12), 'b', 4.4, { lintasan: 1, lebih: 0 }),
     ]
   }
-  const w = lebarTulisan('KETUK SKETSANYA', 28) * 1.0
+  const w = lebarTulisan('KETUK GAMBARNYA', 28)
   return [
-    tulis('KETUK SKETSANYA', 0, 32, 28, 'b', { rata: 'c', jarak: 1.08 }),
+    tulis('KETUK GAMBARNYA', 0, 32, 28, 'b', { rata: 'c', jarak: 1.08 }),
     G(`M${-w / 2 - 18} 20 L${-w / 2 - 78} 20`, 'b', 4.4, { lintasan: 1 }),
     G(kepalaPanah(-w / 2 - 78, 20, 180, 12), 'b', 4.4, { lintasan: 1, lebih: 0 }),
     G(`M${w / 2 + 18} 20 L${w / 2 + 78} 20`, 'b', 4.4, { lintasan: 1 }),
@@ -72,7 +72,7 @@ export function kotakKontak(): Op[] {
   const ukuran = Math.min(40, 400 / lebarJudul("let's clutch it", 1))
   const w = lebarJudul("let's clutch it", ukuran)
   return [
-    tulis('JANGAN DIHAPUS', 260, 22, 20, 'r', { rata: 'c', jarak: 1.18 }),
+    tulis('HUBUNGI KAMI', 260, 22, 20, 'r', { rata: 'c', jarak: 1.18 }),
     G(kotak(12, 34, 496, 122, 10), 'w', 5.5, { amp: 1.4 }),
     tulis('PUNYA IDE?', 260, 80, 28, 'w', { rata: 'c', jarak: 1.1 }),
     ...judul("let's clutch it", 236, 136, ukuran, { rata: 'c' }),
@@ -103,29 +103,6 @@ export function kilauKecil(): Op[] {
   return [
     G(kilau(10, 10, 9), 'o', 3.6, { lintasan: 1, amp: 0.4 }),
     G(kilau(40, 34, 5), 'w', 3, { lintasan: 1, amp: 0.3 }),
-  ]
-}
-
-/** saklar tema di samping tanggal: bulan di kertas terang, matahari di kertas gelap */
-export function bulan(): Op[] {
-  const d = 'M81.3 41 A30 30 0 1 0 77 90 A28 28 0 0 1 81.3 41 Z'
-  return [
-    G(d, 'w', 4.4),
-    A(d, 'y', { jarak: 3.4, sudut: 35, w: 3.8 }),
-    G(kilau(102, 36, 7), 'w', 3, { lintasan: 1, amp: 0.3 }),
-    G(kilau(106, 80, 4.5), 'y', 2.8, { lintasan: 1, amp: 0.3 }),
-  ]
-}
-
-export function matahari(): Op[] {
-  const sinar = Array.from({ length: 8 }, (_, i) => {
-    const a = ((i * 45 + 10) * Math.PI) / 180
-    return `M${65 + Math.cos(a) * 28} ${65 + Math.sin(a) * 28}L${65 + Math.cos(a) * 39} ${65 + Math.sin(a) * 39}`
-  }).join('')
-  return [
-    G(lingkaran(65, 65, 19), 'w', 4.4),
-    A(lingkaran(65, 65, 18), 'y', { jarak: 3.4, sudut: 35, w: 3.8 }),
-    G(sinar, 'o', 4, { lintasan: 1, lebih: 0.4 }),
   ]
 }
 

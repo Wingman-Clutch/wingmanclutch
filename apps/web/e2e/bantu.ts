@@ -1,20 +1,19 @@
 import { expect, type Page } from '@playwright/test'
 
-/** buka halaman dan tunggu semua sketsa selesai digambar */
+/**
+ * Buka halaman dan tunggu semua sketsa selesai digambar. Layar pembuka dilewati seperti kunjungan
+ * kedua di sesi yang sama; skenarionya sendiri ada di halaman.spec.ts.
+ */
 export async function bukaHalaman(page: Page) {
   const galat: string[] = []
   page.on('pageerror', (e) => galat.push(e.message))
   page.on('console', (m) => {
     if (m.type() === 'error' && !m.text().includes('503')) galat.push(m.text())
   })
+  await page.addInitScript(() => sessionStorage.setItem('wc-pembuka', '1'))
   await page.goto('/')
-  await expect(
-    page
-      .locator('[data-sketsa="saklar-bulan"], [data-sketsa="saklar-matahari"]')
-      .locator('visible=true'),
-  ).toHaveClass(/selesai/, {
-    timeout: 10_000,
-  })
+  // kepakan pertama di samping logo adalah sketsa yang paling akhir selesai
+  await expect(page.locator('[data-sketsa="kepak"]')).toHaveClass(/selesai/, { timeout: 12_000 })
   return galat
 }
 

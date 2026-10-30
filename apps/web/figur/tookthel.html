@@ -174,7 +174,7 @@ function sobek(st){
   st.cutting = true; ttTo('torn', 1, 600, () => { st.cutting = false; });
 }
 function bagi(st){
-  if (st.print < 1 && !st.torn) ui.flash('Totalnya dari struk: cetak dulu, nanti dibagi rata');
+  if (st.print < 1 && !st.torn) ui.flash('Cetak struknya dulu, baru bisa dibagi rata');
   ttTo('split', st.split >= 1 ? 0 : 1, 900);
 }
 

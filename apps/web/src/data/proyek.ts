@@ -27,7 +27,7 @@ export const PROYEK: Proyek[] = [
     nama: 'PostPocket',
     slogan: 'Kenangan kecil, dikirim jadi surat.',
     deskripsi:
-      'Tulis kartu foil 3D, simpan satu momen setiap hari, dan foto bareng di booth. Semua dibuka lewat satu link, tanpa daftar dan tanpa aplikasi.',
+      'Tulis surat di kartu foil 3D, lalu kirim link-nya lewat WhatsApp. Yang nerima tinggal ketuk buat buka, nggak perlu daftar atau pasang aplikasi.',
     url: 'https://postpocket.vercel.app',
     repo: 'https://github.com/Wingman-Clutch/PostPocket',
     tumpukan: ['Nuxt', 'Supabase', 'Tailwind CSS', 'PWA'],
@@ -36,16 +36,16 @@ export const PROYEK: Proyek[] = [
     gerak: 'goyang',
     fitur: [
       {
-        judul: 'Surat foil 3D',
-        teks: 'Kartu bercetak foil yang bisa diputar, dibuka, dan dibaca seperti surat sungguhan.',
+        judul: 'Kartu foil 3D',
+        teks: 'Pilih gambar depan atau pakai foto sendiri, atur bagian yang berkilau, lalu putar kartunya buat lihat hasilnya.',
       },
       {
         judul: 'Pocket',
-        teks: 'Kalender bulanan: setiap hari diisi foto lalu dibungkus kantong berstiker.',
+        teks: 'Satu foto tiap hari masuk ke kantong berstiker. Sebulan penuh bisa diputar di TV jadul.',
       },
       {
-        judul: 'Booth',
-        teks: 'Photobooth di browser yang menghasilkan strip foto untuk disimpan.',
+        judul: 'Kotak bareng',
+        teks: 'Beberapa teman nitip surat buat satu orang, terus kotaknya dibuka barengan di jam yang dipilih.',
       },
     ],
   },
@@ -54,7 +54,7 @@ export const PROYEK: Proyek[] = [
     nama: 'goRute',
     slogan: 'Naik TransJakarta tanpa nebak-nebak.',
     deskripsi:
-      'Rute transportasi umum Jabodetabek dari pintu ke pintu: jalan kaki, halte, transit, tarif, dan jamnya. PWA, tanpa akun.',
+      'Cari rute TransJakarta dari pintu ke pintu: jalan ke halte mana, naik koridor apa, turun di mana, dan bayar berapa. Nggak perlu akun.',
     url: 'https://gorute.vercel.app',
     repo: 'https://github.com/Wingman-Clutch/goRute',
     tumpukan: ['React', 'MapLibre', 'GTFS TransJakarta', 'PWA'],
@@ -63,14 +63,17 @@ export const PROYEK: Proyek[] = [
     gerak: 'ayun',
     fitur: [
       {
-        judul: 'Jalur dan transit',
-        teks: 'Koridor yang dilewati, halte transit, dan urutan haltenya.',
+        judul: 'Tiga pilihan rute',
+        teks: 'Urutkan dari yang paling cepat, paling murah, atau paling sedikit transit.',
       },
       {
-        judul: 'Jadwal berangkat',
-        teks: 'Bus berikutnya di halte terdekat, lengkap dengan perkiraan menitnya.',
+        judul: 'Jalan kaki beneran',
+        teks: 'Petunjuk jalan kakinya ngikutin gang dan JPO, bukan garis lurus di peta.',
       },
-      { judul: 'Pintu ke pintu', teks: 'Jalan kaki, naik bus, jalan lagi, plus tarif totalnya.' },
+      {
+        judul: 'Tarif yang pas',
+        teks: 'Rp3.500, Rp2.000 sebelum jam 7, dan satu tiket berlaku tiga jam buat transfer.',
+      },
     ],
   },
   {
@@ -78,7 +81,7 @@ export const PROYEK: Proyek[] = [
     nama: 'Tikoem',
     slogan: 'Titik kumpul yang adil buat semua.',
     deskripsi:
-      'Tiap orang kirim lokasinya, Tikoem carikan tempat ketemuan yang waktu tempuhnya paling seimbang. Naik motor, mobil, atau transportasi umum.',
+      'Tiap orang kirim lokasi dan kendaraannya. Tikoem nyariin tempat ketemuan yang waktu tempuhnya paling seimbang, jadi nggak ada yang kejauhan sendiri.',
     url: 'https://tikoem.vercel.app',
     repo: 'https://github.com/Wingman-Clutch/tikoem',
     tumpukan: ['React', 'Convex', 'MapLibre', 'PWA'],
@@ -87,14 +90,17 @@ export const PROYEK: Proyek[] = [
     gerak: 'melayang',
     fitur: [
       {
-        judul: 'Lokasi semua teman',
-        teks: 'Setiap orang membagikan lokasinya lewat satu link room.',
+        judul: 'Satu link buat grup',
+        teks: 'Bikin room, bagikan link-nya ke grup WhatsApp, lalu tiap orang isi lokasinya.',
       },
       {
-        judul: 'Tempat yang adil',
-        teks: 'Kandidat tempat diurutkan dari waktu tempuh yang paling seimbang.',
+        judul: 'Adil, bukan cuma di tengah',
+        teks: 'Yang dicari tempat dengan perjalanan terlama paling singkat. Motor, mobil, KRL, dan TransJakarta ikut dihitung.',
       },
-      { judul: 'Fix, berangkat', teks: 'Tetapkan tempat dan jamnya, lalu bagikan ke grup.' },
+      {
+        judul: 'Hilang dalam sehari',
+        teks: 'Nama dan lokasi di room dihapus otomatis 24 jam setelah room dibuat.',
+      },
     ],
   },
   {
@@ -102,7 +108,7 @@ export const PROYEK: Proyek[] = [
     nama: 'Tookthel',
     slogan: 'Jadi tumbal boleh, rugi jangan.',
     deskripsi:
-      'Bagi tagihan nongkrong lengkap dengan pajak, service, dan diskon, lalu kirim struknya ke grup.',
+      'Yang bayarin dulu di kasir jangan sampai tekor. Masukin siapa makan apa, nanti pajak, service, dan diskonnya dibagi per orang, terus struknya tinggal dikirim ke grup.',
     url: 'https://tookthel.vercel.app',
     repo: 'https://github.com/Wingman-Clutch/tookthel',
     tumpukan: ['React', 'Vite', 'Tailwind CSS', 'PWA'],
@@ -111,14 +117,17 @@ export const PROYEK: Proyek[] = [
     gerak: 'denyut',
     fitur: [
       {
-        judul: 'Struk lengkap',
-        teks: 'Pesanan, pajak, dan service dihitung persis seperti di kasir.',
+        judul: 'Menu bisa dibagi',
+        teks: 'Satu piring dimakan bertiga? Harganya dibagi rata ke yang ikut makan.',
       },
       {
-        judul: 'Bagian tiap orang',
-        teks: 'Setiap orang tahu harus bayar berapa, sampai ke perak terakhir.',
+        judul: 'Sama kayak struk',
+        teks: 'Pajak, service, dan diskon bisa persen atau nominal, urutan hitungnya ngikutin struk restoran.',
       },
-      { judul: 'Lunas', teks: 'Tandai yang sudah bayar, lalu kirim struknya ke grup.' },
+      {
+        judul: 'Struk buat grup',
+        teks: 'Hasilnya dicetak jadi struk. Nomor rekening si tumbal ikut tercantum, jadi teman bisa langsung transfer.',
+      },
     ],
   },
 ]
@@ -146,14 +155,14 @@ export const TIM: Anggota[] = [
   {
     nama: 'Muhammad Haikal Faruq',
     panggilan: 'Kall',
-    peran: 'Frontend, desain, ilustrasi',
+    peran: 'Frontend dan desain',
     github: 'https://github.com/HaikalFaruq',
     foto: '/tim/kall.jpg',
   },
   {
     nama: 'Bintang Fabian Putra',
     panggilan: 'Bintang',
-    peran: 'Backend, keamanan, data',
+    peran: 'Backend dan data',
     github: 'https://github.com/bintangfabian',
     foto: '/tim/bintang.jpg',
   },

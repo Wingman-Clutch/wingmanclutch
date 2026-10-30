@@ -12,13 +12,31 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from '@playwright/test'
 
-/** `diam` = keadaan figur di gambar halaman; `lembar: false` = hanya dipakai sebagai gambar diam */
+/**
+ * `diam` = keadaan figur di gambar halaman; `lembar: false` = hanya dipakai sebagai gambar diam.
+ * `pose` = beberapa gambar dengan bingkai yang sama, supaya bisa ditukar tanpa bergeser; berkasnya
+ * `<id>-<pose>.webp`, kecuali pose `diam` yang jadi `<id>.webp`. `sisi` = sisi terpanjang gambar.
+ */
 const FIGUR = [
   { id: 'postpocket', diam: 'flap=1&rise=1' },
   { id: 'gorute', diam: 'rute=1&bus=1&door=1' },
   { id: 'tikoem', diam: 'friends=3&meet=1&drop=1' },
   { id: 'tookthel', diam: 'print=1' },
   { id: 'tim', diam: '', lembar: false },
+  {
+    id: 'logo',
+    lembar: false,
+    pose: { diam: 'kepak=0', naik: 'kepak=14', turun: 'kepak=-10' },
+    pandang: 'yaw=18&pitch=16',
+  },
+  {
+    id: 'lampu',
+    lembar: false,
+    pose: { nyala: 'nyala=1', mati: 'nyala=0' },
+    pandang: 'yaw=30&pitch=16',
+    sisi: 360,
+  },
+  { id: 'kopi', diam: '', lembar: false, sisi: 320 },
 ]
 
 /** sisi terpanjang gambar diam: cukup tajam untuk desktop lebar di layar 2x */
@@ -72,38 +90,69 @@ function halamanLembar(berkas) {
   )
 }
 
-/** figur saja tanpa tombol dan latar; PNG besar dengan latar transparan */
-async function potret(browser, berkas, query) {
+/** halaman figur dalam keadaan `query`, semuanya disembunyikan kecuali figurnya */
+async function buka(browser, berkas, query) {
   const p = await browser.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 2 })
   const galat = []
   p.on('pageerror', (e) => galat.push(e.message))
   await p.goto(`file://${berkas}?${query}`)
   // noise filter tangan dipanggang engine sesaat setelah halaman terbuka
   await p.waitForTimeout(800)
+  if (galat.length) throw new Error(`${berkas}?${query}: ${galat.join('; ')}`)
   await p.addStyleTag({
     content: `html, html body { height: auto; background: none; padding: 0; overflow: visible }
       body > :not(.stage), .stage > :not(.zwrap), .zwrap > :not(#fig) { display: none !important }
       #fig { width: ${LEBAR_RENDER / 2}px !important; max-width: none !important; max-height: none !important; overflow: hidden }`,
   })
-  await p.evaluate((lebar) => {
-    const svg = document.getElementById('fig')
-    const b = document.getElementById('art').getBBox()
-    const m = 12
-    svg.setAttribute('viewBox', `${b.x - m} ${b.y - m} ${b.width + 2 * m} ${b.height + 2 * m}`)
-    svg.style.height = `${(lebar * (b.height + 2 * m)) / (b.width + 2 * m)}px`
-  }, LEBAR_RENDER / 2)
-  await p.waitForTimeout(200)
-  if (galat.length) throw new Error(`${berkas}: ${galat.join('; ')}`)
-  const png = await p.locator('#fig').screenshot({ omitBackground: true })
-  await p.close()
-  return png
+  return p
 }
 
-/** potong ke batas piksel berisi, kecilkan, lalu simpan sebagai WebP lewat canvas Chromium */
-async function keWebp(browser, png) {
+/** kotak gambar figur dalam koordinat SVG, dengan sedikit ruang di tepinya */
+async function ukur(browser, berkas, query) {
+  const p = await buka(browser, berkas, query)
+  const b = await p.evaluate(() => {
+    const k = document.getElementById('art').getBBox()
+    return { x: k.x - 12, y: k.y - 12, w: k.width + 24, h: k.height + 24 }
+  })
+  await p.close()
+  return b
+}
+
+/**
+ * Figur saja tanpa tombol dan latar: PNG besar dengan latar transparan, dibingkai `kotak` (koordinat
+ * SVG). `titik` = titik sambungan dari window.titikSambung figur, sebagai pecahan lebar dan tinggi gambar.
+ */
+async function potret(browser, berkas, query, kotak) {
+  const p = await buka(browser, berkas, query)
+  const titik = await p.evaluate(
+    ([lebar, b]) => {
+      const svg = document.getElementById('fig')
+      svg.setAttribute('viewBox', `${b.x} ${b.y} ${b.w} ${b.h}`)
+      svg.style.height = `${(lebar * b.h) / b.w}px`
+      if (!window.titikSambung) return null
+      return Object.fromEntries(
+        Object.entries(window.titikSambung()).map(([k, [x, y]]) => [
+          k,
+          [+((x - b.x) / b.w).toFixed(4), +((y - b.y) / b.h).toFixed(4)],
+        ]),
+      )
+    },
+    [LEBAR_RENDER / 2, kotak],
+  )
+  await p.waitForTimeout(200)
+  const png = await p.locator('#fig').screenshot({ omitBackground: true })
+  await p.close()
+  return { png, titik }
+}
+
+/**
+ * Kecilkan lalu simpan sebagai WebP lewat canvas Chromium. `potong` = buang tepi kosong dulu; pose
+ * tidak dipotong supaya semua posenya tetap sebingkai.
+ */
+async function keWebp(browser, png, sisiMaks, potong) {
   const p = await browser.newPage()
   const { data, w, h } = await p.evaluate(
-    async ([b64, sisi]) => {
+    async ([b64, sisi, buang]) => {
       const img = new Image()
       img.src = 'data:image/png;base64,' + b64
       await img.decode()
@@ -113,15 +162,16 @@ async function keWebp(browser, png) {
       const g = c.getContext('2d', { willReadFrequently: true })
       g.drawImage(img, 0, 0)
       const d = g.getImageData(0, 0, c.width, c.height).data
-      let [x0, y0, x1, y1] = [c.width, c.height, 0, 0]
-      for (let y = 0; y < c.height; y++)
-        for (let x = 0; x < c.width; x++)
-          if (d[(y * c.width + x) * 4 + 3] > 8) {
-            x0 = Math.min(x0, x)
-            y0 = Math.min(y0, y)
-            x1 = Math.max(x1, x)
-            y1 = Math.max(y1, y)
-          }
+      let [x0, y0, x1, y1] = buang ? [c.width, c.height, 0, 0] : [0, 0, c.width - 1, c.height - 1]
+      if (buang)
+        for (let y = 0; y < c.height; y++)
+          for (let x = 0; x < c.width; x++)
+            if (d[(y * c.width + x) * 4 + 3] > 8) {
+              x0 = Math.min(x0, x)
+              y0 = Math.min(y0, y)
+              x1 = Math.max(x1, x)
+              y1 = Math.max(y1, y)
+            }
       const lebar = x1 - x0 + 1
       const tinggi = y1 - y0 + 1
       const k = Math.min(1, sisi / Math.max(lebar, tinggi))
@@ -133,7 +183,7 @@ async function keWebp(browser, png) {
       kecil.drawImage(c, x0, y0, lebar, tinggi, 0, 0, o.width, o.height)
       return { data: o.toDataURL('image/webp', 0.84).split(',')[1], w: o.width, h: o.height }
     },
-    [png.toString('base64'), SISI_MAKS],
+    [png.toString('base64'), sisiMaks, potong],
   )
   await p.close()
   return { webp: Buffer.from(data, 'base64'), w, h }
@@ -141,13 +191,41 @@ async function keWebp(browser, png) {
 
 const browser = await chromium.launch()
 const ukuran = {}
-for (const { id, diam, lembar = true } of FIGUR) {
+/** simpan satu gambar diam dan laporkan ukurannya */
+function simpan(nama, { webp, w, h }) {
+  writeFileSync(join(keluar, `${nama}.webp`), webp)
+  console.log(`${nama}: ${w} x ${h}, ${Math.round(webp.length / 1024)} KB`)
+}
+for (const { id, diam = '', lembar = true, pose, pandang, sisi = SISI_MAKS } of FIGUR) {
   const berkas = bangun(id)
   if (lembar) writeFileSync(join(keluar, `${id}.html`), halamanLembar(berkas))
-  const { webp, w, h } = await keWebp(browser, await potret(browser, berkas, diam))
-  writeFileSync(join(keluar, `${id}.webp`), webp)
-  ukuran[id] = { w, h }
-  console.log(`${id}: ${w} x ${h}, ${Math.round(webp.length / 1024)} KB`)
+  if (!pose) {
+    const kotak = await ukur(browser, berkas, diam)
+    const gambar = await keWebp(
+      browser,
+      (await potret(browser, berkas, diam, kotak)).png,
+      sisi,
+      true,
+    )
+    simpan(id, gambar)
+    ukuran[id] = { w: gambar.w, h: gambar.h }
+    continue
+  }
+  // semua pose dibingkai kotak gabungan, jadi titik sambungan dan ukurannya sama untuk setiap pose
+  const query = Object.fromEntries(Object.entries(pose).map(([k, q]) => [k, `${pandang}&${q}`]))
+  const kotak = (
+    await Promise.all(Object.values(query).map((q) => ukur(browser, berkas, q)))
+  ).reduce((a, b) => {
+    const x = Math.min(a.x, b.x)
+    const y = Math.min(a.y, b.y)
+    return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y }
+  })
+  for (const [nama, q] of Object.entries(query)) {
+    const { png, titik } = await potret(browser, berkas, q, kotak)
+    const gambar = await keWebp(browser, png, sisi, false)
+    simpan(nama === 'diam' ? id : `${id}-${nama}`, gambar)
+    ukuran[id] = { w: gambar.w, h: gambar.h, ...(titik && { titik }) }
+  }
 }
 await browser.close()
 rmSync(kerja, { recursive: true })

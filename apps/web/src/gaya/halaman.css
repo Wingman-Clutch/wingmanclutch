@@ -308,6 +308,233 @@ button.sketsa:active {
   filter: drop-shadow(-1px -1px 1px rgba(0, 0, 0, 0.12));
 }
 
+/* ---------- lampu gantung ---------- */
+
+/* kabel, tali, dan biji punya warna bendanya sendiri, tidak ikut tema; hanya Matrix yang mewarnainya */
+#lampu {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --kain: #463f3a;
+  --kain-terang: #6d655e;
+  --tinta-benda: #231e16;
+  --katun: #ece2cf;
+  --biji: #d9a86c;
+  --biji-sisi: #a8743f;
+}
+
+#lampu .kabel {
+  position: absolute;
+  top: 0;
+  translate: -50% 0;
+  background: linear-gradient(
+    90deg,
+    var(--tinta-benda) 0 20%,
+    var(--kain-terang) 20% 42%,
+    var(--kain) 42% 80%,
+    var(--tinta-benda) 80%
+  );
+}
+
+#lampu .badan {
+  position: absolute;
+}
+
+#lampu .badan img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#lampu .badan img.mati,
+#lampu.padam .badan img.nyala {
+  visibility: hidden;
+}
+
+#lampu.padam .badan img.mati {
+  visibility: visible;
+}
+
+#lampu svg.tali {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+#lampu .tali path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#lampu .tali .tinta {
+  stroke: var(--tinta-benda);
+}
+
+#lampu .tali .isi {
+  stroke: var(--katun);
+}
+
+#lampu .biji .bola {
+  fill: var(--biji);
+  stroke: var(--tinta-benda);
+  stroke-width: 1.3px;
+  vector-effect: non-scaling-stroke;
+}
+
+#lampu .biji .sisi {
+  fill: var(--biji-sisi);
+}
+
+#lampu .biji .kilap {
+  fill: #fff;
+  opacity: 0.6;
+}
+
+#lampu .biji .pendar {
+  fill: #d9f99d;
+  opacity: 0;
+}
+
+/* lampu padam: biji tali berpendar seperti tali glow in the dark, jadi tetap ketemu */
+#lampu.padam .biji .bola {
+  fill: #e4f7b8;
+}
+
+#lampu.padam .biji .sisi {
+  fill: #b5d77a;
+}
+
+#lampu.padam .biji .pendar {
+  opacity: 0.22;
+}
+
+#lampu .tarik {
+  position: absolute;
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+#lampu .tarik:active {
+  cursor: grabbing;
+}
+
+#lampu .tarik:focus-visible {
+  outline: 2px dashed var(--fokus);
+  outline-offset: -6px;
+}
+
+:root[data-tema='matrix'] #lampu {
+  --kain: #0b3d1f;
+  --kain-terang: #1f7a43;
+  --katun: #4dff8f;
+  --biji: #22c55e;
+  --biji-sisi: #15803d;
+}
+
+:root[data-tema='matrix'] #lampu .badan img {
+  filter: var(--figur-matrix);
+}
+
+/* ---------- layar pembuka ---------- */
+
+#pembuka {
+  display: none;
+}
+
+:root.pembuka #pembuka {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+}
+
+#pembuka .latar {
+  position: absolute;
+  inset: 0;
+  background-color: var(--kertas);
+}
+
+#pembuka .panggung {
+  position: relative;
+  width: min(62vw, 520px, 92vh);
+  aspect-ratio: 720 / 433;
+}
+
+#pembuka .lambang {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: translate 0.08s ease-out;
+}
+
+#pembuka .bayang {
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  bottom: -13%;
+  height: 8%;
+  border-radius: 50%;
+  background: #41538f;
+  opacity: 0;
+}
+
+#pembuka.muncul .lambang {
+  animation: lambang-muncul 0.56s cubic-bezier(0.3, 1.5, 0.55, 1) forwards;
+}
+
+#pembuka.muncul .bayang {
+  animation: bayang-muncul 0.56s ease-out forwards;
+}
+
+/* sayap naik: badan sedikit terangkat */
+#pembuka.naik .lambang {
+  translate: 0 -2.5%;
+}
+
+#pembuka.luncur .bayang {
+  opacity: 0 !important;
+  transition: opacity 0.25s;
+}
+
+@keyframes lambang-muncul {
+  0% {
+    opacity: 0;
+    transform: translateY(16%) scale(0.55);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-3%) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bayang-muncul {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
 /* ---------- baki: pensil, penghapus, kaki halaman ---------- */
 
 #baki {

@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { batasGoresan, kompilasi } from '../src/engine/goresan'
-import { judul, lebarJudul, lebarTulisan, tulis } from '../src/engine/huruf'
+import { celahTinta, judul, lebarJudul, lebarTulisan, tulis } from '../src/engine/huruf'
 
 describe('tulisan tangan', () => {
+  it('huruf sempit seperti I tidak menempel ke tetangganya', () => {
+    // dulu "WIN" terbaca "WN" dan "INI:" terbaca "N!:" karena jarak huruf dikali lebar glyph
+    const biasa = celahTinta('WANGSA MENEMBAK', 28).sort((a, b) => a - b)
+    const tengah = biasa[Math.floor(biasa.length / 2)]
+    for (const teks of ['WIN', 'IDE', 'INI:', 'KAMI?', 'AMBIL PENSIL!'])
+      expect(Math.min(...celahTinta(teks, 28)), teks).toBeGreaterThan(tengah * 0.8)
+  })
+
+  it('jarak huruf yang tidak sempit tetap seperti sebelumnya', () => {
+    // 655 dan 621 = lebar maju N dan E di data font; tata letak halaman bergantung pada ini
+    expect(lebarTulisan('NE', 670)).toBeCloseTo((655 + 621) * 1.08)
+  })
+
   it('lebar sebanding dengan ukuran', () => {
     expect(lebarTulisan('HALO', 40)).toBeCloseTo(lebarTulisan('HALO', 20) * 2)
   })

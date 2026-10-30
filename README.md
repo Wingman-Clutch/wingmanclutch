@@ -9,10 +9,10 @@
 
 # Web Porto Wingman Clutch
 
-**Setiap proyek mulai dari coretan.**
+**Two is enough to win.**
 
 Satu halaman buku catatan yang memperlihatkan empat aplikasi Wingman Clutch.<br />
-Digambar di depan mata, bendanya bisa diputar dan dicoba, dan pengunjung boleh ikut corat-coret.
+Tulisannya dicoret pensil langsung di layar, bendanya bisa diputar dan dicoba, dan pengunjung boleh ikut corat-coret.
 
 ### [Buka wingmanclutch.vercel.app](https://wingmanclutch.vercel.app)
 
@@ -30,7 +30,7 @@ Digambar di depan mata, bendanya bisa diputar dan dicoba, dan pengunjung boleh i
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/halaman-gelap.webp" />
-  <img src="docs/gambar/halaman-terang.webp" alt="Halaman buku catatan Wingman Clutch: logo bersayap di tengah, figur berwarna empat aplikasi di sudut-sudutnya, kertas tempel Tentang kami, kotak Let's clutch it, lima pensil, dan penghapus" />
+  <img src="docs/gambar/halaman-terang.webp" alt="Halaman buku catatan Wingman Clutch: lambang bersayap di tengah, figur empat aplikasi di sudut-sudutnya, lampu gantung bertali, kertas tempel Tentang kami, kotak Let's clutch it, lima pensil, dan penghapus" />
 </picture>
 
 <p align="center">
@@ -42,18 +42,19 @@ Digambar di depan mata, bendanya bisa diputar dan dicoba, dan pengunjung boleh i
 
 ## Kenapa
 
-Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang memperlihatkan semuanya beserta orang di baliknya. Kami mau web porto yang terasa seperti kami: main-main, buatan tangan, dan jelas soal apa yang sudah kami kirim. Untuk rilis 1, tata letak dan interaksinya meniru [kracked.studio](https://kracked.studio) 1:1, dengan isi, sketsa, dan kode milik kami sendiri.
+Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang memperlihatkan semuanya beserta orang di baliknya. Kami mau web porto yang terasa seperti kami: main-main, buatan tangan, dan jelas soal apa yang sudah kami kirim. Tata letak dan urutan menggambarnya berangkat dari [kracked.studio](https://kracked.studio). Sejak 31 Oktober 2026 semua benda di halaman jadi figur Colorfigures, ditambah layar pembuka dan lampu bertali. Isi, sketsa, figur, dan kodenya milik kami sendiri.
 
 ## Fitur
 
-- **Digambar langsung.** Tanggal, logo, dan semua catatan dicoret pensil berurutan dalam ±3 detik, sementara figur aplikasi diarsir masuk dengan krayon. Setiap goresan bergoyang seperti tangan.
-- **Empat aplikasi, empat benda.** PostPocket jadi amplop dengan kartu foil, goRute halte dan bus TransJakarta, Tikoem HP dengan peta titik kumpul, Tookthel printer struk dan koin. Semuanya figur 3D isometrik bergaya tinta tangan.
+- **Layar pembuka.** Lambang Wingman Clutch muncul di tengah kertas, mengepakkan sayap, lalu meluncur ke tempatnya sebelum halaman digambar. Tampil sekali per sesi dan berhenti begitu diketuk.
+- **Digambar langsung.** Tanggal, tulisan logo, dan semua catatan dicoret pensil berurutan dalam ±3 detik, sementara figur diarsir masuk dengan krayon. Setiap goresan bergoyang seperti tangan.
+- **Semua benda jadi figur.** PostPocket jadi amplop dengan kartu foil, goRute halte dan bus TransJakarta, Tikoem HP dengan peta titik kumpul, Tookthel printer struk dan koin. Kall dan Bintang yang tos, lambang, lampu, dan mug kopi juga figur 3D isometrik bergaya tinta tangan.
 - **Lembar detail.** Ketuk sebuah figur: putar bendanya, tekan tombolnya (buka amplop, panggil bus, cari titik tengah, cetak struk, bahkan lihat isi printernya), lalu baca fitur, peran kami, tumpukan teknologi, statistik GitHub, dan tautan ke aplikasi serta kodenya.
 - **Ambil pensil.** Lima pensil di baki untuk corat-coret di mana saja di halaman. Penghapusnya menggosok seluruh halaman, meninggalkan remah dan bekas abu-abu, lalu semuanya digambar ulang.
-- **Tiga dunia.** Bulan dan matahari untuk kertas terang dan gelap (seperti kapur di papan tulis). Kupas sudut kanan atas halaman untuk masuk ke Matrix.
-- **Logo yang mengepak.** Setiap ketukan di logo menambah kepakan sayap.
+- **Tarik tali lampunya.** Lampu gantung di atas halaman: tarik talinya buat mematikan lampu (kertas gelap seperti kapur di papan tulis) atau menyalakannya lagi. Kupas sudut kanan atas halaman untuk masuk ke Matrix.
+- **Lambang yang mengepak.** Setiap ketukan di lambang mengepakkan sayapnya dan menambah satu garis kepak.
 - **Let's clutch it.** Form kontak yang dicek di browser, dikirim ke `/api/kontak`, dan jatuh ke email berisi pesan yang sama kalau server gagal.
-- **Satu layar di mana saja.** Tata letak potret dan lanskap, muat tanpa scroll dari HP 320 px sampai monitor lebar. `prefers-reduced-motion` menggambar semuanya seketika.
+- **Satu layar di mana saja.** Tata letak potret dan lanskap, muat tanpa scroll dari HP 320 px sampai monitor lebar. `prefers-reduced-motion` menggambar semuanya seketika, tanpa layar pembuka.
 
 ## Cara kerja
 
@@ -109,11 +110,11 @@ wingmanclutch/
 │   ├── src/sketsa/        # logo, catatan kecil, letak figur
 │   ├── src/halaman/       # tata letak, kertas, papan, pensil dan penghapus, tema, dialog, kontak
 │   ├── src/data/          # isi halaman, data font, logo, dan ukuran figur hasil skrip
-│   ├── figur/             # sumber lima figur dan engine Colorfigures
+│   ├── figur/             # sumber figur dan engine Colorfigures
 │   ├── public/figur/      # hasil skrip: halaman figur interaktif dan gambar diam
 │   ├── mock/              # mock /api sesuai kontrak (dev dan E2E saja)
 │   ├── test/, e2e/        # Vitest dan Playwright
-│   └── scripts/           # pembuat data font, logo pensil, figur, gambar README dan OG
+│   └── scripts/           # pembuat data font, logo, figur, gambar README dan OG
 ├── api/                   # Vercel Functions kontak dan proyek (Bintang)
 ├── docs/                  # PRD, panduan, desain, aset, kontrak API, diagram, gambar README
 ├── scripts/               # cek atribusi AI dan rahasia beserta ujinya
