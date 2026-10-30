@@ -1,12 +1,35 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { batasGoresan, kompilasi } from '../src/engine/goresan'
+import { sudutIstirahat } from '../src/halaman/lipatan'
 import { daftarDef } from '../src/halaman/papan'
 import { atasItem, atasKaki, hitungUkuran, pilihTata, TATA } from '../src/halaman/tata-letak'
 
 const defs = daftarDef()
 
-function kotakDi(kunci: 'potret' | 'lanskap', id: string) {
+interface Kotak {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
+const tindih = (a: Kotak, b: Kotak) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
+
+/** kolom TANGGAL tercetak (label, garis, tulisan) dan saklar tema di sampingnya */
+function kolomTanggal(kunci: 'potret' | 'lanskap'): [string, Kotak][] {
+  const T = TATA[kunci].tanggal
+  // label digambar kertas.ts rata kanan 10 satuan sebelum garis; 82 = lebar terburuk di font sistem
+  return [
+    ['label TANGGAL', { x0: T.x0 - 10 - 82, y0: T.y - 14, x1: T.x0 - 10, y1: T.y + 4 }],
+    ['garis tanggal', { x0: T.x0, y0: T.y - 2, x1: T.x1, y1: T.y + 4 }],
+    ['tulisan tanggal', kotakDi(kunci, 'tanggal')!],
+    ['bulan', kotakDi(kunci, 'saklar-bulan')!],
+    ['matahari', kotakDi(kunci, 'saklar-matahari')!],
+  ]
+}
+
+function kotakDi(kunci: 'potret' | 'lanskap', id: string): Kotak | null {
   const L = TATA[kunci]
   const d = defs.find((x) => x.id === id)!
   const t = L.item[d.tempat ?? id]
@@ -78,6 +101,44 @@ describe('tata letak', () => {
               : 0
           expect.soft(tumpang, `${a} dan ${b}`).toBeLessThan(0.04)
         }
+    })
+
+    it(`logo dan semua kepakannya tidak menimpa kolom tanggal dan saklar (${kunci})`, () => {
+      const sayap = defs.filter((d) => (d.tempat ?? d.id) === 'logo')
+      expect(sayap.length).toBeGreaterThan(2)
+      for (const d of sayap)
+        for (const [nama, k] of kolomTanggal(kunci))
+          expect.soft(tindih(kotakDi(kunci, d.id)!, k), `${d.id} dan ${nama}`).toBe(false)
+    })
+  }
+})
+
+describe('sudut terlipat saat diam', () => {
+  for (const [w, h] of [
+    [320, 568],
+    [390, 844],
+    [768, 1024],
+    [919, 1000],
+    [920, 1000],
+    [1000, 900],
+    [1280, 720],
+    [1440, 900],
+    [1920, 1080],
+    [2560, 1080],
+  ]) {
+    it(`tidak menutupi kolom tanggal dan saklar (${w}x${h})`, () => {
+      const u = hitungUkuran(w, h)
+      const a = sudutIstirahat(w, h)
+      const sudut = { x0: w - a, y0: 0, x1: w, y1: a }
+      for (const [nama, k] of kolomTanggal(u.kunci)) {
+        const layar = {
+          x0: u.kiri + k.x0 * u.k,
+          y0: u.atas + k.y0 * u.k,
+          x1: u.kiri + k.x1 * u.k,
+          y1: u.atas + k.y1 * u.k,
+        }
+        expect.soft(tindih(layar, sudut), nama).toBe(false)
+      }
     })
   }
 })
