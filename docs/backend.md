@@ -21,7 +21,7 @@ Diputuskan Bintang di PR `feat/api-kontak`, mengikuti usulan awal.
 | --- | --- | --- |
 | Penyimpanan batas kirim | Upstash Redis (gratis) lewat `@upstash/ratelimit`, jendela geser 5 per jam | Batas di memori bisa ditembus karena instance Functions berganti-ganti, jadi hanya dipakai sebagai cadangan kalau env Upstash kosong (lokal). Kalau Upstash sedang mati, pesan tetap dikirim supaya form tidak tertutup |
 | Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com. Resend dipanggil lewat `fetch` langsung, tanpa SDK |
-| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, dipasang bersama env produksi | Kode tetap jalan tanpa token, tapi batas 60 permintaan per jam tanpa token dihitung per IP, dan IP keluar Vercel Functions dipakai bersama banyak proyek lain, jadi kuotanya bisa habis duluan walau cache kita satu jam |
+| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, terpasang di Production sejak 30 Oktober 2026, **kedaluwarsa 29 Oktober 2027** | Kode tetap jalan tanpa token, tapi batas 60 permintaan per jam tanpa token dihitung per IP, dan IP keluar Vercel Functions dipakai bersama banyak proyek lain, jadi kuotanya bisa habis duluan walau cache kita satu jam. Org Wingman-Clutch menolak token fine-grained yang berlaku lebih dari 366 hari (GitHub menjawab 403), jadi token pengganti juga maksimal 366 hari. Ganti sebelum 29 Oktober 2027, karena token kedaluwarsa juga dijawab 403 dan statistik jadi 503 |
 
 ## Struktur yang disarankan
 
@@ -41,7 +41,7 @@ api/
   _test/                vitest, plus kontrak.ts untuk validasi skema
 ```
 
-Vercel menjalankan setiap file `.ts` di `api/` sebagai Function Node, jadi jangan menaruh file `.ts` lain (misalnya config Vitest) langsung di `api/`. Rute memakai bentuk Web standar `export default { fetch(req) }`, dan impor antarfile memakai akhiran `.js` (ESM, `moduleResolution: NodeNext`). `vercel.json` di root sudah menunjuk build frontend ke `apps/web/dist`, jadi Functions dan halaman ikut satu deploy dan satu domain (tanpa CORS).
+Vercel menjalankan setiap file `.ts` di `api/` sebagai Function Node, jadi jangan menaruh file `.ts` lain (misalnya config Vitest) langsung di `api/`. Rute memakai bentuk Web standar `export default { fetch(req) }`, dan impor antarfile memakai akhiran `.js` (ESM, `moduleResolution: NodeNext`). `undici-types` sengaja jadi devDependency langsung `api/`, dengan versi yang sama persis dengan yang dipakai `@types/node`: builder `@vercel/node` tidak mengikuti symlink pnpm, jadi tanpa itu tipe `Request` dan `Response` kosong dan log build mencetak `error TS2339`. Kalau `@types/node` naik versi, samakan versinya (cek dengan `ls node_modules/.pnpm | grep undici-types`, lalu `cd api && npx tsc --noEmit --preserveSymlinks`). `vercel.json` di root sudah menunjuk build frontend ke `apps/web/dist`, jadi Functions dan halaman ikut satu deploy dan satu domain (tanpa CORS).
 
 ## Rancangan endpoint
 
