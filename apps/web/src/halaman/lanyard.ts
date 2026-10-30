@@ -3,7 +3,7 @@
 // bertekstur di satu kanvas; kartunya elemen HTML yang diputar 3D dengan CSS, jadi kedua sisinya
 // bisa berisi apa saja. Seret kartu dan talinya menegang, lempar ke samping dan kartu berputar di
 // cincinnya, ketuk (atau Enter/Spasi) untuk membaliknya.
-// Ditulis ulang tanpa React dari komponen yang diberikan Kall; mandala di talinya diganti kilau dan
+// Ditulis ulang tanpa React dari komponen yang diberikan Kall; mandala di talinya diganti lambang dan
 // tulisan Wingman Clutch.
 
 /*!
@@ -32,6 +32,7 @@
 
 import { GERAK_DIKURANGI, kaitkan } from '../engine/animasi'
 import { DPR } from '../engine/sketsa'
+import { isiLambang, RASIO_LAMBANG } from './merek'
 import {
   langkahPutar,
   langkahVerlet,
@@ -71,18 +72,6 @@ export function lebarKartu(lebar: number, tinggi: number, n: number) {
   return Math.round(Math.max(80, Math.min(190, (lebar / n) * 0.72, muatTinggi)))
 }
 
-/** kilau empat sudut, bentuknya sama dengan kilau() di engine/jalur.ts */
-function isiKilau(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const k = r * 0.22
-  ctx.beginPath()
-  ctx.moveTo(cx, cy - r)
-  ctx.quadraticCurveTo(cx + k, cy - k, cx + r, cy)
-  ctx.quadraticCurveTo(cx + k, cy + k, cx, cy + r)
-  ctx.quadraticCurveTo(cx - k, cy + k, cx - r, cy)
-  ctx.quadraticCurveTo(cx - k, cy - k, cx, cy - r)
-  ctx.fill()
-}
-
 /** tekstur tali sepanjang `panjang` px css, membujur sepanjang tinggi kanvas, dalam piksel layar */
 function buatTekstur(panjang: number, lebar: number, dpr: number, g: GayaTali, polos = false) {
   const c = document.createElement('canvas')
@@ -109,22 +98,19 @@ function buatTekstur(panjang: number, lebar: number, dpr: number, g: GayaTali, p
     const label = `·  ${g.label}  ·`
     const lebarLabel = ctx.measureText(label).width
     const jeda = lebar * 0.6
+    const tinggiLambang = lebar * 0.64
     let x = lebar * 0.4
-    let sisi = 1
     while (x < panjang) {
-      // kilau khas halaman: satu besar yang terpotong tepi tali, satu kecil di sebelahnya
-      ctx.globalAlpha = 0.55
-      isiKilau(ctx, x + lebar * 0.5, lebar * (0.5 + sisi * 0.16), lebar * 0.46)
-      isiKilau(ctx, x + lebar * 1.15, lebar * (0.5 - sisi * 0.22), lebar * 0.16)
-      x += lebar * 1.6
+      // cetakan berulang: lambang Wingman Clutch, semboyan, lalu label
       ctx.globalAlpha = 0.95
+      isiLambang(ctx, x, (lebar - tinggiLambang) / 2, tinggiLambang)
+      x += tinggiLambang * RASIO_LAMBANG + jeda
       ctx.font = hurufSkrip
       ctx.fillText(g.teks, x, lebar * 0.52)
       x += lebarSkrip + jeda
       ctx.font = hurufLabel
       ctx.fillText(label, x, lebar * 0.54)
       x += lebarLabel + jeda
-      sisi = -sisi
     }
     ctx.restore()
   }

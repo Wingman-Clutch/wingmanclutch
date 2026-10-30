@@ -26,6 +26,7 @@ halaman/
   hujan.ts         hujan karakter Matrix
   dialog.ts        lembar detail aplikasi, tentang, tim, kontak
   lanyard.ts       kartu nama tim yang tergantung di lanyard (dimuat saat dialog tim dibuka)
+  merek.ts         logo Wingman Clutch berisi (bukan sketsa) untuk kartu nama dan tali lanyard
   kontak.ts        form kontak dan cadangan email
   foto-sketsa.ts   foto tim jadi sketsa pensil
 engine/
@@ -92,7 +93,7 @@ Diagram dibuat dengan [Archify](https://github.com/tt-a1i/archify) dari [`arsite
 
 | Perintah        | Isi                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm test`     | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih, kolom tanggal tidak tertimpa kepakan logo atau sudut terlipat), kontrak (mock divalidasi dengan skema `openapi.yaml`), skrip tata letak di `<head>` sama dengan `hitungUkuran`, `cicil`, fisika tali lanyard                                                                                                                                           |
+| `pnpm test`     | Parser path, arsiran, tulisan, lipatan sudut, tata letak (semua sketsa di dalam halaman dan tidak saling tindih, kolom tanggal tidak tertimpa kepakan logo atau sudut terlipat), kontrak (mock divalidasi dengan skema `openapi.yaml`), skrip tata letak di `<head>` sama dengan `hitungUkuran`, `cicil`, fisika tali lanyard, susunan logo di kartu nama                                                                                                               |
 | `pnpm test:e2e` | Build produksi dengan mock API di Chrome desktop, Pixel 7, dan iPhone 15 (WebKit): semua sketsa tergambar, tanpa scroll, lembar setiap aplikasi, tentang ke tim ke kontak, kartu nama tim (dibalik dengan Enter atau ketukan, diseret tanpa terbalik), form kontak (galat, terkirim, cadangan email), tema tersimpan, Matrix, kepakan logo, keyboard, corat-coret dan penghapus, gerak dikurangi, axe 0 pelanggaran di halaman (terang, gelap, Matrix) dan semua dialog |
 
 Sketsa yang sedang bergerak diam (melayang, mengayun) membuat Playwright menganggapnya "tidak stabil", jadi E2E mengetuknya dengan `click({ force: true })`.
