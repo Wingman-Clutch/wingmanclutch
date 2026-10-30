@@ -306,6 +306,51 @@ test('tali lampu: klik, Enter, dan tarikan mematikan atau menyalakan lampu', asy
   await expect(html).toHaveAttribute('data-tema', 'gelap')
 })
 
+test('tali lampu dengan jari: ketukan, ketukan yang bergeser, dan tarikan', async ({
+  page,
+  browserName,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'sentuhan jari hanya di HP')
+  await bukaHalaman(page)
+  const html = page.locator('html')
+  const tali = page.locator('#lampu .tarik')
+  await tali.tap()
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+
+  test.skip(browserName !== 'chromium', 'menyeret dengan jari (CDP) hanya di Chromium')
+  const cdp = await page.context().newCDPSession(page)
+  const sentuh = (type: 'touchStart' | 'touchMove' | 'touchEnd', x = 0, y = 0) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: type === 'touchEnd' ? [] : [{ x, y }],
+    })
+  const biji = async () => {
+    await expect(page.locator('#lampu')).not.toHaveClass(/bergerak/, { timeout: 15_000 })
+    const k = (await tali.boundingBox())!
+    return [k.x + k.width / 2, k.y + k.height / 2]
+  }
+
+  // jari yang bergeser sedikit ke samping tetap dihitung ketukan
+  let [x, y] = await biji()
+  await sentuh('touchStart', x, y)
+  for (let i = 1; i <= 3; i++) await sentuh('touchMove', x + 2 * i, y)
+  await sentuh('touchEnd')
+  await expect(html).toHaveAttribute('data-tema', 'terang')
+
+  // tarikan panjang berbunyi sekali, dan Enter sesudahnya tetap dihitung
+  ;[x, y] = await biji()
+  await sentuh('touchStart', x, y)
+  for (let i = 1; i <= 8; i++) await sentuh('touchMove', x, y + 8 * i)
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+  await sentuh('touchEnd')
+  await page.waitForTimeout(400)
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+  await tali.focus()
+  await page.keyboard.press('Enter')
+  await expect(html).toHaveAttribute('data-tema', 'terang')
+})
+
 test('layar pembuka: lambang mendarat dulu, baru sketsa halaman digambar', async ({ page }) => {
   const galat: string[] = []
   page.on('pageerror', (e) => galat.push(e.message))

@@ -74,9 +74,11 @@ export class Lampu {
    * Pointer yang sedang menyeret biji. (dx, dy) = jarak pointer dari biji saat mulai ditekan, `lebih` =
    * tali yang sudah keluar saat dipegang (molor karena beratnya, atau belum masuk dari tarikan
    * sebelumnya). Tarikan dihitung dari situ, jadi tarikan pendek tidak pernah memutar saklar.
+   * `berbunyi` = saklar sudah berbunyi selama seretan ini.
    */
   private seret: {
     id: number
+    mouse: boolean
     x0: number
     y0: number
     x: number
@@ -85,8 +87,13 @@ export class Lampu {
     dy: number
     lebih: number
     bergeser: boolean
+    berbunyi: boolean
   } | null = null
-  /** klik dari pointer yang baru saja menyeret tali tidak dihitung lagi sebagai klik */
+  /**
+   * Klik yang menyusul seretan tidak dihitung lagi sebagai tarikan kalau saklarnya sudah berbunyi,
+   * atau kalau mouse-nya bergeser. Jari yang bergeser sedikit tetap dihitung ketukan, karena browser
+   * hanya mengirim klik kalau jarinya hampir diam.
+   */
   private abaikanKlik = false
   private otomatis: { t: number } | null = null
   private jalan = 0
@@ -209,6 +216,7 @@ export class Lampu {
       const c = this.cincin()
       this.seret = {
         id: e.pointerId,
+        mouse: e.pointerType === 'mouse',
         x0: p.x,
         y0: p.y,
         ...p,
@@ -216,6 +224,7 @@ export class Lampu {
         dy: p.y - b.y,
         lebih: Math.max(0, Math.hypot(b.x - c.x, b.y - c.y) / this.k - this.panjang),
         bergeser: false,
+        berbunyi: false,
       }
       this.otomatis = null
       // pegangan baru adalah tarikan baru
@@ -236,17 +245,17 @@ export class Lampu {
       const s = this.seret
       if (!s || s.id !== e.pointerId) return
       this.seret = null
-      this.abaikanKlik = s.bergeser
+      this.abaikanKlik = s.berbunyi || (s.mouse && s.bergeser)
       this.mulai()
     }
     t.addEventListener('pointerup', lepas)
     t.addEventListener('pointercancel', lepas)
-    // klik tanpa menyeret, Enter, atau Spasi: tali ditarik sendiri sampai berbunyi
-    t.addEventListener('click', () => {
-      if (this.abaikanKlik) {
-        this.abaikanKlik = false
-        return
-      }
+    // klik atau ketukan tanpa menyeret, Enter, atau Spasi: tali ditarik sendiri sampai berbunyi
+    t.addEventListener('click', (e) => {
+      const abaikan = this.abaikanKlik
+      this.abaikanKlik = false
+      // seretan jari yang panjang tidak disusul klik, jadi Enter dan Spasi (detail 0) selalu dihitung
+      if (abaikan && e.detail) return
       if (GERAK_DIKURANGI) {
         this.padaTarik()
         return
@@ -337,6 +346,7 @@ export class Lampu {
     const s = saklar(this.siap, this.tarik)
     this.siap = s.siap
     if (s.klik) {
+      if (this.seret) this.seret.berbunyi = true
       this.padaTarik()
       this.ayun.v -= 0.6
     }
