@@ -3,12 +3,12 @@
 import { ambilStatistik } from '../api/klien'
 import type { StatistikProyek } from '../api/kontrak'
 import { judul } from '../engine/huruf'
-import { kilau } from '../engine/jalur'
 import { PENSIL, type Tema } from '../engine/kuas'
 import { gambarKe } from '../engine/sketsa'
 import { PROYEK, TIM, type IdProyek } from '../data/proyek'
 import { sketsaFoto } from './foto-sketsa'
 import type { Lanyard } from './lanyard'
+import { svgLogo } from './merek'
 
 export type NamaDialog = 'proyek' | 'tentang' | 'tim' | 'kontak'
 
@@ -45,20 +45,6 @@ const KATA_STATUS: Record<StatistikProyek['status'], string> = {
   online: '● online',
   gangguan: '● lagi gangguan',
   tidak_diketahui: '',
-}
-
-/** elemen svg kecil berisi kilau khas halaman, untuk hiasan kartu nama */
-function svgKilau(titik: [number, number, number][]) {
-  const ns = 'http://www.w3.org/2000/svg'
-  const svg = document.createElementNS(ns, 'svg')
-  svg.setAttribute('viewBox', '0 0 100 100')
-  svg.setAttribute('aria-hidden', 'true')
-  for (const [x, y, r] of titik) {
-    const p = document.createElementNS(ns, 'path')
-    p.setAttribute('d', kilau(x, y, r))
-    svg.append(p)
-  }
-  return svg
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, kelas: string, teks?: string) {
@@ -199,13 +185,7 @@ export class Dialog {
 
       const depan = el('div', 'muka depan')
       const pita = el('div', 'pita')
-      pita.append(
-        el('span', 'merek', 'Wingman Clutch'),
-        svgKilau([
-          [74, 52, 24],
-          [93, 20, 9],
-        ]),
-      )
+      pita.append(svgLogo('mendatar'))
       const foto = el('canvas', 'foto')
       foto.dataset.foto = a.foto ?? ''
       foto.dataset.inisial = a.panggilan[0]
@@ -215,16 +195,9 @@ export class Dialog {
 
       const belakang = el('div', 'muka belakang')
       const bawah = el('div', 'pita-bawah')
-      bawah.append(
-        svgKilau([
-          [24, 24, 11],
-          [70, 40, 25],
-          [92, 12, 7],
-        ]),
-        el('span', 'semboyan', 'two is enough to win.'),
-      )
+      bawah.append(svgLogo('lambang'), el('span', 'semboyan', 'two is enough to win.'))
       belakang.append(
-        el('span', 'merek', 'Wingman Clutch · Tim'),
+        svgLogo('mendatar'),
         el('strong', 'lengkap', a.nama),
         el('span', 'jabatan', a.peran),
         el('span', 'akun', a.github.replace(/^https:\/\//, '')),
