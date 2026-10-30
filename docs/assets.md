@@ -1,0 +1,16 @@
+# Aset dan Lisensi
+
+Semua aset yang ikut ke halaman, sumbernya, dan lisensinya. Aset baru wajib dicatat di sini dalam PR yang sama.
+
+| Aset | Di mana | Sumber | Lisensi |
+| --- | --- | --- | --- |
+| Logo, lambang, ikon, dan avatar Wingman Clutch | `docs/brand/`, `apps/web/src/data/logo.json`, `apps/web/public/ikon.svg`, `apps/web/public/apple-touch-icon.png` | Dibuat untuk Wingman Clutch | Milik Wingman Clutch, tidak untuk dipakai pihak lain |
+| Foto tim | `apps/web/public/tim/` | Foto profil GitHub [@HaikalFaruq](https://github.com/HaikalFaruq) dan [@bintangfabian](https://github.com/bintangfabian), diperkecil ke 256 px | Milik masing-masing orang, dipakai dengan izin |
+| EMS Tech (tulisan tangan satu goresan) | `apps/web/src/data/font.json` (bagian `tangan`) | Sheldon B. Michaels, turunan Architects Daughter karya Kimberly Geswein; versi SVG dari paket npm [`hersheytext`](https://github.com/techninja/hersheytextjs) | [SIL Open Font License 1.1](https://openfontlicense.org) |
+| Bungee (judul) | `apps/web/src/data/font.json` (bagian `judul`) | David Jonathan Ross, dari paket npm [`@fontsource/bungee`](https://fontsource.org/fonts/bungee) | SIL Open Font License 1.1 |
+| Special Elite (teks dialog) | di-bundle dari [`@fontsource/special-elite`](https://fontsource.org/fonts/special-elite) | Astigmatic | Apache License 2.0 |
+| Ilustrasi perangkat, catatan, pensil, penghapus | `apps/web/src/sketsa/`, `apps/web/src/halaman/baki.ts` | Digambar sendiri sebagai kode | Milik Wingman Clutch |
+
+## Yang tidak boleh masuk repo
+
+Tata letak dan interaksi halaman meniru [kracked.studio](https://kracked.studio) (lihat [referensi](referensi/kracked-studio.md)). Kode, gambar, logo, foto, dan screenshot dari situs itu tidak disalin ke repo ini. Mesin pensil, sketsa, dan pensil di baki ditulis ulang dari nol.

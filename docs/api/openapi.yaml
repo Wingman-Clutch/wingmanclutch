@@ -1,0 +1,231 @@
+openapi: 3.1.0
+info:
+  title: Wingman Clutch API
+  version: 0.1.0
+  summary: Kontrak antara halaman (apps/web) dan backend (api/) web porto Wingman Clutch.
+  description: |
+    Kontrak dulu, kode kemudian. Bintang menulis dan mengimplementasikan kontrak ini sebagai
+    Vercel Functions di `api/`. Kall me-review setiap perubahannya. Frontend memakai mock yang
+    mengikuti file ini (`apps/web/mock/api.ts`), dan unit test memvalidasi jawaban mock dengan
+    skema di sini, jadi perubahan kontrak selalu masuk satu PR dengan perubahan mock-nya.
+
+    Semua endpoint berada di domain yang sama dengan halaman (`/api/...`), jadi tidak perlu CORS.
+    Semua teks galat berbahasa Indonesia dan aman ditampilkan ke pengunjung.
+  contact:
+    name: Wingman Clutch
+    email: wingmanclutch@gmail.com
+servers:
+  - url: /
+    description: Domain yang sama dengan halaman
+tags:
+  - name: kontak
+    description: Form "Let's clutch it" di halaman
+  - name: proyek
+    description: Statistik hidup untuk lembar detail aplikasi
+paths:
+  /api/kontak:
+    post:
+      tags: [kontak]
+      operationId: kirimKontak
+      summary: Kirim pesan dari form kontak
+      description: |
+        Pesan diteruskan ke email Wingman Clutch (balasan diarahkan ke email pengirim).
+        Kolom `situs` adalah jebakan bot yang disembunyikan dari manusia. Kalau terisi,
+        server tetap menjawab 202 tetapi pesannya dibuang, supaya bot tidak belajar apa-apa.
+        Batas kirim: 5 pesan per jam per jaringan (alamat IP di-hash, tidak disimpan mentah).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PesanKontak'
+            examples:
+              biasa:
+                value:
+                  nama: Sari Wulandari
+                  email: sari@contoh.com
+                  pesan: Mau bikin aplikasi kasir buat warung kopi.
+                  situs: ''
+      responses:
+        '202':
+          description: Pesan diterima dan sedang dikirim.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terkirim'
+        '400':
+          description: Body bukan JSON yang valid, atau ada kolom yang belum benar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+              examples:
+                kolom:
+                  value:
+                    galat: INPUT_TIDAK_VALID
+                    pesan: Ada kolom yang belum benar.
+                    kolom:
+                      - kolom: email
+                        alasan: format
+        '405':
+          description: Metode selain POST.
+          headers:
+            Allow:
+              schema:
+                type: string
+                const: POST
+        '413':
+          description: Body lebih dari 16 KB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+        '415':
+          description: Content-Type bukan application/json.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+        '429':
+          description: Terlalu banyak pesan dari jaringan yang sama.
+          headers:
+            Retry-After:
+              description: Detik sampai boleh mengirim lagi.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+        '503':
+          description: Pengirim email tidak bisa dihubungi. Frontend menawarkan kirim lewat email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+  /api/proyek:
+    get:
+      tags: [proyek]
+      operationId: ambilStatistikProyek
+      summary: Statistik keempat aplikasi
+      description: |
+        Bintang di GitHub, waktu push terakhir ke repo, dan status aplikasinya (dicek dengan
+        permintaan HEAD ke URL produksi, batas 5 detik). Jawaban di-cache di CDN satu jam.
+        Teks, gambar, dan tautan aplikasi tetap ada di frontend (`apps/web/src/data/proyek.ts`);
+        endpoint ini hanya menambah angka yang berubah sendiri.
+      responses:
+        '200':
+          description: Statistik terbaru (bisa dari cache).
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, s-maxage=3600, stale-while-revalidate=86400
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaftarStatistik'
+        '503':
+          description: GitHub tidak bisa dihubungi dan belum ada cache. Frontend menyembunyikan baris statistik.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Galat'
+components:
+  schemas:
+    PesanKontak:
+      type: object
+      additionalProperties: false
+      required: [nama, email, pesan, situs]
+      properties:
+        nama:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Dipangkas spasinya sebelum dicek.
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        pesan:
+          type: string
+          minLength: 10
+          maxLength: 2000
+        situs:
+          type: string
+          maxLength: 200
+          description: Jebakan bot. Manusia mengirim string kosong.
+    Terkirim:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: terkirim
+    Galat:
+      type: object
+      additionalProperties: false
+      required: [galat, pesan]
+      properties:
+        galat:
+          type: string
+          enum: [INPUT_TIDAK_VALID, TERLALU_SERING, LAYANAN_GAGAL]
+        pesan:
+          type: string
+          description: Kalimat untuk manusia, boleh ditampilkan apa adanya.
+        kolom:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalatKolom'
+        cobaLagiDetik:
+          type: integer
+          minimum: 1
+          description: Hanya untuk TERLALU_SERING, sama dengan header Retry-After.
+    GalatKolom:
+      type: object
+      additionalProperties: false
+      required: [kolom, alasan]
+      properties:
+        kolom:
+          type: string
+          enum: [nama, email, pesan]
+        alasan:
+          type: string
+          enum: [wajib, terlalu_pendek, terlalu_panjang, format]
+    DaftarStatistik:
+      type: object
+      additionalProperties: false
+      required: [diperbarui, proyek]
+      properties:
+        diperbarui:
+          type: string
+          format: date-time
+          description: Kapan statistik ini diambil dari GitHub.
+        proyek:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/StatistikProyek'
+    StatistikProyek:
+      type: object
+      additionalProperties: false
+      required: [id, bintang, terakhirDiperbarui, status]
+      properties:
+        id:
+          type: string
+          enum: [postpocket, tikoem, gorute, tookthel]
+        bintang:
+          type: integer
+          minimum: 0
+          description: Jumlah star repo di GitHub.
+        terakhirDiperbarui:
+          type: string
+          format: date-time
+          description: pushed_at repo di GitHub.
+        status:
+          type: string
+          enum: [online, gangguan, tidak_diketahui]
+          description: online kalau URL produksi menjawab 2xx/3xx dalam 5 detik.
