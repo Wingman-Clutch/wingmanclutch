@@ -26,6 +26,9 @@ test('pensil mencoret halaman, penghapus membersihkan lalu menggambar ulang', as
   await expect.poll(() => pikselTinta(page, '#coretan'), { timeout: 8000 }).toBe(0)
   await expect(page.locator('[data-sketsa="kontak"]')).toHaveClass(/selesai/, { timeout: 10_000 })
   expect(await pikselTinta(page, '[data-sketsa="logo"] canvas')).toBeGreaterThan(500)
+  await expect
+    .poll(() => pikselTinta(page, '[data-sketsa="gorute"] canvas.figur'))
+    .toBeGreaterThan(2000)
 })
 
 test('gerak dikurangi: semua sketsa langsung tergambar', async ({ browser }) => {
@@ -33,6 +36,11 @@ test('gerak dikurangi: semua sketsa langsung tergambar', async ({ browser }) => 
   const page = await konteks.newPage()
   await page.goto('/')
   await expect(page.locator('[data-sketsa="kontak"]')).toHaveClass(/selesai/, { timeout: 1500 })
-  expect(await pikselTinta(page, '[data-sketsa="postpocket"] canvas')).toBeGreaterThan(500)
+  expect(await pikselTinta(page, '[data-sketsa="postpocket"] canvas:not(.figur)')).toBeGreaterThan(
+    500,
+  )
+  await expect
+    .poll(() => pikselTinta(page, '[data-sketsa="postpocket"] canvas.figur'))
+    .toBeGreaterThan(2000)
   await konteks.close()
 })

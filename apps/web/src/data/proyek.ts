@@ -1,13 +1,9 @@
 // Isi halaman: empat aplikasi Wingman Clutch dan orang-orangnya. Ubah teks di sini, bukan di komponen.
 
-import type { KodeWarna, Op } from '../engine/goresan'
-import { gorute, layarGorute } from '../sketsa/gorute'
-import { layarPostpocket, postpocket } from '../sketsa/postpocket'
-import { layarTikoem, tikoem } from '../sketsa/tikoem'
-import { layarTookthel, tookthel } from '../sketsa/tookthel'
+import type { KodeWarna } from '../engine/goresan'
 
 export type IdProyek = 'postpocket' | 'tikoem' | 'gorute' | 'tookthel'
-/** gerak diam sketsa di halaman */
+/** gerak diam figur di halaman */
 export type Gerak = 'goyang' | 'ayun' | 'melayang' | 'denyut'
 
 export interface Proyek {
@@ -21,9 +17,7 @@ export interface Proyek {
   peran: string
   warna: KodeWarna
   gerak: Gerak
-  gambar: (denganLabel?: boolean) => Op[]
-  layar: (() => Op[])[]
-  /** satu keterangan untuk setiap layar, tampil di lembar detail */
+  /** keterangan fitur di bawah figur, tampil di lembar detail */
   fitur: { judul: string; teks: string }[]
 }
 
@@ -40,8 +34,6 @@ export const PROYEK: Proyek[] = [
     peran: 'Kall di frontend, Bintang di backend',
     warna: 'p',
     gerak: 'goyang',
-    gambar: postpocket,
-    layar: layarPostpocket,
     fitur: [
       {
         judul: 'Surat foil 3D',
@@ -69,8 +61,6 @@ export const PROYEK: Proyek[] = [
     peran: 'Dipegang Bintang',
     warna: 'b',
     gerak: 'ayun',
-    gambar: gorute,
-    layar: layarGorute,
     fitur: [
       {
         judul: 'Jalur dan transit',
@@ -95,8 +85,6 @@ export const PROYEK: Proyek[] = [
     peran: 'Kall di backend, Bintang di frontend',
     warna: 'r',
     gerak: 'melayang',
-    gambar: tikoem,
-    layar: layarTikoem,
     fitur: [
       {
         judul: 'Lokasi semua teman',
@@ -121,8 +109,6 @@ export const PROYEK: Proyek[] = [
     peran: 'Dipegang Bintang',
     warna: 'g',
     gerak: 'denyut',
-    gambar: tookthel,
-    layar: layarTookthel,
     fitur: [
       {
         judul: 'Struk lengkap',

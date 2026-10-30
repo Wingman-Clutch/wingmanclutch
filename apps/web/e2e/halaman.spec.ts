@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { bukaHalaman, pikselTinta } from './bantu'
+import { bukaHalaman, bukaLembar, pikselTinta } from './bantu'
 
 const APLIKASI = [
   {
@@ -7,10 +7,29 @@ const APLIKASI = [
     nama: 'PostPocket',
     url: 'https://postpocket.vercel.app',
     repo: 'PostPocket',
+    tombol: 'Buka amplop',
   },
-  { id: 'gorute', nama: 'goRute', url: 'https://gorute.vercel.app', repo: 'goRute' },
-  { id: 'tikoem', nama: 'Tikoem', url: 'https://tikoem.vercel.app', repo: 'tikoem' },
-  { id: 'tookthel', nama: 'Tookthel', url: 'https://tookthel.vercel.app', repo: 'tookthel' },
+  {
+    id: 'gorute',
+    nama: 'goRute',
+    url: 'https://gorute.vercel.app',
+    repo: 'goRute',
+    tombol: 'Cari rute',
+  },
+  {
+    id: 'tikoem',
+    nama: 'Tikoem',
+    url: 'https://tikoem.vercel.app',
+    repo: 'tikoem',
+    tombol: 'Tambah teman',
+  },
+  {
+    id: 'tookthel',
+    nama: 'Tookthel',
+    url: 'https://tookthel.vercel.app',
+    repo: 'tookthel',
+    tombol: 'Cetak struk',
+  },
 ]
 
 test('halaman terbuka tanpa galat dan semua sketsa tergambar', async ({ page }) => {
@@ -25,8 +44,13 @@ test('halaman terbuka tanpa galat dan semua sketsa tergambar', async ({ page }) 
     'tim',
     'kontak',
   ]) {
-    expect.soft(await pikselTinta(page, `[data-sketsa="${id}"] canvas`), id).toBeGreaterThan(500)
+    const goresan = `[data-sketsa="${id}"] canvas:not(.figur)`
+    expect.soft(await pikselTinta(page, goresan), id).toBeGreaterThan(500)
   }
+  for (const id of [...APLIKASI.map((a) => a.id), 'tim'])
+    await expect
+      .poll(() => pikselTinta(page, `[data-sketsa="${id}"] canvas.figur`), `figur ${id}`)
+      .toBeGreaterThan(2000)
   await expect(page.locator('.pensil')).toHaveCount(5)
   await expect(page.getByRole('button', { name: 'Hapus halaman lalu gambar ulang' })).toBeVisible()
   expect(galat).toEqual([])
@@ -54,23 +78,76 @@ for (const a of APLIKASI) {
   test(`sketsa ${a.nama} membuka lembar detailnya`, async ({ page }) => {
     await bukaHalaman(page)
     const tombol = page.getByRole('button', { name: new RegExp(`^${a.nama}:`) })
-    await tombol.click({ force: true })
-    const d = page.getByRole('dialog', { name: a.nama })
-    await expect(d).toBeVisible()
+    const { d, figur } = await bukaLembar(page, a.nama)
+    await expect(figur.getByRole('img', { name: a.nama })).toBeVisible()
     await expect(d.getByRole('link', { name: 'buka aplikasinya →' })).toHaveAttribute('href', a.url)
     await expect(d.getByRole('link', { name: 'lihat kodenya →' })).toHaveAttribute(
       'href',
       `https://github.com/Wingman-Clutch/${a.repo}`,
     )
     await expect(d.locator('#pr-fitur li')).toHaveCount(3)
-    expect(await pikselTinta(page, '#pr-fitur canvas')).toBeGreaterThan(500)
     // statistik dari /api/proyek (mock)
     await expect(d.locator('#pr-statistik')).toContainText('★')
     await page.keyboard.press('Escape')
     await expect(d).toBeHidden()
     await expect(tombol).toBeFocused()
+    // iframe dibuang supaya figurnya tidak jalan terus di belakang
+    await expect(page.locator('#pr-figur iframe')).toHaveCount(0)
+  })
+
+  test(`figur ${a.nama}: tombolnya mengubah gambar dan Escape menutup lembar`, async ({ page }) => {
+    await bukaHalaman(page)
+    const { d, figur } = await bukaLembar(page, a.nama)
+    const gambar = () => figur.locator('#art').innerHTML()
+    const awal = await gambar()
+    // fokus pindah ke dalam iframe, jadi Escape harus tetap sampai ke dialog di halaman induk
+    await figur.getByRole('button', { name: a.tombol }).click()
+    await expect.poll(gambar).not.toBe(awal)
+    await page.keyboard.press('Escape')
+    await expect(d).toBeHidden()
   })
 }
+
+test('figur diputar dengan seret dan tidak menambah riwayat browser', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'menyeret dengan mouse hanya di desktop')
+  await bukaHalaman(page)
+  const riwayat = await page.evaluate(() => history.length)
+  const { figur } = await bukaLembar(page, 'goRute')
+  const gambar = () => figur.locator('#art').innerHTML()
+  const awal = await gambar()
+  const b = (await figur.locator('#fig').boundingBox())!
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(b.x + b.width / 2 + 120, b.y + b.height / 2, { steps: 6 })
+  await page.mouse.up()
+  await expect.poll(gambar).not.toBe(awal)
+  await page.keyboard.press('Escape')
+  await bukaLembar(page, 'Tikoem')
+  await page.keyboard.press('Escape')
+  expect(await page.evaluate(() => history.length)).toBe(riwayat)
+})
+
+test('figur mengikuti tema gelap, termasuk saat tema sistem berganti', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await bukaHalaman(page)
+  const { figur } = await bukaLembar(page, 'Tookthel')
+  await expect(figur.locator('html')).toHaveAttribute('data-tema', 'gelap')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(figur.locator('html')).toHaveAttribute('data-tema', 'terang')
+})
+
+test('figur gagal dimuat: gambar diamnya tetap tampil', async ({ page }) => {
+  await page.route(/\/figur\/\w+\.html/, (r) => r.abort())
+  await bukaHalaman(page)
+  await page.getByRole('button', { name: /^goRute:/ }).click({ force: true })
+  const panggung = page.locator('#pr-figur')
+  await expect(panggung.locator('img')).toBeVisible()
+  await expect(panggung.locator('img')).toHaveJSProperty('complete', true)
+  await expect(panggung).not.toHaveClass(/siap/)
+})
 
 test('tentang kami, lalu tim, lalu kontak', async ({ page }) => {
   await bukaHalaman(page)

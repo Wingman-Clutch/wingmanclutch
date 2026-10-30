@@ -1,14 +1,15 @@
-// Papan: semua sketsa di halaman, posisinya, urutan menggambarnya, layar yang berganti, dan
-// kepakan logo setiap kali diketuk.
+// Papan: semua sketsa di halaman, posisinya, urutan menggambarnya, dan kepakan logo setiap kali
+// diketuk.
 
-import { batalkan, cicil, GERAK_DIKURANGI, jadwalkan, type Tugas } from '../engine/animasi'
+import { batalkan, cicil, jadwalkan, type Tugas } from '../engine/animasi'
 import type { Op } from '../engine/goresan'
 import type { Tema } from '../engine/kuas'
-import { Sketsa } from '../engine/sketsa'
+import { Sketsa, type Figur } from '../engine/sketsa'
 import { PROYEK, type IdProyek } from '../data/proyek'
-import { DASAR_LABEL } from '../sketsa/bantu'
+import { DASAR_LABEL, label } from '../sketsa/bantu'
 import {
   bulan,
+  FIGUR_TIM,
   kilauKecil,
   kopi,
   kotakKontak,
@@ -20,6 +21,7 @@ import {
   tentang,
   tim,
 } from '../sketsa/catatan'
+import { bingkai, KOTAK_APLIKASI, letakFigur } from '../sketsa/figur'
 import { DASAR_LOGO, JUMLAH_KEPAK, kepakAwal, kepakTambahan, logo } from '../sketsa/logo'
 import { atasItem, type Ukuran } from './tata-letak'
 
@@ -33,7 +35,7 @@ export interface Def {
   /** kunci posisi di tata letak (default sama dengan id) */
   tempat?: string
   ops: () => Op[]
-  layar?: (() => Op[])[]
+  figur?: Figur
   /** garis dasar tulisan dalam satuan gambar, untuk `baris` di tata letak */
   dasar: number
   tombol?: { label: string; aksi: Aksi }
@@ -85,17 +87,20 @@ export function daftarDef(): Def[] {
       dasar: DASAR_LOGO,
       kelas: 'kepak',
     })),
-    ...PROYEK.map<Def>((p) => ({
-      id: p.id,
-      ops: () => p.gambar(true),
-      layar: p.layar,
-      dasar: DASAR_LABEL,
-      tombol: {
-        label: `${p.nama}: ${p.slogan} Buka detailnya`,
-        aksi: { jenis: 'proyek', id: p.id },
-      },
-      kelas: `perangkat gerak-${p.gerak}`,
-    })),
+    ...PROYEK.map<Def>((p) => {
+      const figur = letakFigur(p.id, KOTAK_APLIKASI)
+      return {
+        id: p.id,
+        ops: () => [bingkai(figur), ...label(p.nama, p.warna)],
+        figur,
+        dasar: DASAR_LABEL,
+        tombol: {
+          label: `${p.nama}: ${p.slogan} Buka detailnya`,
+          aksi: { jenis: 'proyek', id: p.id },
+        },
+        kelas: `perangkat gerak-${p.gerak}`,
+      }
+    }),
     {
       id: 'tentang',
       ops: tentang,
@@ -107,6 +112,7 @@ export function daftarDef(): Def[] {
     {
       id: 'tim',
       ops: tim,
+      figur: FIGUR_TIM,
       dasar: 150,
       tombol: { label: 'Kenalan sama tim: 2 orang', aksi: { jenis: 'tim' } },
     },
@@ -153,7 +159,6 @@ export class Papan {
   private ukuran?: Ukuran
   private tema: Tema = 'terang'
   private tugas: Tugas[] = []
-  private pengatur = new Set<number>()
   private kepakan = 0
   sibuk = false
 
@@ -175,7 +180,7 @@ export class Papan {
         wadah = document.createElement('div')
         wadah.setAttribute('aria-hidden', 'true')
       }
-      const s = new Sketsa(d.id, d.ops, d.layar ?? [], wadah)
+      const s = new Sketsa(d.id, d.ops, d.figur, wadah)
       if (d.kelas) s.el.classList.add(...d.kelas.split(' '))
       s.el.hidden = true
       el.appendChild(s.el)
@@ -235,47 +240,13 @@ export class Papan {
           () => s.el.classList.add('selesai'),
         ),
       )
-      if (s.jumlahLayar) this.putarLayar(s, tunda + durasi * 0.75)
     }
   }
 
-  /** layar perangkat bergantian: gambar, tahan, pudar, ganti */
-  private putarLayar(s: Sketsa, tunda: number) {
-    let i = 0
-    const kanvasLayar = s.semuaKanvas[1]
-    const satu = () => {
-      kanvasLayar.classList.remove('pudar')
-      const gambar = s.pilihLayar(i % s.jumlahLayar)
-      this.tugas.push(
-        jadwalkan(0, 1000, gambar, () => {
-          if (GERAK_DIKURANGI && i > 0) return
-          this.tunda(() => {
-            kanvasLayar.classList.add('pudar')
-            this.tunda(() => {
-              i++
-              satu()
-            }, 380)
-          }, 3800)
-        }),
-      )
-    }
-    this.tunda(satu, tunda)
-  }
-
-  private tunda(f: () => void, ms: number) {
-    const h = window.setTimeout(() => {
-      this.pengatur.delete(h)
-      f()
-    }, ms)
-    this.pengatur.add(h)
-  }
-
-  /** hentikan semua gambar dan layar yang sedang berjalan */
+  /** hentikan semua gambar yang sedang berjalan */
   hentikan() {
     for (const t of this.tugas) batalkan(t)
     this.tugas = []
-    for (const h of this.pengatur) clearTimeout(h)
-    this.pengatur.clear()
   }
 
   /** satu kepakan sayap tambahan; mengembalikan false kalau sudah habis */

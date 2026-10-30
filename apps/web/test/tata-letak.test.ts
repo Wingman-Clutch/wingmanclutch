@@ -34,7 +34,7 @@ function kotakDi(kunci: 'potret' | 'lanskap', id: string): Kotak | null {
   const d = defs.find((x) => x.id === id)!
   const t = L.item[d.tempat ?? id]
   if (!t) return null
-  const b = batasGoresan(kompilasi([...d.ops(), ...(d.layar?.flatMap((l) => l()) ?? [])], 1))
+  const b = batasGoresan(kompilasi(d.ops(), 1))
   const atas = atasItem(L, t, d.dasar)
   return {
     x0: t.x + b.x * t.s,

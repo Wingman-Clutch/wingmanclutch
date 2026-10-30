@@ -1,10 +1,13 @@
-// Catatan kecil di halaman: kertas tempel Tentang kami, dua orang tos, kopi hari ini,
+// Catatan kecil di halaman: kertas tempel Tentang kami, judul Tim kami, kopi hari ini,
 // petunjuk, kotak kontak, rumus, kilau, bulan dan matahari, serta tanggal hari ini.
 
-import { A, G, grup, TITIK, type Op } from '../engine/goresan'
+import { A, G, grup, type Op } from '../engine/goresan'
 import { judul, lebarJudul, lebarTulisan, tulis } from '../engine/huruf'
 import { geser, gelombang, kepalaPanah, kilau, kotak, lingkaran } from '../engine/jalur'
-import { GARIS, hati } from './bantu'
+import { hati } from './bantu'
+import { bingkai, KOTAK_TIM, letakFigur } from './figur'
+
+export const FIGUR_TIM = letakFigur('tim', KOTAK_TIM)
 
 export function tentang(): Op[] {
   const w = lebarJudul('tentang', 30)
@@ -19,37 +22,11 @@ export function tentang(): Op[] {
   ]
 }
 
-/** dua orang tos di atas judul Tim kami */
+/** judul Tim kami di bawah figur dua orang tos */
 export function tim(): Op[] {
   const w = lebarJudul('tim kami', 30)
-  const badan = (cx: number, c: 'b' | 'g', tanganKe: number) => {
-    const bahu = `M${cx - 20} 110 Q${cx - 20} 82 ${cx} 82 Q${cx + 20} 82 ${cx + 20} 110`
-    return [
-      G(lingkaran(cx, 62, 14), 'w', 3.2, { lintasan: 1, amp: 0.3 }),
-      G(`M${cx - 5} 60 h1.4 M${cx + 4} 60 h1.4`, 'w', 2.8, TITIK),
-      G(`M${cx - 5} 66 Q${cx} 71 ${cx + 5} 66`, 'w', 2.2, GARIS),
-      G(bahu, 'w', 3.4, { lintasan: 1, lebih: 0.3 }),
-      A(bahu + 'Z', c, { jarak: 2.8, sudut: 35, w: 3.2, a: 0.7 }),
-      // lengan terangkat ke tengah untuk tos
-      G(`M${cx + 14 * tanganKe} 86 Q${cx + 26 * tanganKe} 60 ${100 - 6 * tanganKe} 30`, 'w', 3.4, {
-        lintasan: 1,
-        lebih: 0.2,
-      }),
-    ]
-  }
   return [
-    ...badan(60, 'b', 1),
-    // rambut Kall: poni lebat
-    G('M46 58 Q46 42 60 42 Q76 42 75 58 M47 54 L52 60 L55 52 L60 60 L64 52 L68 60 L72 53', 'w', 3, {
-      lintasan: 1,
-      amp: 0.2,
-    }),
-    ...badan(140, 'g', -1),
-    // rambut Bintang: ikal
-    G('M126 58 Q122 44 132 42 Q136 34 146 40 Q156 40 154 54', 'w', 3, { lintasan: 1, amp: 0.3 }),
-    G('M130 44 q2 -4 5 0 M140 41 q3 -3 5 1 M148 46 q3 -2 4 2', 'w', 2.4, GARIS),
-    G(kilau(100, 22, 10), 'y', 3.4, { lintasan: 1, amp: 0.3 }),
-    G('M86 14 L80 8 M114 14 L120 8 M100 6 V0', 'y', 2.6, GARIS),
+    bingkai(FIGUR_TIM),
     ...judul('tim kami', 100, 150, 30, { rata: 'c' }),
     G(gelombang(100 - w / 2, 100 + w / 2 + 6, 166, 2.6, 16), 'o', 4.2, { lintasan: 1, amp: 0.5 }),
   ]

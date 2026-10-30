@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { bukaHalaman } from './bantu'
+import { bukaHalaman, bukaLembar } from './bantu'
 
 /** tunggu animasi yang punya akhir (dialog menempel, tema memudar); gerak diam sketsa diabaikan */
 async function tungguDiam(page: Page) {
@@ -18,7 +18,9 @@ async function tungguDiam(page: Page) {
 async function periksa(page: Page, pemilih?: string) {
   await tungguDiam(page)
   const axe = new AxeBuilder({ page })
-  if (pemilih) axe.include(pemilih)
+  // iframe figur ikut diperiksa, tapi ia widget di dalam lembar: judul dan landmark datang dari
+  // dialognya, jadi aturan tingkat halaman tidak berlaku untuknya
+  if (pemilih) axe.include(pemilih).disableRules(['page-has-heading-one', 'landmark-one-main'])
   const { violations } = await axe.analyze()
   return violations.map((v) => `${v.id}: ${v.help} -> ${v.nodes.map((n) => n.target).join(', ')}`)
 }
@@ -40,8 +42,7 @@ test('halaman tanpa pelanggaran axe di tema terang, gelap, dan Matrix', async ({
 for (const nama of ['PostPocket', 'goRute', 'Tikoem', 'Tookthel']) {
   test(`lembar ${nama} tanpa pelanggaran axe`, async ({ page }) => {
     await bukaHalaman(page)
-    await page.getByRole('button', { name: new RegExp(`^${nama}:`) }).click({ force: true })
-    const d = page.getByRole('dialog', { name: nama })
+    const { d } = await bukaLembar(page, nama)
     // tunggu statistik dari mock supaya baris itu ikut diperiksa
     await expect(d.locator('#pr-statistik')).toContainText('★')
     expect(await periksa(page, '#dlg-proyek')).toEqual([])
@@ -52,7 +53,7 @@ test('lembar aplikasi dan form kontak di tema gelap tanpa pelanggaran axe', asyn
   await page.addInitScript(() => localStorage.setItem('wc-tema', 'gelap'))
   await bukaHalaman(page)
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'gelap')
-  await page.getByRole('button', { name: /^goRute:/ }).click({ force: true })
+  await bukaLembar(page, 'goRute')
   await expect(page.locator('#pr-statistik')).toContainText('★')
   expect(await periksa(page, '#dlg-proyek'), 'lembar').toEqual([])
   await page.keyboard.press('Escape')
