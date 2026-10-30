@@ -1,0 +1,35 @@
+{
+  "name": "@wingmanclutch/web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "oxlint --deny-warnings && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "font": "node scripts/buat-font.mjs",
+    "foto-tim": "node scripts/buat-foto-tim.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/bungee": "^5.3.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.19.1",
+    "ajv": "^8.20.0",
+    "hersheytext": "2.0.0",
+    "opentype.js": "^2.0.0",
+    "oxlint": "^1.90.0",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5",
+    "yaml": "^2.9.1"
+  },
+  "dependencies": {
+    "@fontsource/special-elite": "^5.3.0"
+  }
+}

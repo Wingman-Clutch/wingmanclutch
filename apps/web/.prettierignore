@@ -1,0 +1,5 @@
+dist
+src/data/font.json
+src/data/logo.json
+test-results
+playwright-report
