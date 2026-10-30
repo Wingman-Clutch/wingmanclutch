@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
-import { mockApi } from './mock/api'
+// Impor di berkas yang dimuat config ini (mock/api.ts, src/api/kontrak.ts) memakai ekstensi .ts,
+// supaya config juga bisa dimuat langsung oleh Node (`configLoader: 'native'`, calon default Vite).
+import { mockApi } from './mock/api.ts'
 
 // Mock API menjawab /api di `vite dev`, dan di `vite preview` kalau MOCK_API=1 (dipakai E2E).
 // Build produksi tidak pernah membawa mock. Untuk mencoba backend sungguhan di lokal, jalankan
