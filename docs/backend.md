@@ -21,7 +21,7 @@ Diputuskan Bintang di PR `feat/api-kontak`, mengikuti usulan awal.
 | --- | --- | --- |
 | Penyimpanan batas kirim | Upstash Redis (gratis) lewat `@upstash/ratelimit`, jendela geser 5 per jam | Batas di memori bisa ditembus karena instance Functions berganti-ganti, jadi hanya dipakai sebagai cadangan kalau env Upstash kosong (lokal). Kalau Upstash sedang mati, pesan tetap dikirim supaya form tidak tertutup |
 | Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com. Resend dipanggil lewat `fetch` langsung, tanpa SDK |
-| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, dipasang belakangan | Opsional. Tanpa token batasnya 60 permintaan per jam per IP, dan cache satu jam membuat kebutuhan nyata jauh di bawah itu. Dipasang kalau statistik mulai kosong |
+| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, dipasang bersama env produksi | Kode tetap jalan tanpa token, tapi batas 60 permintaan per jam tanpa token dihitung per IP, dan IP keluar Vercel Functions dipakai bersama banyak proyek lain, jadi kuotanya bisa habis duluan walau cache kita satu jam |
 
 ## Struktur yang disarankan
 
@@ -71,7 +71,7 @@ Daftar repo dan URL ada di `api/_lib/github.ts` (`APLIKASI`). Test membandingkan
 1. Untuk keempat repo (`Wingman-Clutch/PostPocket`, `tikoem`, `goRute`, `tookthel`), ambil `stargazers_count` dan `pushed_at` dari `GET https://api.github.com/repos/{owner}/{repo}`, dengan header `Authorization: Bearer $GITHUB_TOKEN` kalau token ada.
 2. Bersamaan, kirim `HEAD` ke URL produksi setiap aplikasi (lihat `apps/web/src/data/proyek.ts`) dengan batas 5 detik. 2xx atau 3xx berarti `online`, galat atau lewat waktu berarti `gangguan`, dan kalau pengecekan tidak bisa dilakukan sama sekali `tidak_diketahui`.
 3. Jawab `200` dengan `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`, supaya CDN Vercel yang menahan beban dan GitHub jarang dipanggil.
-4. Kalau GitHub gagal untuk semua repo, `503 LAYANAN_GAGAL` tanpa cache. Kalau hanya sebagian, kirim data yang ada dengan cache lima menit (`s-maxage=300`) supaya cepat pulih. Repo yang gagal diisi nilai terakhir yang berhasil di instance itu, atau `bintang: 0` dan `terakhirDiperbarui` sama dengan `diperbarui` kalau belum pernah berhasil. Status tetap dari cek HEAD, karena tidak bergantung pada GitHub. Urutan id mengikuti enum di kontrak.
+4. Repo yang gagal diisi nilai terakhir yang berhasil di instance itu, lalu dijawab `200` dengan cache lima menit (`s-maxage=300`) supaya cepat pulih. Kalau ada repo yang gagal dan belum punya nilai terakhir, jawab `503 LAYANAN_GAGAL` tanpa cache, supaya halaman menyembunyikan baris statistik daripada menulis "★ 0 · baru saja". Status tetap dari cek HEAD, karena tidak bergantung pada GitHub. Urutan id mengikuti enum di kontrak.
 
 ## Keamanan
 
