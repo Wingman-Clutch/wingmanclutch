@@ -139,7 +139,7 @@ apps/web/               halaman buku catatan (Vite + TypeScript tanpa framework)
   src/data/             isi halaman (proyek.ts) dan data font serta logo hasil skrip
   mock/                 mock /api sesuai kontrak (hanya development dan E2E)
   test/, e2e/           unit test Vitest dan skenario Playwright
-api/                    Vercel Functions, dipegang Bintang (belum ada, lihat docs/backend.md)
+api/                    Vercel Functions, dipegang Bintang (lihat docs/backend.md)
 docs/prd/               PRD
 docs/frontend.md        panduan frontend
 docs/backend.md         panduan backend

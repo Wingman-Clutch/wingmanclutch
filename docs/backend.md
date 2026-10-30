@@ -13,13 +13,15 @@ Frontend sudah jalan dengan mock dari kontrak, jadi backend bisa dikerjakan kapa
 
 Kontraknya [`docs/api/openapi.yaml`](api/openapi.yaml). Kalau perlu mengubah bentuk data, ubah kontraknya dulu lewat PR yang di-review Kall, termasuk mock di `apps/web/mock/api.ts` (unit test frontend memvalidasi mock dengan kontrak, jadi CI merah kalau keduanya tidak sejalan).
 
-## Keputusan yang menunggu
+## Keputusan
 
-| Keputusan | Usulan | Catatan |
+Diputuskan Bintang di PR `feat/api-kontak`, mengikuti usulan awal.
+
+| Keputusan | Pilihan | Catatan |
 | --- | --- | --- |
-| Penyimpanan batas kirim | Upstash Redis (gratis) lewat `@upstash/ratelimit` | Batas di memori bisa ditembus karena instance Functions berganti-ganti. Boleh dipakai sebagai cadangan kalau env Upstash kosong (lokal) |
-| Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com |
-| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)` | Opsional. Tanpa token batasnya 60 permintaan per jam per IP, dan cache satu jam membuat kebutuhan nyata jauh di bawah itu |
+| Penyimpanan batas kirim | Upstash Redis (gratis) lewat `@upstash/ratelimit`, jendela geser 5 per jam | Batas di memori bisa ditembus karena instance Functions berganti-ganti, jadi hanya dipakai sebagai cadangan kalau env Upstash kosong (lokal). Kalau Upstash sedang mati, pesan tetap dikirim supaya form tidak tertutup |
+| Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com. Resend dipanggil lewat `fetch` langsung, tanpa SDK |
+| Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, dipasang belakangan | Opsional. Tanpa token batasnya 60 permintaan per jam per IP, dan cache satu jam membuat kebutuhan nyata jauh di bawah itu. Dipasang kalau statistik mulai kosong |
 
 ## Struktur yang disarankan
 
@@ -27,18 +29,19 @@ Kontraknya [`docs/api/openapi.yaml`](api/openapi.yaml). Kalau perlu mengubah ben
 api/
   package.json          @wingmanclutch/api (masuk pnpm-workspace.yaml, sudah terdaftar)
   tsconfig.json
-  kontak.ts             handler POST /api/kontak
-  proyek.ts             handler GET /api/proyek
+  kontak.ts             rute POST /api/kontak, hanya memanggil _lib/kontak.ts
+  proyek.ts             rute GET /api/proyek
   _lib/                 bukan rute (awalan _ diabaikan Vercel)
+    kontak.ts           logika /api/kontak, pembatas dan pengirim bisa diganti tiruan di test
     validasi.ts         aturan kolom, sama dengan kontrak
     batas.ts            batas kirim per jaringan
     email.ts            kirim lewat Resend
     github.ts           statistik repo dan cek status
     jawab.ts            helper JSON dan galat
-  _test/                vitest
+  _test/                vitest, plus kontrak.ts untuk validasi skema
 ```
 
-Vercel menjalankan setiap file `.ts` di `api/` sebagai Function Node. `vercel.json` di root sudah menunjuk build frontend ke `apps/web/dist`, jadi Functions dan halaman ikut satu deploy dan satu domain (tanpa CORS).
+Vercel menjalankan setiap file `.ts` di `api/` sebagai Function Node, jadi jangan menaruh file `.ts` lain (misalnya config Vitest) langsung di `api/`. Rute memakai bentuk Web standar `export default { fetch(req) }`, dan impor antarfile memakai akhiran `.js` (ESM, `moduleResolution: NodeNext`). `vercel.json` di root sudah menunjuk build frontend ke `apps/web/dist`, jadi Functions dan halaman ikut satu deploy dan satu domain (tanpa CORS).
 
 ## Rancangan endpoint
 
@@ -89,19 +92,19 @@ Test handler tanpa jaringan: panggil handler dengan `Request` buatan, dan ganti 
 
 ## CI
 
-Tambahkan workflow `Backend` (`.github/workflows/backend.yml`) yang jalan kalau `api/` atau `docs/api/` berubah: `pnpm --filter @wingmanclutch/api typecheck`, `test`, dan `npx @redocly/cli@1 lint docs/api/openapi.yaml`. Setelah stabil, tambahkan job-nya ke required checks `main`.
+Workflow `Backend` (`.github/workflows/backend.yml`) jalan kalau `api/` atau `docs/api/` berubah: `lint`, `typecheck`, `test` package `@wingmanclutch/api`, dan `npx @redocly/cli@1 lint docs/api/openapi.yaml` dengan aturan di `redocly.yaml`. Setelah stabil, tambahkan job-nya ke required checks `main`.
 
 ## Checklist
 
 ### Rilis 1
 
-- [ ] Putuskan penyimpanan batas kirim dan pengirim email (tabel di atas), tulis keputusannya di PR
-- [ ] `api/` sebagai package `@wingmanclutch/api` dengan TypeScript, Vitest, dan typecheck
-- [ ] `POST /api/kontak`: metode, content type, ukuran body, JSON, jebakan bot, validasi kolom
-- [ ] Batas kirim 5 per jam per jaringan dengan IP di-hash, `429` dan `Retry-After`
-- [ ] Kirim email lewat Resend dengan `reply_to`, `503` saat gagal atau lewat 8 detik
+- [x] Putuskan penyimpanan batas kirim dan pengirim email (tabel di atas), tulis keputusannya di PR
+- [x] `api/` sebagai package `@wingmanclutch/api` dengan TypeScript, Vitest, dan typecheck
+- [x] `POST /api/kontak`: metode, content type, ukuran body, JSON, jebakan bot, validasi kolom
+- [x] Batas kirim 5 per jam per jaringan dengan IP di-hash, `429` dan `Retry-After`
+- [x] Kirim email lewat Resend dengan `reply_to`, `503` saat gagal atau lewat 8 detik
 - [ ] `GET /api/proyek`: GitHub dan cek status bersamaan, cache CDN, galat sebagian dan total
 - [ ] Unit test semua jalur di atas, jawaban divalidasi dengan skema kontrak
-- [ ] Workflow `Backend` di CI dan lint kontrak dengan Redocly
+- [x] Workflow `Backend` di CI dan lint kontrak dengan Redocly
 - [ ] Env produksi di Vercel (`RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN`)
 - [ ] Cek produksi: pesan uji sampai ke wingmanclutch@gmail.com, kiriman ke-6 dalam satu jam ditolak, statistik tampil di lembar detail
