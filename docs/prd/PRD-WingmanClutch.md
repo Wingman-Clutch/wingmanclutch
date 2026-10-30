@@ -7,7 +7,7 @@
 | Backend | Bintang ([@bintangfabian](https://github.com/bintangfabian)) |
 | Status | Halaman live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026. Backend: `POST /api/kontak` dan `GET /api/proyek` live, env produksi lengkap sejak 30 Oktober 2026 |
 | Referensi | [kracked.studio](https://kracked.studio), catatan di [docs/referensi/kracked-studio.md](../referensi/kracked-studio.md) |
-| Terakhir diubah | 30 Oktober 2026 |
+| Terakhir diubah | 31 Oktober 2026 |
 
 ## 1. Latar belakang
 
@@ -44,24 +44,25 @@ Di mini project sebelumnya, salah satu dari kami sering menunggu yang lain seles
 
 ## 4. Cakupan rilis 1
 
-Rilis 1 meniru kracked.studio 1:1 dari sisi tata letak, urutan menggambar, dan interaksi. Isinya milik Wingman Clutch.
+Rilis 1 berangkat dari kracked.studio: tata letak, urutan menggambar, dan interaksinya dibuat mirip, isinya milik Wingman Clutch. Pada 31 Oktober 2026 Kall dan Bintang sepakat bergeser dari tiruan 1:1 supaya gaya halamannya seragam: semua benda di halaman jadi figur Colorfigures (empat aplikasi, tim, lambang, lampu, kopi), halaman dibuka dengan layar pembuka berisi lambang yang mengepak, dan tema diganti lewat tali lampu gantung. Tulisan, catatan, dan coretan tetap digambar mesin pensil.
 
 ### 4.1 Pemetaan dari referensi
 
 | kracked.studio | Wingman Clutch | Pemilik |
 | --- | --- | --- |
 | Kertas kotak-kotak, butiran kertas, noda cincin kopi | Sama, dengan warna kertas krem brand `#F7F6F1` | Kall |
-| Logo Kracked (monster dan tulisan) digambar pensil, lalu retak | Lambang dua orang bersayap, WINGMAN, CLUTCH, dan tagline tulisan tangan. Setiap ketukan menambah kepakan sayap (sampai 4) | Kall |
+| (tidak ada) | Layar pembuka: lambang figur muncul di tengah kertas, mengepakkan sayap dua kali, lalu meluncur ke tempatnya sebelum halaman digambar. Sekali per sesi, bisa dilewati, tidak tampil di gerak dikurangi | Kall |
+| Logo Kracked (monster dan tulisan) digambar pensil, lalu retak | Lambang dua orang bersayap sebagai figur Colorfigures, lalu WINGMAN, CLUTCH, dan tagline ditulis pensil. Setiap ketukan mengepakkan sayap lambang dan menambah garis kepak (sampai 4) | Kall |
 | Kolom DATE berisi tanggal hari ini | Kolom TANGGAL, nama bulan Indonesia | Kall |
-| Bulan dan matahari untuk tema terang dan gelap | Sama, pilihan disimpan di perangkat | Kall |
+| Bulan dan matahari untuk tema terang dan gelap | Lampu gantung bertali: ditarik untuk mematikan lampu (kertas gelap) atau menyalakannya (kertas terang). Pilihan disimpan di perangkat | Kall |
 | Sudut kanan atas bisa dikupas ke Matrix | Sama | Kall |
 | Empat kategori (Games, Websites, Apps, Art) dengan layar yang berganti | Empat aplikasi, masing-masing satu figur berwarna: PostPocket (amplop dan kartu foil), goRute (halte dan bus TransJakarta), Tikoem (HP dengan peta di dudukan), Tookthel (printer struk dan koin) | Kall |
 | Lembar proyek saat sketsa diketuk | Lembar detail aplikasi: figur interaktif yang bisa diputar dan dicoba, deskripsi, tiga fitur, peran kami, tumpukan teknologi, statistik hidup, tautan aplikasi dan kode | Kall (tampilan), Bintang (statistik) |
-| Kertas tempel ABOUT US | TENTANG KAMI, dialog dengan tiga langkah kerja kami | Kall |
+| Kertas tempel ABOUT US | TENTANG KAMI dengan nama Kall dan Bintang, dialog berisi siapa kami dan cara kami bagi kerja | Kall |
 | THE TEAM dengan lima orang | TIM KAMI: figur dua orang tos. Dialog berisi kartu nama berlanyard dengan foto sketsa pensil dari profil GitHub | Kall |
-| Kotak DO NOT ERASE, GOT AN IDEA? LET'S KRACK IT | JANGAN DIHAPUS, PUNYA IDE? LET'S CLUTCH IT, membuka form kontak | Kall (form), Bintang (pengiriman) |
+| Kotak DO NOT ERASE, GOT AN IDEA? LET'S KRACK IT | HUBUNGI KAMI, PUNYA IDE? LET'S CLUTCH IT, membuka form kontak | Kall (form), Bintang (pengiriman) |
 | ART + CODE = ♥ | FE + BE = ♥ | Kall |
-| TODAY: tally kopi | HARI INI: tally kopi | Kall |
+| TODAY: tally kopi | KOPI HARI INI: tally kopi di samping figur mug | Kall |
 | Lima pensil untuk corat-coret | Sama, dengan stempel WINGMAN CLUTCH | Kall |
 | Penghapus menggosok seluruh halaman lalu semuanya digambar ulang | Sama, termasuk remah dan bekas gosokan | Kall |
 | Kaki halaman | © 2026 Wingman Clutch, tautan GitHub dan Traktir kopi (Sociabuzz) | Kall |
@@ -166,7 +167,7 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 | Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
 | Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Kode MIT, tapi logo, foto tim, dan isi tetap milik Wingman Clutch | Berdua |
 | Foto tim | Foto profil GitHub sekarang, atau foto khusus | Foto profil GitHub dulu | Berdua |
-| Tally HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Statis di rilis 1 | Berdua |
+| Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Statis di rilis 1 | Berdua |
 
 ## 10. Risiko
 

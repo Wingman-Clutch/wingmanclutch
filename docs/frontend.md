@@ -21,6 +21,8 @@ halaman/
   tata-letak.ts    posisi setiap sketsa (satuan adegan) untuk potret dan lanskap
   kertas.ts        kertas kotak, kolom TANGGAL, noda kopi, butiran kertas
   papan.ts         semua sketsa di halaman, urutan menggambar, kepakan logo
+  lampu.ts         lampu gantung dan tali tariknya (fisika Verlet), saklar tema
+  pembuka.ts       layar pembuka: lambang mengepak lalu meluncur ke tempatnya di halaman
   baki.ts          lima pensil (corat-coret) dan penghapus (gosok seluruh halaman)
   lipatan.ts       sudut halaman yang bisa dikupas ke Matrix
   hujan.ts         hujan karakter Matrix
@@ -36,7 +38,7 @@ engine/
   kuas.ts          warna pensil per tema dan kuas bertekstur butiran
   sketsa.ts        satu sketsa di kanvasnya sendiri, digambar bertahap, dan figur di bawah goresannya
   animasi.ts       satu requestAnimationFrame untuk semua yang bergerak
-  tali.ts          fisika lanyard: simpul Verlet, sambungan, putaran kartu di cincin
+  tali.ts          fisika tali (lanyard dan tali lampu): simpul Verlet, sambungan, putaran kartu
 sketsa/            logo, catatan kecil, dan letak figur
 data/              isi halaman (proyek.ts), font.json, logo.json, dan figur.json hasil skrip
 ../figur/          sumber figur, penyesuaian lembar detail, dan engine Colorfigures
@@ -47,7 +49,7 @@ data/              isi halaman (proyek.ts), font.json, logo.json, dan figur.json
 
 - **Satuan gambar.** Setiap aplikasi menempati kotak 200 x 200 (figurnya di `KOTAK_APLIKASI`), dengan label nama di garis dasar y = 236. Logo memakai koordinat logo brand (872 lebar).
 - **Satuan adegan.** Seluruh halaman: lanskap 1700 x 1112, potret 1000 x 2273. Garis kotak buku berjarak 46 satuan. `baris: n` di tata letak menaruh garis dasar tulisan sketsa tepat di garis buku ke-n.
-- **Tiga pita.** Header di atas berisi stiker Tentang kami, kolom tanggal, dan saklar tema. Kaki halaman ada di bawah. Sisanya (logo, empat aplikasi, kontak, tim, catatan, pensil, penghapus) berada di tengah, dengan jarak ke header dan ke kaki halaman yang kurang lebih sama. Adegan lebih tinggi dari referensi (1000 dan 2180) supaya ketiga pita itu terpisah jelas. Kalau isi tengah digeser, `garis0` ikut digeser kelipatan 46 supaya garis tanggal tetap di garis buku, dan posisi `y` mutlak ditambah selisih yang sama.
+- **Tiga pita.** Header di atas berisi stiker Tentang kami, kolom tanggal, dan lampu gantung. Kaki halaman ada di bawah. Sisanya (logo, empat aplikasi, kontak, tim, catatan, pensil, penghapus) berada di tengah, dengan jarak ke header dan ke kaki halaman yang kurang lebih sama. Adegan lebih tinggi dari referensi (1000 dan 2180) supaya ketiga pita itu terpisah jelas. Kalau isi tengah digeser, `garis0` ikut digeser kelipatan 46 supaya garis tanggal tetap di garis buku, dan posisi `y` mutlak ditambah selisih yang sama.
 - **Piksel.** Adegan diskalakan supaya muat di layar (`k` piksel per satuan adegan), lalu setiap sketsa diskalakan lagi dengan `s`.
 
 ### Menggambar sketsa
@@ -68,12 +70,19 @@ Goyangan tangan memakai benih dari id sketsa, jadi gambarnya sama setiap kali di
 
 ### Figur
 
-Empat aplikasi dan Tim kami digambar dengan [Colorfigures](https://april-zhu.com/colorfigures): model 3D isometrik yang ditulis sebagai satu HTML per figur di `apps/web/figur/`. Namanya tetap ditulis mesin pensil, jadi sketsa aplikasi berisi label dan bingkai tak terlihat, sedangkan gambarnya tinggal di kanvas figur.
+Semua benda di halaman digambar dengan [Colorfigures](https://april-zhu.com/colorfigures): empat aplikasi, Tim kami, lambang Wingman Clutch, lampu gantung, dan mug kopi. Setiap figur adalah model 3D isometrik yang ditulis sebagai satu HTML di `apps/web/figur/`. Namanya tetap ditulis mesin pensil, jadi sketsa aplikasi berisi label dan bingkai tak terlihat, sedangkan gambarnya tinggal di kanvas figur.
 
 | Tempat        | Bentuk                                                                                                                                                                                                                                                                                                                                                               |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Halaman utama | Gambar diam `public/figur/<id>.webp`, dilukis `Sketsa` ke kanvasnya sendiri lewat coretan krayon (`jalurKrayon`). Karena kanvas, penghapus dan noda bekasnya bekerja seperti pada goresan. Ukurannya dibaca dari `src/data/figur.json`, jadi tata letak tidak menunggu gambarnya dimuat                                                                              |
 | Lembar detail | Halaman interaktif `public/figur/<id>.html` di iframe. Engine mengambil alih `<body>` dan memakai nama global pendek, jadi harus hidup di dokumennya sendiri. Iframe dibuat baru setiap lembar dibuka dan dibuang saat ditutup, supaya riwayat browser bersih dan figur tidak jalan di belakang. Tim tidak punya halaman interaktif; lembarnya kartu nama berlanyard |
+
+Figur berpose dibuat sebingkai oleh skrip, jadi gambarnya bisa ditukar tanpa bergeser (test membaca ukuran dari kepala berkas WebP):
+
+- **Lambang** (`logo.webp`, `logo-naik.webp`, `logo-turun.webp`): garis tepinya diambil dari `docs/brand/wingman-clutch-emblem.svg`. Sayap mengepak dengan memutar titik-titik ujung sayap di sekitar bahu, jadi siluet pose diamnya sama persis dengan lambang brand. Di halaman, sketsa `logo` hanya berisi lambang (sekaligus tombol kepak), sedangkan WINGMAN, CLUTCH, dan tagline ada di sketsa `merek`.
+- **Lampu** (`lampu-nyala.webp`, `lampu-mati.webp`): figur menyimpan dua titik sambungan lewat `window.titikSambung`, yaitu ujung atas kabel dan cincin tali, dan skrip menulisnya ke `figur.json` sebagai pecahan lebar dan tinggi gambar. `halaman/lampu.ts` menyambung kabel CSS sampai tepi atas layar dan menggantung tali tarik SVG dari titik itu. Saklarnya berbunyi saat tali tertarik melewati ambang (`saklar()`), lalu siap lagi setelah talinya kembali masuk.
+
+Layar pembuka (`halaman/pembuka.ts`) diputuskan skrip di `<head>`: kelas `pembuka` dipasang kalau sesi ini belum pernah melihatnya dan pengguna tidak memilih gerak dikurangi, jadi lapisannya sudah tampil di lukisan pertama. Lambang muncul, mengepak dua kali, lalu meluncur ke kotak lambang di halaman. Setelah itu `papan.pembukaan({ logoSiap: true })` menggambar lambang utuh tanpa krayon, dan lapisan pembuka dibuang sesudah satu frame supaya tidak berkedip.
 
 Halaman figur punya CSP sendiri (`default-src 'none'`), tidak diindeks, dan menerima tema lewat `?tema=`. `vercel.json` memasang `X-Frame-Options: SAMEORIGIN` hanya untuk `/figur/`; path lain tetap `DENY`. Kalau iframe gagal dimuat, gambar diamnya tetap tampil.
 
@@ -90,7 +99,7 @@ Tampilan di dalam lembar detail (warna tema, huruf, tombol, teks Bahasa Indonesi
 1. Teks, tautan, tumpukan teknologi, dan keterangan fitur: `src/data/proyek.ts`.
 2. Figur: satu file di `figur/`, didaftarkan di `FIGUR` pada `scripts/buat-figur.mjs` (lihat bagian Figur).
 3. Posisi: `src/halaman/tata-letak.ts` untuk potret dan lanskap.
-4. Jalankan `pnpm test`. Test tata letak gagal kalau ada sketsa yang keluar halaman atau menindih logo, aplikasi lain, kontak, atau tim. Test yang sama juga gagal kalau kepakan logo menimpa kolom tanggal atau saklar tema, atau kalau sudut yang terlipat menutupi keduanya.
+4. Jalankan `pnpm test`. Test tata letak gagal kalau ada sketsa yang keluar halaman atau menindih logo, aplikasi lain, kontak, atau tim. Test yang sama juga gagal kalau kepakan logo menimpa kolom tanggal atau lampu, kalau lampu dan talinya (sampai ditarik penuh) menimpa sketsa, atau kalau sudut yang terlipat menutupi kolom tanggal dan lampu.
 5. Kalau id aplikasi baru, ubah juga enum `id` di `docs/api/openapi.yaml` dan mock-nya (bilang Bintang di PR).
 
 ### Skrip
@@ -126,7 +135,7 @@ Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build
 
 Kalau perlu memakai Vercel CLI, jalankan `vercel link` di folder sementara, karena perintah itu menulis `.env.local` berisi token. Kalau `/api/proyek` gagal, lembar detail menyembunyikan statistik; kalau `/api/kontak` gagal, form kontak menawarkan email.
 
-Lighthouse mobile 30 Oktober 2026 (Lighthouse 13.6, build produksi lokal, CPU diperlambat 9x supaya setara mesin PageSpeed Insights): sebelum PR `feat/lighthouse-axe` Performa 88–97 (TBT 200–450 ms, CLS 0,044), sesudahnya Performa 99–100 (TBT 60–110 ms, CLS 0). Aksesibilitas dan Best Practices 100, SEO produksi 100 (di `vite preview` lokal 92 karena `/robots.txt` dijawab `index.html`). Yang dulu menahan Performa: semua sketsa dikompilasi di satu tugas pembuka, hujan Matrix digambar penuh walau belum terlihat, dan ubin butiran. Sekarang `Sketsa` baru dikompilasi saat dibutuhkan dan `Papan` mencicilnya per tugas (`cicil` di `engine/animasi.ts`), hujan hanya digambar di bagian yang terlihat, dan butiran dibuat saat browser senggang. Skrip di `<head>` menghitung tata letak sebelum dicat supaya kaki halaman tidak melompat; kalau skrip itu diubah, hash di CSP ikut diganti (`test/csp.test.ts` memberi hash barunya). Setelah figur masuk (dengan cara ukur yang sama): Performa 99, TBT 100–120 ms, CLS 0, total muatan halaman 365 KiB, termasuk lima gambar figur sekitar 50 KB per gambar. Halaman figur baru dimuat saat lembarnya dibuka.
+Lighthouse mobile 30 Oktober 2026 (Lighthouse 13.6, build produksi lokal, CPU diperlambat 9x supaya setara mesin PageSpeed Insights): sebelum PR `feat/lighthouse-axe` Performa 88–97 (TBT 200–450 ms, CLS 0,044), sesudahnya Performa 99–100 (TBT 60–110 ms, CLS 0). Aksesibilitas dan Best Practices 100, SEO produksi 100 (di `vite preview` lokal 92 karena `/robots.txt` dijawab `index.html`). Yang dulu menahan Performa: semua sketsa dikompilasi di satu tugas pembuka, hujan Matrix digambar penuh walau belum terlihat, dan ubin butiran. Sekarang `Sketsa` baru dikompilasi saat dibutuhkan dan `Papan` mencicilnya per tugas (`cicil` di `engine/animasi.ts`), hujan hanya digambar di bagian yang terlihat, dan butiran dibuat saat browser senggang. Skrip di `<head>` menghitung tata letak sebelum dicat supaya kaki halaman tidak melompat; kalau skrip itu diubah, hash di CSP ikut diganti (`test/csp.test.ts` memberi hash barunya). Setelah figur masuk (dengan cara ukur yang sama): Performa 99, TBT 100–120 ms, CLS 0, total muatan halaman 365 KiB, termasuk lima gambar figur sekitar 50 KB per gambar. Halaman figur baru dimuat saat lembarnya dibuka. Setelah semua benda jadi figur dan ada layar pembuka (31 Oktober 2026, cara ukur sama, lima kali): Performa 98–99, TBT 40–150 ms, LCP 1,6–1,8 detik, CLS 0, total muatan 503 KiB. Tambahannya sekitar 134 KB gambar: lambang tiga pose, lampu dua keadaan, dan mug. Layar pembuka hanya menukar gambar dan memakai animasi CSS, jadi tidak menambah tugas panjang. Satu run pertama sempat dapat Performa 69, tapi tugas panjangnya milik skrip Lighthouse sendiri (`_lighthouse-eval.js`), bukan halaman.
 
 ## Checklist
 
@@ -134,8 +143,10 @@ Lighthouse mobile 30 Oktober 2026 (Lighthouse 13.6, build produksi lokal, CPU di
 
 - [x] Mesin pensil: path SVG, goyangan tangan, arsiran, kuas butiran, tulisan tangan dan judul
 - [x] Kertas, tanggal, noda kopi, tema terang dan gelap tersimpan
-- [x] Logo pensil dari logo brand, kepakan sayap saat diketuk
-- [x] Lima figur Colorfigures: gambar diam di halaman, figur interaktif di lembar detail aplikasi
+- [x] Logo: lambang figur Colorfigures yang mengepak saat diketuk, tulisan WINGMAN CLUTCH dari pensil
+- [x] Figur Colorfigures untuk semua benda: empat aplikasi (interaktif di lembar detail), tim, lambang, lampu, kopi
+- [x] Layar pembuka: lambang mengepak lalu mendarat, sekali per sesi, bisa dilewati
+- [x] Tema lewat tali lampu gantung: tarik, klik, atau Enter
 - [x] Catatan: tentang kami, tim kami, kontak, rumus FE + BE, kopi, petunjuk, kilau
 - [x] Tata letak potret dan lanskap, muat tanpa scroll dari 320 px
 - [x] Lima pensil untuk corat-coret dan penghapus yang menggambar ulang halaman

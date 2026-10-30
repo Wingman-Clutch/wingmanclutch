@@ -1,6 +1,6 @@
 # Identitas Visual
 
-Halaman Wingman Clutch adalah satu halaman buku catatan kotak-kotak. Logo, tulisan, dan catatan dicoret pensil di depan pengunjung, empat aplikasi dan tim muncul sebagai figur berwarna yang diarsir masuk, dan pengunjung boleh ikut mencoret.
+Halaman Wingman Clutch adalah satu halaman buku catatan kotak-kotak. Tulisan dan catatan dicoret pensil di depan pengunjung, semua bendanya (empat aplikasi, tim, lambang, lampu gantung, mug kopi) muncul sebagai figur berwarna yang diarsir masuk, dan pengunjung boleh ikut mencoret. Halaman dibuka dengan layar pembuka: lambang Wingman Clutch mengepakkan sayap di tengah kertas, lalu meluncur ke tempatnya.
 
 ## Logo
 
@@ -8,13 +8,13 @@ Logo brand ada di [`docs/brand/`](brand/): lambang dua orang bersayap yang membe
 
 | Berkas | Pakai untuk |
 | --- | --- |
-| `wingman-clutch-logo.svg` / `.png` | Logo utama bertumpuk, sumber logo pensil di halaman |
+| `wingman-clutch-logo.svg` / `.png` | Logo utama bertumpuk, sumber tulisan logo pensil di halaman |
 | `wingman-clutch-horizontal.svg` | Logo mendatar di latar terang |
 | `wingman-clutch-horizontal-gelap.svg` | Logo mendatar di latar `#101828` |
-| `wingman-clutch-emblem.svg` | Lambang saja, sumber favicon |
+| `wingman-clutch-emblem.svg` | Lambang saja, sumber favicon dan garis tepi figur lambang |
 | `wingman-clutch-ikon.png`, `wingman-clutch-avatar.png` | Ikon aplikasi dan avatar 1024 px |
 
-Di halaman, logo digambar ulang oleh mesin pensil dari `wingman-clutch-logo.svg` (skrip `apps/web/scripts/buat-logo.mjs` menghaluskan tepi hasil tracing). Lambang dan tulisan diarsir grafit dengan bayangan biru yang bergeser sedikit, tagline ditulis tangan.
+Di halaman, lambangnya figur Colorfigures: papan tebal bercat biru dengan garis tepi persis lambang brand, dan sayap atasnya bisa mengepak. WINGMAN dan CLUTCH digambar ulang mesin pensil dari `wingman-clutch-logo.svg` (skrip `apps/web/scripts/buat-logo.mjs` menghaluskan tepi hasil tracing), diarsir grafit dengan bayangan biru yang bergeser sedikit, dan tagline ditulis tangan.
 
 ## Warna
 
@@ -48,8 +48,11 @@ Benda utama di halaman digambar dengan gaya [Colorfigures](https://april-zhu.com
 | Tikoem | HP merah di dudukan, layarnya peta kota | Tambah teman, cari titik tengah, ulangi |
 | Tookthel | Printer struk thermal hijau dan koin patungan | Cetak struk, sobek struk, bagi rata, tembus pandang |
 | Tim kami | Kall dan Bintang saling tos di alas kayu | Tidak ada; hanya gambar di halaman |
+| Lambang | Lambang dua orang bersayap dari papan biru tebal | Ketuk untuk mengepakkan sayapnya; tampil juga di layar pembuka |
+| Lampu | Lampu gantung enamel kuning dengan tali tarik | Tarik talinya, klik, atau tekan Enter untuk mematikan dan menyalakan lampu |
+| Kopi | Mug keramik berisi kopi di atas tatakan kayu | Tidak ada; hanya gambar di samping hitungan kopi |
 
-Di halaman, figur tampil sebagai gambar diam yang muncul mengikuti coretan krayon. Nama di bawahnya tetap ditulis mesin pensil. Warna figur tidak mengikuti tema terang atau gelap, karena bendanya sendiri tidak berubah warna; di Matrix figur ikut hijau lewat filter CSS.
+Di halaman, figur tampil sebagai gambar diam yang muncul mengikuti coretan krayon. Nama di bawahnya tetap ditulis mesin pensil. Warna figur tidak mengikuti tema terang atau gelap, karena bendanya sendiri tidak berubah warna; di Matrix figur ikut hijau lewat filter CSS. Lampu yang jadi saklar temanya: menyala di kertas terang, padam di kertas gelap, dan biji talinya berpendar supaya tetap ketemu saat lampu padam. Lambang punya tiga pose (diam, sayap naik, sayap turun) sebingkai, jadi kepakannya cukup menukar gambar.
 
 ## Huruf
 
@@ -63,7 +66,8 @@ Sumber dan lisensinya di [assets.md](assets.md).
 
 ## Aturan
 
-- Logo, tulisan, dan catatan digambar oleh mesin pensil, bukan berkas gambar. Pengecualian: figur Colorfigures, pensil dan penghapus di baki (SVG dan CSS yang tampak nyata, sengaja kontras dengan sketsa), foto tim, dan kertas tempel kuning.
+- Tulisan dan catatan digambar oleh mesin pensil, bukan berkas gambar. Semua benda adalah figur Colorfigures. Pengecualian lain: pensil dan penghapus di baki (SVG dan CSS yang tampak nyata, sengaja kontras dengan sketsa), tali lampu (SVG, karena harus bisa ditarik), foto tim, dan kertas tempel kuning.
+- Layar pembuka hanya tampil sekali per sesi, berhenti begitu pengunjung mengetuk atau menekan tombol apa pun, dan tidak pernah tampil di `prefers-reduced-motion`.
 - Garis tidak pernah sempurna: setiap goresan bergoyang sedikit, ujungnya kebablasan, dan garis tepi ditarik dua kali.
 - Isi berwarna diarsir, tidak diblok rata. Sudut arsir berbeda-beda per bidang supaya terasa tangan.
 - Teks di halaman ditulis huruf kapital, pendek, dan berbahasa Indonesia santai. Istilah yang memang Inggris (Let's clutch it, Two is enough to win) dibiarkan.

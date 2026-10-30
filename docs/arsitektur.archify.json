@@ -401,7 +401,7 @@
    "url": "https://github.com/Wingman-Clutch/wingmanclutch.git",
    "provider": "github",
    "link_mode": "web",
-   "revision": "c1e2d741e33adb9243f2541f9d187b79e57e1f99"
+   "revision": "fbe8b3f16a013c89c20970a4786291a3702ca472"
   },
   "legend": {
    "entries": {
@@ -516,20 +516,20 @@
    "sources": [
     {
      "path": "apps/web/src/main.ts",
-     "line": 96,
-     "end_line": 112,
+     "line": 102,
+     "end_line": 131,
      "label": "tata letak lalu menggambar"
     },
     {
      "path": "apps/web/index.html",
      "line": 12,
-     "end_line": 56,
+     "end_line": 63,
      "label": "CSP dan pilihan tema"
     },
     {
      "path": "apps/web/src/halaman/papan.ts",
-     "line": 225,
-     "end_line": 244,
+     "line": 207,
+     "end_line": 231,
      "label": "urutan menggambar"
     }
    ]
@@ -562,8 +562,8 @@
     },
     {
      "path": "apps/web/src/engine/sketsa.ts",
-     "line": 210,
-     "end_line": 218,
+     "line": 212,
+     "end_line": 220,
      "label": "gambar bertahap"
     }
    ]
@@ -584,14 +584,14 @@
    "sources": [
     {
      "path": "apps/web/scripts/buat-figur.mjs",
-     "line": 16,
-     "end_line": 22,
+     "line": 20,
+     "end_line": 40,
      "label": "daftar figur dan keadaannya"
     },
     {
      "path": "apps/web/src/engine/sketsa.ts",
-     "line": 220,
-     "end_line": 244,
+     "line": 228,
+     "end_line": 253,
      "label": "gambar diam lewat coretan krayon"
     },
     {
@@ -696,8 +696,8 @@
    "sources": [
     {
      "path": "apps/web/src/data/proyek.ts",
-     "line": 129,
-     "end_line": 129,
+     "line": 138,
+     "end_line": 138,
      "label": "alamat tujuan"
     },
     {
@@ -781,7 +781,7 @@
     {
      "path": "apps/web/src/data/proyek.ts",
      "line": 31,
-     "end_line": 106,
+     "end_line": 112,
      "label": "URL produksi"
     },
     {
