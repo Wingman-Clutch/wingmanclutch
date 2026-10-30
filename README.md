@@ -14,8 +14,10 @@
 Satu halaman buku catatan yang memperlihatkan empat aplikasi Wingman Clutch.<br />
 Semuanya digambar pensil di depan mata, dan pengunjung boleh ikut corat-coret.
 
+### [Buka wingmanclutch.vercel.app](https://wingmanclutch.vercel.app)
+
 [![CI](https://img.shields.io/github/actions/workflow/status/Wingman-Clutch/wingmanclutch/web.yml?branch=main&style=flat-square&label=CI&labelColor=101828)](https://github.com/Wingman-Clutch/wingmanclutch/actions/workflows/web.yml)
-[![Rilis 1](https://img.shields.io/badge/rilis_1-dikerjakan-EFB21A?style=flat-square&labelColor=101828)](docs/prd/PRD-WingmanClutch.md)
+[![Live](https://img.shields.io/badge/halaman-live-EFB21A?style=flat-square&labelColor=101828)](https://wingmanclutch.vercel.app)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=101828)](https://vite.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-tanpa_framework-3178C6?style=flat-square&logo=typescript&logoColor=white&labelColor=101828)](https://www.typescriptlang.org)
 [![Canvas](https://img.shields.io/badge/canvas-mesin_pensil_sendiri-E4589C?style=flat-square&labelColor=101828)](#cara-kerja)
@@ -24,7 +26,7 @@ Semuanya digambar pensil di depan mata, dan pengunjung boleh ikut corat-coret.
 </div>
 
 > [!NOTE]
-> **Rilis 1 sedang dikerjakan.** Halaman sudah jalan lengkap dengan mock API dan belum dideploy. Backend (`/api/kontak` dan `/api/proyek`) dikerjakan Bintang mengikuti [kontrak](docs/api/openapi.yaml). Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
+> **Halamannya sudah live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026**, dan Vercel men-deploy `main` ke produksi. Backend (`/api/kontak` dan `/api/proyek`) sedang dikerjakan Bintang mengikuti [kontrak](docs/api/openapi.yaml); sampai itu jadi, form kontak mengarahkan ke email dan baris statistik disembunyikan. Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/halaman-gelap.webp" />
@@ -136,7 +138,7 @@ Unit test ikut menjaga desain: semua sketsa harus berada di dalam halaman dan ti
 
 | Bagian | Di mana | Catatan |
 | --- | --- | --- |
-| Halaman | Vercel, dari `main` | `pnpm build`, hasil `apps/web/dist` ([`vercel.json`](vercel.json)). Tanpa env |
+| Halaman | Vercel (`haikalfaruqs-projects`), dari `main` | [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app). `pnpm build`, hasil `apps/web/dist` ([`vercel.json`](vercel.json)). Tanpa env |
 | Functions | Vercel, folder `api/` | Env `RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN` ([contoh](.env.example)) |
 | Diagram arsitektur | GitHub Pages dari `main` `/docs` | [wingman-clutch.github.io/wingmanclutch/arsitektur.html](https://wingman-clutch.github.io/wingmanclutch/arsitektur.html) |
 

@@ -5,7 +5,7 @@
 | Pemilik produk | Kall dan Bintang |
 | Frontend | Kall ([@HaikalFaruq](https://github.com/HaikalFaruq)) |
 | Backend | Bintang ([@bintangfabian](https://github.com/bintangfabian)) |
-| Status | Rilis 1 dalam pengerjaan. Halaman frontend sudah jalan dengan mock API; backend belum dimulai |
+| Status | Halaman live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026, tanpa backend. Backend belum dimulai |
 | Referensi | [kracked.studio](https://kracked.studio), catatan di [docs/referensi/kracked-studio.md](../referensi/kracked-studio.md) |
 | Terakhir diubah | 30 Oktober 2026 |
 
@@ -161,7 +161,7 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 
 | Keputusan | Pilihan | Usulan | Siapa |
 | --- | --- | --- | --- |
-| Domain | `wingmanclutch.vercel.app` atau beli domain | Mulai di `wingmanclutch.vercel.app` | Berdua |
+| Domain | `wingmanclutch.vercel.app` atau beli domain | Sudah jalan di `wingmanclutch.vercel.app`; beli domain nanti kalau perlu | Berdua |
 | Penyimpanan batas kirim | Upstash Redis atau di memori per instance | Upstash (di memori bisa ditembus karena instance berganti-ganti) | Bintang |
 | Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Daftarkan akun Resend dengan wingmanclutch@gmail.com, pakai `onboarding@resend.dev` | Bintang |
 | Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Kode MIT, tapi logo, foto tim, dan isi tetap milik Wingman Clutch | Berdua |
