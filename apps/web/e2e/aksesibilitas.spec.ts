@@ -72,6 +72,8 @@ test('tentang, tim, dan kontak tanpa pelanggaran axe', async ({ page }) => {
 
   await page.getByRole('button', { name: 'kenalan sama tim →' }).click()
   await expect(page.getByRole('dialog', { name: 'Tim kami' })).toBeVisible()
+  // tunggu kartu nama tergantung supaya tombol baliknya ikut diperiksa
+  await expect(page.getByRole('button', { name: /^Kartu nama Kall/ })).toBeVisible()
   expect(await periksa(page, '#dlg-tim'), 'tim').toEqual([])
 
   await page.getByRole('button', { name: 'ajak kerja bareng →' }).click()
