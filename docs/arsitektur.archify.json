@@ -401,7 +401,7 @@
    "url": "https://github.com/Wingman-Clutch/wingmanclutch.git",
    "provider": "github",
    "link_mode": "web",
-   "revision": "505b0904a593ff70bf021cf80c47b5e6552bb1ea"
+   "revision": "c1e2d741e33adb9243f2541f9d187b79e57e1f99"
   },
   "legend": {
    "entries": {
@@ -430,9 +430,10 @@
      "pengunjung",
      "cdn",
      "halaman",
-     "mesin"
+     "mesin",
+     "figur"
     ],
-    "note": "Vercel mengirim HTML, JS, dan font; semua sketsa lalu digambar pensil di canvas, tanpa gambar statis."
+    "note": "Vercel mengirim HTML, JS, dan gambar figur; tulisan digambar pensil, figur diarsir masuk."
    },
    {
     "id": "kontak",
@@ -468,7 +469,7 @@
    "label": "Pengunjung",
    "sublabel": "HP atau desktop",
    "pos": [
-    40,
+    20,
     200
    ],
    "size": [
@@ -493,7 +494,7 @@
     {
      "path": "vercel.json",
      "line": 1,
-     "end_line": 21,
+     "end_line": 28,
      "label": "build, output, header keamanan"
     }
    ]
@@ -515,20 +516,20 @@
    "sources": [
     {
      "path": "apps/web/src/main.ts",
-     "line": 93,
-     "end_line": 106,
+     "line": 96,
+     "end_line": 112,
      "label": "tata letak lalu menggambar"
     },
     {
      "path": "apps/web/index.html",
      "line": 12,
-     "end_line": 41,
+     "end_line": 56,
      "label": "CSP dan pilihan tema"
     },
     {
      "path": "apps/web/src/halaman/papan.ts",
-     "line": 215,
-     "end_line": 237,
+     "line": 225,
+     "end_line": 244,
      "label": "urutan menggambar"
     }
    ]
@@ -539,11 +540,11 @@
    "label": "Mesin pensil",
    "sublabel": "goresan, arsiran, kuas butiran",
    "pos": [
-    300,
+    205,
     360
    ],
    "size": [
-    200,
+    180,
     64
    ],
    "sources": [
@@ -555,15 +556,49 @@
     },
     {
      "path": "apps/web/src/engine/kuas.ts",
-     "line": 123,
-     "end_line": 156,
+     "line": 125,
+     "end_line": 158,
      "label": "kuas bertekstur"
     },
     {
      "path": "apps/web/src/engine/sketsa.ts",
-     "line": 153,
-     "end_line": 173,
+     "line": 210,
+     "end_line": 218,
      "label": "gambar bertahap"
+    }
+   ]
+  },
+  {
+   "id": "figur",
+   "type": "frontend",
+   "label": "Figur Colorfigures",
+   "sublabel": "gambar diam dan iframe",
+   "pos": [
+    400,
+    360
+   ],
+   "size": [
+    170,
+    64
+   ],
+   "sources": [
+    {
+     "path": "apps/web/scripts/buat-figur.mjs",
+     "line": 16,
+     "end_line": 22,
+     "label": "daftar figur dan keadaannya"
+    },
+    {
+     "path": "apps/web/src/engine/sketsa.ts",
+     "line": 220,
+     "end_line": 244,
+     "label": "gambar diam lewat coretan krayon"
+    },
+    {
+     "path": "apps/web/src/halaman/dialog.ts",
+     "line": 169,
+     "end_line": 195,
+     "label": "iframe di lembar detail"
     }
    ]
   },
@@ -571,7 +606,7 @@
    "id": "fnKontak",
    "type": "backend",
    "label": "/api/kontak",
-   "sublabel": "Function, belum dibuat",
+   "sublabel": "Function, batas dan kirim",
    "pos": [
     660,
     200
@@ -582,21 +617,21 @@
    ],
    "sources": [
     {
-     "path": "docs/api/openapi.yaml",
-     "line": 26,
-     "end_line": 106,
-     "label": "kontrak POST /api/kontak"
+     "path": "api/_lib/kontak.ts",
+     "line": 34,
+     "end_line": 96,
+     "label": "logika /api/kontak"
     },
     {
-     "path": "docs/backend.md",
-     "line": 45,
-     "end_line": 62,
-     "label": "rancangan handler"
+     "path": "docs/api/openapi.yaml",
+     "line": 28,
+     "end_line": 108,
+     "label": "kontrak POST /api/kontak"
     },
     {
      "path": "apps/web/src/api/klien.ts",
      "line": 14,
-     "end_line": 35,
+     "end_line": 38,
      "label": "dipanggil halaman"
     }
    ]
@@ -616,9 +651,9 @@
    ],
    "sources": [
     {
-     "path": "docs/backend.md",
-     "line": 54,
-     "end_line": 54,
+     "path": "api/_lib/batas.ts",
+     "line": 1,
+     "end_line": 81,
      "label": "5 pesan per jam per jaringan"
     }
    ]
@@ -638,9 +673,9 @@
    ],
    "sources": [
     {
-     "path": "docs/backend.md",
-     "line": 55,
-     "end_line": 59,
+     "path": "api/_lib/email.ts",
+     "line": 1,
+     "end_line": 41,
      "label": "from, to, reply_to"
     }
    ]
@@ -661,8 +696,8 @@
    "sources": [
     {
      "path": "apps/web/src/data/proyek.ts",
-     "line": 143,
-     "end_line": 143,
+     "line": 129,
+     "end_line": 129,
      "label": "alamat tujuan"
     },
     {
@@ -677,7 +712,7 @@
    "id": "fnProyek",
    "type": "backend",
    "label": "/api/proyek",
-   "sublabel": "Function, belum dibuat",
+   "sublabel": "Function, cache CDN",
    "pos": [
     660,
     360
@@ -688,21 +723,21 @@
    ],
    "sources": [
     {
+     "path": "api/_lib/proyek.ts",
+     "line": 14,
+     "end_line": 44,
+     "label": "logika /api/proyek"
+    },
+    {
      "path": "docs/api/openapi.yaml",
-     "line": 107,
-     "end_line": 134,
+     "line": 109,
+     "end_line": 145,
      "label": "kontrak GET /api/proyek"
     },
     {
-     "path": "docs/backend.md",
-     "line": 64,
-     "end_line": 69,
-     "label": "rancangan handler"
-    },
-    {
      "path": "apps/web/src/halaman/dialog.ts",
-     "line": 133,
-     "end_line": 141,
+     "line": 148,
+     "end_line": 163,
      "label": "baris statistik"
     }
    ]
@@ -722,9 +757,9 @@
    ],
    "sources": [
     {
-     "path": "docs/backend.md",
-     "line": 66,
-     "end_line": 66,
+     "path": "api/_lib/github.ts",
+     "line": 1,
+     "end_line": 87,
      "label": "repos/{owner}/{repo}"
     }
    ]
@@ -745,14 +780,14 @@
    "sources": [
     {
      "path": "apps/web/src/data/proyek.ts",
-     "line": 37,
-     "end_line": 118,
+     "line": 31,
+     "end_line": 106,
      "label": "URL produksi"
     },
     {
      "path": "docs/backend.md",
-     "line": 67,
-     "end_line": 67,
+     "line": 72,
+     "end_line": 72,
      "label": "cek HEAD 5 detik"
     }
    ]
@@ -764,12 +799,13 @@
    "label": "Browser pengunjung",
    "wraps": [
     "halaman",
-    "mesin"
+    "mesin",
+    "figur"
    ]
   },
   {
    "kind": "region",
-   "label": "api/ di Vercel (rencana)",
+   "label": "api/ di Vercel",
    "wraps": [
     "fnKontak",
     "fnProyek"
@@ -795,6 +831,12 @@
    "from": "halaman",
    "to": "mesin",
    "label": "gambar sketsa"
+  },
+  {
+   "id": "tampilFigur",
+   "from": "halaman",
+   "to": "figur",
+   "label": "tampilkan figur"
   },
   {
    "id": "kirim",

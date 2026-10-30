@@ -62,7 +62,7 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 <a href="https://wingman-clutch.github.io/wingmanclutch/arsitektur.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/arsitektur-gelap.webp" />
-  <img src="docs/gambar/arsitektur-terang.webp" alt="Arsitektur web porto Wingman Clutch: pengunjung membuka halaman dari Vercel CDN, halaman menggambar sketsa dengan mesin pensil, memanggil /api/kontak yang membatasi kiriman lewat Upstash dan meneruskan email lewat Resend, serta /api/proyek yang membaca GitHub dan mengecek keempat aplikasi" />
+  <img src="docs/gambar/arsitektur-terang.webp" alt="Arsitektur web porto Wingman Clutch: pengunjung membuka halaman dari Vercel CDN, halaman menggambar sketsa dengan mesin pensil dan menampilkan figur Colorfigures, memanggil /api/kontak yang membatasi kiriman lewat Upstash dan meneruskan email lewat Resend, serta /api/proyek yang membaca GitHub dan mengecek keempat aplikasi" />
 </picture>
 </a>
 
@@ -114,7 +114,7 @@ wingmanclutch/
 │   ├── mock/              # mock /api sesuai kontrak (dev dan E2E saja)
 │   ├── test/, e2e/        # Vitest dan Playwright
 │   └── scripts/           # pembuat data font, logo pensil, figur, gambar README dan OG
-├── api/                   # Vercel Functions kontak dan proyek (Bintang, belum dibuat)
+├── api/                   # Vercel Functions kontak dan proyek (Bintang)
 ├── docs/                  # PRD, panduan, desain, aset, kontrak API, diagram, gambar README
 ├── scripts/               # cek atribusi AI dan rahasia beserta ujinya
 └── AGENTS.md              # aturan kerja untuk manusia dan AI agent
