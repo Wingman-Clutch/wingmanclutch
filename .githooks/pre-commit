@@ -1,0 +1,5 @@
+#!/bin/sh
+# Tolak file .env dan pola secret sebelum masuk commit (AGENTS.md bagian 9).
+# Aktif otomatis setelah pnpm install, atau: git config core.hooksPath .githooks
+
+exec "$(git rev-parse --show-toplevel)/scripts/check-secrets.sh" --staged

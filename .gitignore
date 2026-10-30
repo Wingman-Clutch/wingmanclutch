@@ -1,0 +1,29 @@
+# OS dan editor
+.DS_Store
+Thumbs.db
+.idea/
+
+# Node dan Vite
+node_modules/
+dist/
+*.log
+*.tsbuildinfo
+
+# Env dan secret
+.env
+.env.*
+!.env.example
+
+# Deploy
+.vercel/
+
+# Setting pribadi agent
+.claude/settings.local.json
+
+# Hasil tes Playwright
+test-results/
+playwright-report/
+blob-report/
+
+# Folder kerja Archify: docs/arsitektur.archify.json dirender ke sini, lalu disalin ke docs/
+.archify/
