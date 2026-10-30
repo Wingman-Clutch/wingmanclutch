@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kopi hari ini</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Mug kopi di catatan "kopi hari ini": mug keramik putih berisi kopi hitam di atas tatakan kayu bundar. Hanya gambar
+   diam di halaman; uapnya digambar mesin pensil.
+   x, y = mendatar, z = tinggi, pusat tatakan di (0, 0). Satuan kira-kira milimeter: mug 80 x 95, tatakan 110.
+   Bagian:
+   TATAKAN  cakram kayu
+   MUG      dinding keramik (sisi jauh di dalam, kopi, lalu sisi dekat), bibir mug
+   KOPI     permukaan kopi dengan cincin crema
+   GAGANG   lengkung keramik di sisi kanan layar */
+const KP_TATAKAN = [55, 6], KP_R = 40, KP_TINGGI = 95, KP_KOPI = 82;
+const KP_KOPI_WARNA = '#4a2c18', KP_CREMA = '#9a6a3e';
+const KP_GAGANG = norm([1, -1, 0]);                                  // arah ke kanan layar pada sudut bawaan
+const kpRing = (r, z, n = 36) => on(PZ(z), ellUV(0, 0, r, r, n));
+
+function kpGagang(){
+  // setengah lingkaran di bidang tegak yang memuat arah gagang, ditarik sebagai satu tabung: tinta, isi, lalu kilap.
+  // Lebar garis dibagi INK_K supaya tetap setebal gagang setelah engine menyesuaikan tebal tinta.
+  const pts = Array.from({ length: 17 }, (_, i) => { const t = -Math.PI / 2 + Math.PI * i / 16, d = KP_R - 3 + Math.cos(t) * 24;
+    return [KP_GAGANG[0] * d, KP_GAGANG[1] * d, KP_TATAKAN[1] + 50 + Math.sin(-t) * 24]; });
+  const d = pd(pts, false), garis = (w, c, extra = '') => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${f(w / INK_K)}" stroke-linecap="round" stroke-linejoin="round" ${extra}/>`;
+  return garis(14, INK) + garis(10, CERAMIC.m) + garis(3.6, CERAMIC.l, 'transform="translate(-1.4 -1.8)"');
+}
+
+function scene(){
+  const z0 = KP_TATAKAN[1];
+  let s = cyl(0, 0, 0, z0, KP_TATAKAN[0], WOOD, toneI, 1.8, 40);
+  const atas = on(PZ(z0), ellUV(0, 0, KP_TATAKAN[0], KP_TATAKAN[0], 40));
+  s += castShadow([...kpRing(KP_R, z0, 20), ...kpRing(KP_R, z0 + KP_TINGGI, 20)], z0, atas);
+  const bawah = kpRing(KP_R, z0), bibir = kpRing(KP_R, z0 + KP_TINGGI);
+  const kopi = kpRing(KP_R - 4, z0 + KP_KOPI), crema = kpRing(KP_R - 9, z0 + KP_KOPI, 30);
+  const isi = fill(pd(kopi), KP_KOPI_WARNA) + `<path d="${pd(crema)}" fill="none" stroke="${KP_CREMA}" stroke-width="3" opacity=".75"/>`;
+  s += openShell(bawah, bibir, n => toneI(n, CERAMIC), isi);
+  s += hullInk([...bawah, ...bibir], 2.4) + ink(pd(bibir), 1.6);
+  return s + kpGagang();
+}
+
+mountFigure({
+  fig:'08', turn:'full', credit:false, title:'Kopi hari ini',
+  size:[110, 110, KP_TINGGI + 10], center:[0, 0], palette:'mustard',
+  state:{}, scene,
+});
+</script></body></html>

@@ -3,20 +3,57 @@ import { describe, expect, it } from 'vitest'
 import UKURAN from '../src/data/figur.json'
 import { PROYEK } from '../src/data/proyek'
 import { jalurKrayon } from '../src/engine/sketsa'
-import { KOTAK_APLIKASI, KOTAK_TIM, letakFigur } from '../src/sketsa/figur'
+import { KOTAK_APLIKASI, KOTAK_KOPI, KOTAK_TIM, letakFigur } from '../src/sketsa/figur'
 
 const berkas = (nama: string) => new URL(`../public/figur/${nama}`, import.meta.url)
 const IDS = PROYEK.map((p) => p.id)
 
+/** gambar diam setiap figur; figur berpose punya satu gambar per pose */
+const GAMBAR: Record<string, string[]> = {
+  ...Object.fromEntries([...IDS, 'tim', 'kopi'].map((id) => [id, [`${id}.webp`]])),
+  logo: ['logo.webp', 'logo-naik.webp', 'logo-turun.webp'],
+  lampu: ['lampu-nyala.webp', 'lampu-mati.webp'],
+}
+
+/** lebar dan tinggi kanvas WebP dari kepala berkasnya (VP8X, VP8L, atau VP8) */
+function ukuranWebp(nama: string) {
+  const b = readFileSync(berkas(nama))
+  const jenis = b.toString('ascii', 12, 16)
+  if (jenis === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) }
+  if (jenis === 'VP8L') {
+    const n = b.readUInt32LE(21)
+    return { w: 1 + (n & 0x3fff), h: 1 + ((n >> 14) & 0x3fff) }
+  }
+  return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff }
+}
+
 describe('hasil scripts/buat-figur.mjs', () => {
-  it('ada gambar diam untuk setiap aplikasi dan tim, tidak lebih dari 80 KB', () => {
-    expect(Object.keys(UKURAN).sort()).toEqual([...IDS, 'tim'].sort())
-    for (const id of Object.keys(UKURAN))
-      expect.soft(statSync(berkas(`${id}.webp`)).size, id).toBeLessThan(80 * 1024)
+  it('ada gambar diam untuk setiap figur, tidak lebih dari 80 KB', () => {
+    expect(Object.keys(UKURAN).sort()).toEqual(Object.keys(GAMBAR).sort())
+    for (const nama of Object.values(GAMBAR).flat())
+      expect.soft(statSync(berkas(nama)).size, nama).toBeLessThan(80 * 1024)
   })
 
-  it('tim hanya gambar diam; lembarnya tetap kartu nama berlanyard', () => {
-    expect(existsSync(berkas('tim.html'))).toBe(false)
+  it('semua pose sebuah figur sebingkai, jadi bisa ditukar tanpa bergeser', () => {
+    for (const [id, daftar] of Object.entries(GAMBAR)) {
+      const { w, h } = UKURAN[id as keyof typeof UKURAN]
+      for (const nama of daftar) expect.soft(ukuranWebp(nama), nama).toEqual({ w, h })
+    }
+  })
+
+  it('titik sambungan lampu ada di dalam gambarnya', () => {
+    for (const [x, y] of Object.values(UKURAN.lampu.titik)) {
+      expect(x).toBeGreaterThan(0)
+      expect(x).toBeLessThan(1)
+      expect(y).toBeGreaterThan(0)
+      expect(y).toBeLessThan(1)
+    }
+  })
+
+  it('figur yang hanya gambar diam tidak punya halaman figur', () => {
+    // lembar Tim kami tetap kartu nama berlanyard; logo, lampu, dan kopi tidak punya lembar
+    for (const id of ['tim', 'logo', 'lampu', 'kopi'])
+      expect(existsSync(berkas(`${id}.html`)), id).toBe(false)
   })
 
   for (const id of IDS) {
@@ -44,6 +81,7 @@ describe('letak figur', () => {
     ['gorute', KOTAK_APLIKASI],
     ['postpocket', KOTAK_APLIKASI],
     ['tim', KOTAK_TIM],
+    ['kopi', KOTAK_KOPI],
   ] as const) {
     it(`${id} muat di kotaknya, menempel ke bawah, dan tidak gepeng`, () => {
       const f = letakFigur(id, kotak)

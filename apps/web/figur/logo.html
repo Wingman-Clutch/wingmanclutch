@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lambang Wingman Clutch</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Lambang Wingman Clutch sebagai benda: dua orang bersayap yang membentuk huruf W, dipotong dari papan tebal dan dicat
+   biru. Dipakai sebagai gambar diam di halaman dan di layar pembuka, dalam tiga pose (diam, sayap naik, sayap turun);
+   tidak punya lembar detail.
+   Garis tepi diambil dari docs/brand/wingman-clutch-emblem.svg (730 x 430, u ke kanan, v ke bawah), lalu y = 730 - u
+   (kiri layar = +y) dan z = 430 - v. Tebal papan sepanjang x, muka depan di x = LG_X1.
+   Bagian:
+   BADAN KIRI   separuh kiri huruf W: sayap atas, bulu bawah, dan garis miring sampai ke lembah kiri
+   BADAN KANAN  garis tengah dan separuh kanan huruf W: sayap atas dan bulu bawah
+   KEPALA       dua cakram di atas bahu
+   Sayap mengepak dengan memutar titik-titik ujung sayap atas di sekitar bahu; titik pangkalnya tetap, jadi sayap
+   melentur dan tidak pernah lepas dari badan. */
+const LG_X0 = 12, LG_X1 = 60;
+const LG_DEPAN = { l:'#6f8fd6', m:'#5a7cc6', d:'#3d5ca6' };           // muka depan
+const LG_SISI = { l:'#4a6bb8', m:'#34508f', d:'#1f2f5c' };            // dinding samping, selalu lebih gelap
+const lgP = ([u, v]) => [730 - u, 430 - v];
+/* garis tepi dan nomor titik sayap atas (yang ikut berputar), urut seperti di berkas brand */
+const LG_KIRI = [[24,98],[21,108],[79,184],[197,217],[212,227],[222,245],[109,219],[104,223],[231,404],[253,416],[282,407],[344,319],[353,314],[254,162],[228,145]].map(lgP);
+const LG_SAYAP_KIRI = [0, 1, 2, 3, 4, 14];
+const LG_KANAN = [[712,101],[700,97],[505,145],[477,164],[442,221],[499,309],[495,319],[485,315],[383,176],[367,171],[344,176],[312,219],[439,404],[459,417],[482,417],[503,402],[629,221],[514,245],[524,227],[539,217],[651,186],[712,108]].map(lgP);
+const LG_SAYAP_KANAN = [0, 1, 2, 18, 19, 20, 21];
+const LG_BAHU = [lgP([238, 204]), lgP([496, 204])];               // tengah garis pangkal sayap kiri dan kanan
+const LG_KEPALA = [[270.5, 74, 54], [462.5, 74, 54.5]];
+
+/* lempeng: poligon (y, z) di bidang lambang, ditebalkan sepanjang x dari x0 (belakang) ke x1 (depan).
+   Garis belakang dulu (yang tersisa hanya bagian siluet), dinding samping urut kedalaman, lalu muka depan. */
+function lgLempeng(poly, x0, x1){
+  const depan = poly.map(([y, z]) => [x1, y, z]), belakang = poly.map(([y, z]) => [x0, y, z]);
+  let luas = 0;
+  for (let i = 0; i < poly.length; i++){ const a = poly[i], b = poly[(i + 1) % poly.length]; luas += a[0]*b[1] - b[0]*a[1]; }
+  const arah = luas > 0 ? 1 : -1, dinding = [];
+  for (let i = 0; i < poly.length; i++){
+    const a = poly[i], b = poly[(i + 1) % poly.length], n = norm([0, (b[1] - a[1]) * arah, -(b[0] - a[0]) * arah]);
+    if (!vis(n)) continue;
+    const q = [[x0, a[0], a[1]], [x1, a[0], a[1]], [x1, b[0], b[1]], [x0, b[0], b[1]]];
+    dinding.push({ at: avg(q), svg: face(pd(q), tone(n, LG_SISI)) + ink(pd([q[0], q[3]], false), .9) });
+  }
+  let s = ink(pd(belakang), 2.6);
+  if (vis([-1, 0, 0])) s += fill(pd(belakang), tone([-1, 0, 0], LG_SISI));
+  s += dinding.sort((p, q) => depthOf(p.at) - depthOf(q.at)).map(p => p.svg).join('');
+  if (vis([1, 0, 0])) s += fill(pd(depan), tone([1, 0, 0], LG_DEPAN)) + ink(pd(depan), 2.4);
+  return s;
+}
+
+/* putar titik nomor `idx` mengelilingi c sebesar a derajat (positif = berlawanan jarum jam di bidang y, z) */
+function lgKepak(poly, idx, c, a){ const r = a * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+  return poly.map(([y, z], i) => idx.includes(i) ? [c[0] + (y - c[0]) * cs - (z - c[1]) * sn, c[1] + (y - c[0]) * sn + (z - c[1]) * cs] : [y, z]); }
+
+const lgKotak = (poly, x0, x1) => [[x0, Math.min(...poly.map(p => p[0])), Math.min(...poly.map(p => p[1]))],
+  [x1, Math.max(...poly.map(p => p[0])), Math.max(...poly.map(p => p[1]))]];
+
+function scene(st){
+  // sayap kiri berputar berlawanan jarum jam supaya ujungnya naik, sayap kanan sebaliknya
+  const kiri = lgKepak(LG_KIRI, LG_SAYAP_KIRI, LG_BAHU[0], st.kepak), kanan = lgKepak(LG_KANAN, LG_SAYAP_KANAN, LG_BAHU[1], -st.kepak);
+  const parts = [kiri, kanan].map(p => ({ box: lgKotak(p, LG_X0, LG_X1), svg: lgLempeng(p, LG_X0, LG_X1) }));
+  for (const [u, v, r] of LG_KEPALA){ const [y, z] = lgP([u, v]);
+    parts.push({ box: [[LG_X0, y - r, z - r], [LG_X1, y + r, z + r]], svg: lgKepala(y, z, r) }); }
+  return byDepth(parts);
+}
+
+/* kepala: cakram setebal papan, muka depan sewarna badan */
+function lgKepala(y, z, r){
+  const A = on(PX(LG_X0), ellUV(y, z, r, r, 40)), B = on(PX(LG_X1), ellUV(y, z, r, r, 40));
+  return loft(A, B, n => tone(n, LG_SISI)) + (vis([1, 0, 0]) ? fill(pd(B), tone([1, 0, 0], LG_DEPAN)) + ink(pd(B), 2.2) : '') + hullInk([...A, ...B], 2.6);
+}
+
+mountFigure({
+  fig:'06', turn:'full', credit:false, title:'Lambang Wingman Clutch',
+  size:[LG_X1, 730, 470], center:[LG_X1 / 2, 365], palette:'cobalt',
+  state:{ kepak: 0 }, scene,
+  params(st, q){ if (q.has('kepak')) st.kepak = +q.get('kepak'); },
+});
+</script></body></html>
