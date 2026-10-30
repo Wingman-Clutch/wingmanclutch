@@ -136,7 +136,9 @@ paths:
                 type: string
                 const: GET
         '503':
-          description: GitHub tidak bisa dihubungi dan belum ada cache. Frontend menyembunyikan baris statistik.
+          description: |
+            GitHub gagal untuk satu repo atau lebih yang belum punya nilai terakhir di server,
+            jadi statistiknya tidak lengkap. Tidak di-cache. Frontend menyembunyikan baris statistik.
           content:
             application/json:
               schema:

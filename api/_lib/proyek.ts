@@ -7,7 +7,7 @@ import { galat, json } from './jawab.js'
 export const CACHE_LENGKAP = 'public, s-maxage=3600, stale-while-revalidate=86400'
 export const CACHE_SEBAGIAN = 'public, s-maxage=300, stale-while-revalidate=3600'
 
-/** nilai terakhir yang berhasil di instance ini, dipakai kalau satu repo gagal */
+/** nilai terakhir yang berhasil di instance ini, dipakai kalau sebuah repo gagal */
 const terakhir = new Map<string, Repo>()
 export const lupakanTerakhir = () => terakhir.clear()
 
@@ -20,22 +20,24 @@ export async function tanganiProyek(req: Request, sekarang = () => new Date()): 
     Promise.all(APLIKASI.map((a) => cekStatus(a.url))),
   ])
 
-  if (repo.every((r) => r === null))
+  // simpan yang berhasil dulu, supaya repo lain yang gagal di permintaan ini tetap terbantu
+  APLIKASI.forEach((a, i) => {
+    const r = repo[i]
+    if (r) terakhir.set(a.id, r)
+  })
+  const pakai = APLIKASI.map((a, i) => repo[i] ?? terakhir.get(a.id))
+
+  // lebih baik baris statistik disembunyikan daripada menulis "★ 0 · baru saja"
+  if (pakai.some((r) => !r))
     return galat(
       503,
       { galat: 'LAYANAN_GAGAL', pesan: 'Statistik GitHub sedang tidak bisa diambil.' },
       { 'Cache-Control': 'no-store' },
     )
 
-  const diperbarui = sekarang().toISOString()
   const isi: DaftarStatistik = {
-    diperbarui,
-    proyek: APLIKASI.map((a, i) => {
-      const r = repo[i]
-      if (r) terakhir.set(a.id, r)
-      const pakai = r ?? terakhir.get(a.id) ?? { bintang: 0, terakhirDiperbarui: diperbarui }
-      return { id: a.id, ...pakai, status: status[i]! }
-    }),
+    diperbarui: sekarang().toISOString(),
+    proyek: APLIKASI.map((a, i) => ({ id: a.id, ...pakai[i]!, status: status[i]! })),
   }
   const lengkap = repo.every((r) => r !== null)
   return json(200, isi, { 'Cache-Control': lengkap ? CACHE_LENGKAP : CACHE_SEBAGIAN })

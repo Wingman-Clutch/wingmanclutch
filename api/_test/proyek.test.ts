@@ -112,7 +112,7 @@ describe('GET /api/proyek', () => {
     expect(head[1]).toMatchObject({ method: 'HEAD', redirect: 'manual' })
   })
 
-  it('GitHub gagal sebagian: data yang ada tetap dikirim dengan cache lebih pendek', async () => {
+  it('503 tanpa cache kalau satu repo gagal dan belum punya nilai terakhir', async () => {
     tiru({
       github: (url) =>
         url.endsWith('/tikoem')
@@ -120,20 +120,14 @@ describe('GET /api/proyek', () => {
           : Response.json({ stargazers_count: 4, pushed_at: '2026-10-20T00:00:00Z' }),
     })
     const r = await panggil()
-    expect(r.status).toBe(200)
-    expect(r.headers.get('cache-control')).toBe(CACHE_SEBAGIAN)
-    const isi = await baca(r)
-    expect(cocok('DaftarStatistik', isi)).toBe(true)
-    expect(isi.proyek.find((p) => p.id === 'tikoem')).toEqual({
-      id: 'tikoem',
-      bintang: 0,
-      terakhirDiperbarui: SEKARANG.toISOString(),
-      status: 'online',
-    })
-    expect(isi.proyek.find((p) => p.id === 'gorute')!.bintang).toBe(4)
+    expect(r.status).toBe(503)
+    expect(r.headers.get('cache-control')).toBe('no-store')
+    const isi = await r.json()
+    expect(cocok('Galat', isi)).toBe(true)
+    expect(isi).toMatchObject({ galat: 'LAYANAN_GAGAL' })
   })
 
-  it('GitHub gagal sebagian: pakai nilai terakhir yang berhasil di instance ini', async () => {
+  it('repo yang gagal memakai nilai terakhir di instance ini, dengan cache lebih pendek', async () => {
     tiru()
     await panggil()
     tiru({
@@ -142,11 +136,36 @@ describe('GET /api/proyek', () => {
           ? Promise.reject(new Error('putus'))
           : Response.json({ stargazers_count: 9, pushed_at: '2026-10-29T00:00:00Z' }),
     })
-    const isi = await baca(await panggil())
-    expect(isi.proyek.find((p) => p.id === 'tikoem')).toMatchObject({
+    const r = await panggil()
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe(CACHE_SEBAGIAN)
+    const isi = await baca(r)
+    expect(cocok('DaftarStatistik', isi)).toBe(true)
+    expect(isi.proyek.find((p) => p.id === 'tikoem')).toEqual({
+      id: 'tikoem',
       bintang: 'tikoem'.length,
       terakhirDiperbarui: '2026-10-26T15:56:00.000Z',
+      status: 'online',
     })
+    expect(isi.proyek.find((p) => p.id === 'gorute')!.bintang).toBe(9)
+  })
+
+  it('nilai yang berhasil tetap disimpan walau jawabannya 503', async () => {
+    tiru({
+      github: (url) =>
+        url.endsWith('/tikoem')
+          ? new Response('{}', { status: 500 })
+          : Response.json({ stargazers_count: 7, pushed_at: '2026-10-28T00:00:00Z' }),
+    })
+    expect((await panggil()).status).toBe(503)
+    tiru({
+      github: (url) =>
+        url.endsWith('/tikoem')
+          ? Response.json({ stargazers_count: 1, pushed_at: '2026-10-28T00:00:00Z' })
+          : new Response('{}', { status: 500 }),
+    })
+    const isi = await baca(await panggil())
+    expect(isi.proyek.map((p) => p.bintang)).toEqual([7, 1, 7, 7])
   })
 
   it('503 tanpa cache kalau GitHub gagal untuk semua repo', async () => {
