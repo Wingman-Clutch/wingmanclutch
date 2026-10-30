@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikoem</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Tikoem: HP di dudukan meja, layarnya peta kota. Cara kerja nyatanya: setiap teman menaruh lokasinya, aplikasi
+   mencari titik kumpul yang waktu tempuhnya paling adil untuk semua, lalu menunjukkan rute dari tiap teman ke sana.
+   x = tebal (layar menghadap x besar), y = lebar, z = tinggi.
+   Bagian:
+   MEJA     alas . dudukan HP (pelat dasar, bibir depan, sandaran belakang)
+   HP       badan bercasing merah . kaca layar dengan bingkai . tombol samping . kamera belakang
+   LAYAR    kepala aplikasi TIKOEM . peta (jalan, taman, sungai) . pin teman berinisial . garis rute . pin titik kumpul
+            . kartu titik kumpul di bawah */
+const TK_BOARD = [6, 0, 82, 100];
+const TK_X0 = 44, TK_X1 = 49, TK_Y0 = 26, TK_Y1 = 74, TK_Z0 = 6, TK_Z1 = 96, TK_R = 6;
+const TK_PROF = rrUV(TK_Y0, TK_Z0, TK_Y1, TK_Z1, TK_R);
+const TK_RED = { l:'#ef6a4c', m:'#cf5038', d:'#4a2219' }, TK_STAND = { l:'#e8e4da', m:'#cbc5b7', d:'#a59e8e' };
+const TK_SCR = { y0: TK_Y0 + 2.5, y1: TK_Y1 - 2.5, z0: TK_Z0 + 3, z1: TK_Z1 - 3 };
+const TK_FRIENDS = [
+  { n:'A', c:'#2f74d0', at:[.2, .3] },
+  { n:'B', c:'#2f9a52', at:[.8, .38] },
+  { n:'C', c:'#ee7a24', at:[.42, .78] },
+];
+const TK_MEET = [.5, .5];
+
+// titik layar: sx 0 (kiri) .. 1 (kanan), sy 0 (atas) .. 1 (bawah), di bidang muka depan HP
+const tkP = (sx, sy, dx = .15) => [TK_X1 + dx, TK_SCR.y1 - (TK_SCR.y1 - TK_SCR.y0) * sx, TK_SCR.z1 - (TK_SCR.z1 - TK_SCR.z0) * sy];
+const tkPoly = (pts, dx) => pts.map(([a, b]) => tkP(a, b, dx));
+const tkRect = (a, b, c, d, dx) => tkPoly([[a, b], [c, b], [c, d], [a, d]], dx);
+const tkCirc = (cx, cy, r, dx, n = 14) => tkPoly(Array.from({ length: n }, (_, i) => { const t = i / n * Math.PI * 2; return [cx + Math.cos(t) * r, cy + Math.sin(t) * r * .55]; }), dx);
+// pin tetes: lingkaran di atas dengan ujung lancip di titik (cx, cy)
+const tkPin = (cx, cy, r, col, dx, label) => {
+  const top = cy - r * 2.1, pts = [];
+  for (let i = 0; i <= 12; i++){ const t = Math.PI * (.85 + 1.3 * i / 12); pts.push([cx + Math.cos(t) * r, top + Math.sin(t) * r * .55]); }
+  pts.push([cx, cy]);
+  let s = shape(tkPoly(pts, dx), col, .7) + fill(pd(tkCirc(cx, top, r * .48, dx + .01, 10)), '#ffffff');
+  if (label) s += tx(...tkP(cx, top + r * .2, dx + .02), label, 1.9, col, 800);
+  return s;
+};
+
+function tkScreen(st){
+  let s = shape(tkRect(0, 0, 1, 1, .1), '#f3efe3', .8);                   // peta
+  // taman dan sungai
+  s += fill(pd(tkRect(.62, .55, .95, .74, .11)), '#bfe3c4');
+  s += `<path d="${pd(tkPoly([[0, .9], [.25, .84], [.5, .92], [.75, .86], [1, .9]], .11), false)}" fill="none" stroke="#9cc8ef" stroke-width="2.6" stroke-linecap="round"/>`;
+  // jalan: putih bergaris tepi
+  const roads = [[[0, .26], [1, .3]], [[0, .6], [1, .52]], [[.3, .1], [.36, 1]], [[.7, .1], [.66, .82]]];
+  for (const r of roads){ const d = pd(tkPoly(r, .12), false);
+    s += `<path d="${d}" fill="none" stroke="#d6cfbd" stroke-width="3" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"/>`; }
+  // garis dari tiap teman ke titik kumpul
+  const k = st.meet;
+  if (k > 0) for (const fr of TK_FRIENDS.slice(0, st.friends)){
+    const [ax, ay] = fr.at, ex = ax + (TK_MEET[0] - ax) * k, ey = ay + (TK_MEET[1] - ay) * k;
+    s += `<path d="${pd(tkPoly([[ax, ay], [ex, ey]], .13), false)}" fill="none" stroke="${fr.c}" stroke-width="1.3" stroke-dasharray="2 1.6" stroke-linecap="round"/>`;
+  }
+  // pin teman muncul satu per satu (pop = skala pin yang terakhir ditambahkan)
+  TK_FRIENDS.slice(0, st.friends).forEach((fr, i) => {
+    const pop = i === st.friends - 1 ? st.pop : 1;
+    if (pop > 0) s += tkPin(fr.at[0], fr.at[1], .06 * pop, fr.c, .14, pop > .7 ? fr.n : '');
+  });
+  if (k >= 1) s += tkPin(TK_MEET[0], TK_MEET[1], .085 * Math.min(1, st.drop), '#e2483d', .16, st.drop > .7 ? '★' : '');
+  // kepala aplikasi
+  s += shape(tkRect(0, 0, 1, .1, .13), '#e2483d', .6) + tx(...tkP(.5, .072, .14), 'TIKOEM', 2.8, '#ffffff', 800);
+  // kartu titik kumpul
+  if (k >= 1 && st.drop > .5){
+    s += shape(tkRect(.06, .8, .94, .96, .15), '#ffffff', .6);
+    s += tx(...tkP(.5, .865, .16), 'TITIK KUMPUL', 1.8, '#4a2219', 800) + tx(...tkP(.5, .93, .16), '± 12 MNT UNTUK SEMUA', 1.5, '#5d6271', 700);
+  } else s += tx(...tkP(.5, .97, .15), st.friends ? `${st.friends} TEMAN` : 'TAMBAH TEMAN', 1.6, '#5d6271', 700);
+  return s;
+}
+
+function tkPhone(st){
+  const FRONT = facing([1,0,0]), BACK = facing([-1,0,0]), RIGHT = facing([0,-1,0]);
+  let s = extrude(TK_PROF, TK_X0, TK_X1, TK_RED);
+  if (FRONT){
+    s += fill(pd(on(PX(TK_X1), TK_PROF)), tone([1,0,0], TK_RED));
+    s += shape(on(PX(TK_X1 + .05), rrUV(TK_Y0 + 1.2, TK_Z0 + 1.6, TK_Y1 - 1.2, TK_Z1 - 1.6, TK_R - 1.5)), '#151413', 1);   // kaca hitam
+    s += tkScreen(st);
+    s += ink(pd(on(PX(TK_X1), TK_PROF)), 2);
+  }
+  if (BACK){
+    s += fill(pd(on(PX(TK_X0), TK_PROF)), tone([-1,0,0], TK_RED));
+    s += shape(on(PX(TK_X0 - .1), rrUV(TK_Y1 - 18, TK_Z1 - 20, TK_Y1 - 5, TK_Z1 - 6, 3)), '#2a2724', 1);
+    for (const [y, z] of [[TK_Y1 - 14.5, TK_Z1 - 9.5], [TK_Y1 - 8.5, TK_Z1 - 9.5], [TK_Y1 - 14.5, TK_Z1 - 16]])
+      s += shape(on(PX(TK_X0 - .15), ellUV(y, z, 2.2, 2.2, 14)), '#4b5060', .7);
+    s += ink(pd(on(PX(TK_X0), TK_PROF)), 2);
+  }
+  if (RIGHT) for (const [z0, z1] of [[70, 80], [56, 62]]) s += box(TK_X0 + 1.5, TK_Y0 - .8, z0, TK_X1 - 1.5, TK_Y0, z1, TK_RED, tone, .7);
+  return s + hullInk([...on(PX(TK_X0), TK_PROF), ...on(PX(TK_X1), TK_PROF)], 2.6);
+}
+
+function scene(st){
+  let s = board(...TK_BOARD, 3, 6, BOARD);
+  const top = boardTop(...TK_BOARD, 3, 6);
+  s += castShadow([...on(PX(TK_X0), TK_PROF), ...on(PX(TK_X1), TK_PROF), [26, 24, 3], [62, 76, 3], [37, 40, 58]], 3, top);
+  const base = box(26, 24, 3, 62, 76, 6, TK_STAND, tone, 1.4);
+  const lip = box(TK_X1, 34, 6, 55, 66, 12, TK_STAND, tone, 1.2);
+  const back = box(37, 40, 6, TK_X0, 60, 58, TK_STAND, tone, 1.4);
+  const parts = byDepth([
+    { box: [[TK_X1, 34, 6], [55, 66, 12]], svg: lip },
+    { box: [[37, 40, 6], [TK_X0, 60, 58]], svg: back },
+    { box: [[TK_X0, TK_Y0, TK_Z0], [TK_X1, TK_Y1, TK_Z1]], svg: tkPhone(st) } ]);
+  return s + base + parts;
+}
+
+let ui;
+function tkTo(key, target, ms, done){
+  const st = ui.st, from = st[key], t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / ms); st[key] = from + (target - from) * ease(k); if (k >= 1 && done) done(); return k < 1; });
+}
+function tambahTeman(st){
+  if (st.friends >= TK_FRIENDS.length) return ui.flash('Tiga teman sudah cukup buat dicoba');
+  st.meet = 0; st.drop = 0; st.friends += 1; st.pop = 0; tkTo('pop', 1, 450);
+}
+function cariTengah(st){
+  if (st.friends < 2){ ui.flash('Butuh minimal dua teman'); return tambahTeman(st); }
+  if (st.meet >= 1) return ui.flash('Titik kumpulnya sudah ketemu');
+  tkTo('meet', 1, 1100, () => tkTo('drop', 1, 500));
+}
+function ulangi(st){ st.friends = 0; st.meet = 0; st.drop = 0; st.pop = 1; }
+
+ui = mountFigure({
+  fig:'03', turn:'full', credit:false, title:'Tikoem',
+  size:[TK_BOARD[2], TK_BOARD[3], TK_Z1 + 2], center:[(TK_BOARD[0] + TK_BOARD[2]) / 2, TK_BOARD[3] / 2], palette:'tomato',
+  state:{ friends:0, pop:1, meet:0, drop:0 },
+  scene,
+  buttons:[
+    { label:'Tambah teman', onClick:(st) => tambahTeman(st) },
+    { label:'Cari titik tengah', onClick:(st) => cariTengah(st) },
+    { label:'Ulangi', onClick:(st) => ulangi(st) },
+  ],
+  params:(st, q) => { for (const k of ['friends', 'pop', 'meet', 'drop']) if (q.has(k)) st[k] = +q.get(k); },
+});
+</script></body></html>

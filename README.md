@@ -12,7 +12,7 @@
 **Setiap proyek mulai dari coretan.**
 
 Satu halaman buku catatan yang memperlihatkan empat aplikasi Wingman Clutch.<br />
-Semuanya digambar pensil di depan mata, dan pengunjung boleh ikut corat-coret.
+Digambar di depan mata, bendanya bisa diputar dan dicoba, dan pengunjung boleh ikut corat-coret.
 
 ### [Buka wingmanclutch.vercel.app](https://wingmanclutch.vercel.app)
 
@@ -30,13 +30,13 @@ Semuanya digambar pensil di depan mata, dan pengunjung boleh ikut corat-coret.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/halaman-gelap.webp" />
-  <img src="docs/gambar/halaman-terang.webp" alt="Halaman buku catatan Wingman Clutch: logo bersayap di tengah, empat aplikasi digambar pensil di sudut-sudutnya, kertas tempel Tentang kami, kotak Let's clutch it, lima pensil, dan penghapus" />
+  <img src="docs/gambar/halaman-terang.webp" alt="Halaman buku catatan Wingman Clutch: logo bersayap di tengah, figur berwarna empat aplikasi di sudut-sudutnya, kertas tempel Tentang kami, kotak Let's clutch it, lima pensil, dan penghapus" />
 </picture>
 
 <p align="center">
-  <img src="docs/gambar/hp-1-halaman.webp" width="24%" alt="Halaman di HP: semua sketsa muat dalam satu layar tanpa scroll" />
-  <img src="docs/gambar/hp-2-detail.webp" width="24%" alt="Lembar detail goRute: tiga fitur bergambar, deskripsi, dan statistik" />
-  <img src="docs/gambar/hp-3-tim.webp" width="24%" alt="Dialog Tim kami: polaroid Kall dan Bintang yang diubah jadi sketsa pensil" />
+  <img src="docs/gambar/hp-1-halaman.webp" width="24%" alt="Halaman di HP: semua figur dan sketsa muat dalam satu layar tanpa scroll" />
+  <img src="docs/gambar/hp-2-detail.webp" width="24%" alt="Lembar detail goRute: figur halte dan bus yang bisa diputar, deskripsi, dan fitur" />
+  <img src="docs/gambar/hp-3-tim.webp" width="24%" alt="Dialog Tim kami: kartu nama Kall dan Bintang yang tergantung di lanyard" />
   <img src="docs/gambar/hp-4-kontak.webp" width="24%" alt="Form kontak Let's clutch it" />
 </p>
 
@@ -46,9 +46,9 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 
 ## Fitur
 
-- **Digambar langsung.** Tanggal, logo, empat aplikasi, dan semua catatan dicoret pensil berurutan dalam ±3 detik, bukan gambar statis. Setiap goresan bergoyang seperti tangan, dan isinya diarsir.
-- **Empat aplikasi, empat benda.** PostPocket jadi amplop dengan kartu foil, goRute papan halte dan bus TransJakarta, Tikoem HP dengan peta titik kumpul, Tookthel struk nongkrong dan koin. Layar setiap benda berganti menunjukkan tiga fiturnya.
-- **Lembar detail.** Ketuk sebuah sketsa: tiga fitur bergambar, deskripsi, peran kami, tumpukan teknologi, statistik GitHub, dan tautan ke aplikasi serta kodenya.
+- **Digambar langsung.** Tanggal, logo, dan semua catatan dicoret pensil berurutan dalam ±3 detik, sementara figur aplikasi diarsir masuk dengan krayon. Setiap goresan bergoyang seperti tangan.
+- **Empat aplikasi, empat benda.** PostPocket jadi amplop dengan kartu foil, goRute halte dan bus TransJakarta, Tikoem HP dengan peta titik kumpul, Tookthel printer struk dan koin. Semuanya figur 3D isometrik bergaya tinta tangan.
+- **Lembar detail.** Ketuk sebuah figur: putar bendanya, tekan tombolnya (buka amplop, panggil bus, cari titik tengah, cetak struk, bahkan lihat isi printernya), lalu baca fitur, peran kami, tumpukan teknologi, statistik GitHub, dan tautan ke aplikasi serta kodenya.
 - **Ambil pensil.** Lima pensil di baki untuk corat-coret di mana saja di halaman. Penghapusnya menggosok seluruh halaman, meninggalkan remah dan bekas abu-abu, lalu semuanya digambar ulang.
 - **Tiga dunia.** Bulan dan matahari untuk kertas terang dan gelap (seperti kapur di papan tulis). Kupas sudut kanan atas halaman untuk masuk ke Matrix.
 - **Logo yang mengepak.** Setiap ketukan di logo menambah kepakan sayap.
@@ -62,14 +62,15 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 <a href="https://wingman-clutch.github.io/wingmanclutch/arsitektur.html">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/arsitektur-gelap.webp" />
-  <img src="docs/gambar/arsitektur-terang.webp" alt="Arsitektur web porto Wingman Clutch: pengunjung membuka halaman dari Vercel CDN, halaman menggambar sketsa dengan mesin pensil, memanggil /api/kontak yang membatasi kiriman lewat Upstash dan meneruskan email lewat Resend, serta /api/proyek yang membaca GitHub dan mengecek keempat aplikasi" />
+  <img src="docs/gambar/arsitektur-terang.webp" alt="Arsitektur web porto Wingman Clutch: pengunjung membuka halaman dari Vercel CDN, halaman menggambar sketsa dengan mesin pensil dan menampilkan figur Colorfigures, memanggil /api/kontak yang membatasi kiriman lewat Upstash dan meneruskan email lewat Resend, serta /api/proyek yang membaca GitHub dan mengecek keempat aplikasi" />
 </picture>
 </a>
 
 **[Buka diagram interaktif ↗](https://wingman-clutch.github.io/wingmanclutch/arsitektur.html)** · [telusuri jalur Kirim pesan ↗](https://wingman-clutch.github.io/wingmanclutch/arsitektur.html#route=pengunjung~gmail) · [sumber JSON](docs/arsitektur.archify.json)
 
 - **Mesin pensil sendiri.** Path SVG diurai jadi polyline, diberi goyangan tangan dan ujung kebablasan, lalu digambar sedikit demi sedikit dengan kuas bertekstur butiran yang menempel ke kertas ([`engine/`](apps/web/src/engine)). Benih acak per sketsa membuat gambarnya selalu sama.
-- **Tanpa framework.** Vite dan TypeScript saja; seluruh JavaScript sekitar 49 KB gzip. Sketsa adalah kode ([`sketsa/`](apps/web/src/sketsa)), dan isi halaman ada di satu file ([`data/proyek.ts`](apps/web/src/data/proyek.ts)).
+- **Figur yang bisa dicoba.** Model 3D ditulis sebagai kode di [`figur/`](apps/web/figur) dengan engine [Colorfigures](https://april-zhu.com/colorfigures). Skrip membuat dua hasil: gambar diam untuk halaman, dan halaman interaktif yang dimuat di iframe hanya saat lembarnya dibuka.
+- **Tanpa framework.** Vite dan TypeScript saja; seluruh JavaScript sekitar 51 KB gzip. Sketsa adalah kode ([`sketsa/`](apps/web/src/sketsa)), dan isi halaman ada di satu file ([`data/proyek.ts`](apps/web/src/data/proyek.ts)).
 - **Kontrak dulu.** Halaman dan backend bertemu di [`docs/api/openapi.yaml`](docs/api/openapi.yaml). Halaman jalan dengan mock dari kontrak itu, dan unit test memvalidasi jawaban mock dengan skemanya, jadi Kall dan Bintang tidak saling menunggu.
 - **Tetap jalan tanpa backend.** Kalau `/api/proyek` gagal, baris statistik disembunyikan; kalau `/api/kontak` gagal, pengunjung diarahkan ke email.
 - **Tanpa pelacak.** Tidak ada cookie, analitik, atau domain luar. Tema disimpan di localStorage, dan coretan tidak dikirim ke mana pun.
@@ -105,13 +106,15 @@ Pertama kali menjalankan E2E di mesin baru: `pnpm --filter @wingmanclutch/web ex
 wingmanclutch/
 ├── apps/web/              # halaman buku catatan (Kall)
 │   ├── src/engine/        # mesin pensil: path, goresan, arsiran, kuas, tulisan, animasi
-│   ├── src/sketsa/        # logo, empat aplikasi, catatan kecil
+│   ├── src/sketsa/        # logo, catatan kecil, letak figur
 │   ├── src/halaman/       # tata letak, kertas, papan, pensil dan penghapus, tema, dialog, kontak
-│   ├── src/data/          # isi halaman, data font dan logo hasil skrip
+│   ├── src/data/          # isi halaman, data font, logo, dan ukuran figur hasil skrip
+│   ├── figur/             # sumber lima figur dan engine Colorfigures
+│   ├── public/figur/      # hasil skrip: halaman figur interaktif dan gambar diam
 │   ├── mock/              # mock /api sesuai kontrak (dev dan E2E saja)
 │   ├── test/, e2e/        # Vitest dan Playwright
-│   └── scripts/           # pembuat data font, logo pensil, gambar README dan OG
-├── api/                   # Vercel Functions kontak dan proyek (Bintang, belum dibuat)
+│   └── scripts/           # pembuat data font, logo pensil, figur, gambar README dan OG
+├── api/                   # Vercel Functions kontak dan proyek (Bintang)
 ├── docs/                  # PRD, panduan, desain, aset, kontrak API, diagram, gambar README
 ├── scripts/               # cek atribusi AI dan rahasia beserta ujinya
 └── AGENTS.md              # aturan kerja untuk manusia dan AI agent
@@ -126,11 +129,11 @@ CI di GitHub Actions jalan di setiap PR dan setiap push ke `main`:
 | **Web** | Cek rahasia, lint, typecheck, unit test, lalu E2E Playwright di build produksi pada Chrome desktop, Pixel 7, dan iPhone 15 (WebKit) |
 | **No AI attribution** | Menolak atribusi AI di commit dan PR. Juga dicek hook `commit-msg` dan `pre-push`, dan wajib lolos sebelum apa pun masuk `main` |
 
-Unit test ikut menjaga desain: semua sketsa harus berada di dalam halaman dan tidak saling tindih di tata letak potret maupun lanskap, mock harus cocok dengan kontrak, dan hash CSP harus cocok dengan skrip tema.
+Unit test ikut menjaga desain: semua sketsa harus berada di dalam halaman dan tidak saling tindih di tata letak potret maupun lanskap, mock harus cocok dengan kontrak, hash CSP harus cocok dengan skrip tema, dan halaman figur harus membawa lisensi dan CSP-nya tanpa muatan dari luar.
 
 ## Keamanan dan privasi
 
-- **CSP ketat.** Hanya skrip dari domain sendiri plus satu skrip tema yang di-hash; tidak ada domain luar sama sekali. Header keamanan lain diatur di [`vercel.json`](vercel.json).
+- **CSP ketat.** Hanya skrip dari domain sendiri plus satu skrip tema yang di-hash; tidak ada domain luar sama sekali. Halaman figur punya CSP sendiri yang menutup semua koneksi, dan hanya boleh dibingkai halaman ini. Header keamanan lain diatur di [`vercel.json`](vercel.json).
 - **Tanpa rahasia di repo.** Hook `pre-commit` menolak berkas `.env`, API key Resend, dan token GitHub; CI mengecek ulang semua berkas, dan secret scanning serta push protection GitHub menyala.
 - **Data seperlunya.** Pesan kontak tidak disimpan di server, alamat IP hanya dipakai dalam bentuk hash untuk batas kirim, dan tidak ada cookie atau analitik.
 
@@ -174,4 +177,4 @@ Alur kerja lengkapnya ada di [`AGENTS.md`](AGENTS.md). Ringkasnya:
   </tr>
 </table>
 
-Tata letak dan interaksi rilis 1 terinspirasi [kracked.studio](https://kracked.studio); kode, sketsa, dan isinya milik Wingman Clutch. Huruf pihak ketiga dan lisensinya tercatat di [docs/assets.md](docs/assets.md).
+Tata letak dan interaksi rilis 1 terinspirasi [kracked.studio](https://kracked.studio); kode, sketsa, dan isinya milik Wingman Clutch. Figur digambar dengan engine [Colorfigures](https://april-zhu.com/colorfigures) karya April Zhu (MIT). Huruf dan aset pihak ketiga lainnya tercatat di [docs/assets.md](docs/assets.md).

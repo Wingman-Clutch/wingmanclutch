@@ -21,6 +21,7 @@
   --balik: #ecebe4;
   --fokus: #2f74d0;
   --butiran: none;
+  --figur-matrix: grayscale(1) sepia(1) saturate(5) hue-rotate(75deg) brightness(0.85);
   --u: 1px;
   color-scheme: light;
   font-family: 'Special Elite', 'Courier New', ui-monospace, monospace;
@@ -170,12 +171,9 @@ body {
   pointer-events: none;
 }
 
-.sketsa .layar {
-  transition: opacity 0.35s ease;
-}
-
-.sketsa .layar.pudar {
-  opacity: 0;
+/* figur berwarna ikut jadi hijau di dalam Matrix */
+:root[data-tema='matrix'] .sketsa canvas.figur {
+  filter: var(--figur-matrix);
 }
 
 div.sketsa {
@@ -201,7 +199,7 @@ button.sketsa:active {
   scale: 0.97;
 }
 
-/* gerak diam perangkat setelah selesai digambar */
+/* gerak diam figur aplikasi setelah selesai digambar */
 @media (prefers-reduced-motion: no-preference) {
   .sketsa.perangkat.selesai.gerak-goyang {
     animation: goyang 5.2s ease-in-out infinite;

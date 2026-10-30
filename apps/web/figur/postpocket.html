@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PostPocket</title></head><body>
+<script src="core.js"></script>
+<script>
+/* PostPocket: amplop surat berdiri di dudukan kayu, berisi kartu foil "UNTUKMU".
+   Cara kerja nyatanya: amplop punya dua lembar. Lembar belakang (sisi alamat, menghadap -x) utuh dan tepi atasnya
+   jadi engsel tutup; lembar kantong (menghadap +x) bertakik V, jadi mulut amplop terbuka sampai ke tengah. Tutup
+   menekuk melewati tepi atas dan menempel ke kantong dengan segel lilin. Setelah tutupnya dibuka, kartu ditarik ke
+   atas lewat takikan itu, lalu kartu foilnya bisa diputar dan berkilau.
+   x = tebal (kantong di x besar), y = lebar, z = tinggi.
+   Bagian:
+   MEJA    alas kayu . dudukan surat dengan celah
+   AMPLOP  lembar belakang (perangko, baris alamat) . lembar kantong bertakik V (dua lipatan samping, lipatan bawah)
+           . tutup segitiga berengsel . segel lilin berhati
+   KARTU   kartu foil (depan: UNTUKMU, tiga bunga; belakang: pola hati) . kilau foil yang menyapu saat diputar */
+const PP_BOARD = [8, 0, 72, 124];                                  // alas: x0, y0, x1, y1
+const PP_HOLD = [28, 12, 52, 112, 3, 13];                          // dudukan: x0, y0, x1, y1, z0, z1
+const PP_EX0 = 38.5, PP_EX1 = 41.5, PP_EY0 = 14, PP_EY1 = 110, PP_EZ0 = 13, PP_EZ1 = 74;  // amplop, berdiri di celah dudukan
+const PP_CW = 76, PP_CH = 54, PP_CT = 1.2;                         // kartu: lebar, tinggi, tebal
+const PP_FLAP = 40, PP_VZ = PP_EZ1 - PP_FLAP + 2;                    // panjang tutup; dasar takikan kantong
+const PP_PINK = { l:'#f3a6bb', m:'#d8869c', d:'#b4657e' }, PP_PAPER = { l:'#fbf4ea', m:'#ece0cf', d:'#c9b9a2' };
+const PP_FOIL = { l:'#f6e7b8', m:'#e5cf8f', d:'#b89a52' }, PP_SEAL = '#d8432f';
+const ppMid = (PP_EY0 + PP_EY1) / 2;
+const ppInk = '#7a3a4e';
+
+/* kartu foil: kotak tipis tegak, berpusat di (cx, cy), diputar `a` radian di sekitar sumbu z */
+function ppCard(st){
+  const cx = (PP_EX0 + PP_EX1) / 2, cy = ppMid, z0 = PP_EZ0 + 4 + 50 * st.rise + 12 * st.lift, z1 = z0 + PP_CH, a = st.spin;
+  const u = [-Math.sin(a), Math.cos(a), 0];                        // arah lebar kartu (awal: +y)
+  const n = [Math.cos(a), Math.sin(a), 0];                         // arah muka depan (awal: +x)
+  const at = (du, dn, z) => [cx + u[0]*du + n[0]*dn, cy + u[1]*du + n[1]*dn, z];
+  const hw = PP_CW / 2, ht = PP_CT / 2;
+  const front = [at(-hw, ht, z0), at(hw, ht, z0), at(hw, ht, z1), at(-hw, ht, z1)];
+  const back = [at(-hw, -ht, z0), at(hw, -ht, z0), at(hw, -ht, z1), at(-hw, -ht, z1)];
+  const nF = n, nB = n.map(v => -v), nR = u, nL = u.map(v => -v);
+  let s = '';
+  // tepi kartu dulu, lalu muka yang menghadap pemirsa
+  for (const [nn, q] of [[nR, [front[1], back[1], back[2], front[2]]], [nL, [front[0], back[0], back[3], front[3]]], [[0,0,1], [front[3], front[2], back[2], back[3]]]])
+    if (facing(nn)) s += shape(q, toneI(nn, PP_FOIL), .6);
+  const sheen = st.shine;                                          // 0..1: kilau yang menyapu kartu
+  const decorate = (q, nn, sisi) => {
+    let d = shape(q, toneI(nn, PP_PAPER), 1.1);
+    const p = (du, z) => at(sisi * du, sisi * (ht + .05), z);     // titik di muka ini (du dari tengah, z mutlak)
+    // bingkai foil
+    d += `<path d="${pd([p(-hw + 3, z0 + 3), p(hw - 3, z0 + 3), p(hw - 3, z1 - 3), p(-hw + 3, z1 - 3)])}" fill="none" stroke="#c9a54e" stroke-width="1.1"/>`;
+    if (sisi > 0){
+      d += `<text transform="${txM(P(...p(0, z1 - 12)), Dv(...u.map(v => -v)), Dv(0,0,-1))}" font-size="6.4" fill="${PP_PINK.d}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="800" letter-spacing=".12em">UNTUKMU</text>`;
+      // tiga bunga bertangkai
+      for (const [du, h, c] of [[-18, 20, '#e2483d'], [0, 26, '#f59447'], [18, 20, '#2f74d0']]){
+        const top = z0 + 6 + h;
+        d += `<path d="${pd([p(du, z0 + 5), p(du + 1.5, (z0 + 5 + top) / 2), p(du, top)], false)}" fill="none" stroke="#2f9a52" stroke-width="1.3" stroke-linecap="round"/>`;
+        for (let k = 0; k < 5; k++){ const t = k / 5 * Math.PI * 2;
+          d += fill(pd(on(([uu, vv]) => p(uu, vv), ellUV(du + Math.cos(t) * 3.2, top + Math.sin(t) * 3.2, 2.4, 2.4, 10))), c); }
+        d += fill(pd(on(([uu, vv]) => p(uu, vv), ellUV(du, top, 1.8, 1.8, 10))), '#f6c33c');
+      }
+    } else {
+      // belakang: pola hati kecil
+      for (const [du, dz] of [[-20, 14], [0, 26], [20, 14], [-10, 38], [10, 38]])
+        d += fill(pd(on(([uu, vv]) => p(uu, vv), [[du, z0 + dz - 3], [du - 3.4, z0 + dz + 1], [du - 2, z0 + dz + 3.4], [du, z0 + dz + 2], [du + 2, z0 + dz + 3.4], [du + 3.4, z0 + dz + 1]])), '#e4589c');
+      d += `<text transform="${txM(P(...p(0, z0 + 6)), Dv(...u), Dv(0,0,-1))}" font-size="3.2" fill="${PP_PINK.d}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="700">POSTPOCKET</text>`;
+    }
+    if (sheen > 0 && sheen < 1){
+      const c = -hw - 14 + (PP_CW + 28) * sheen;
+      d += fill(pd([p(c - 6, z0), p(c + 4, z0), p(c + 12, z1), p(c + 2, z1)].map(q => q)), '#ffffff', 'opacity=".55"');
+    }
+    return d;
+  };
+  if (facing(nF)) s += decorate(front, nF, 1);
+  if (facing(nB)) s += decorate(back, nB, -1);
+  return s + hullInk([...front, ...back], 1.6);
+}
+
+/* amplop: lembar belakang, kartu di antara kedua lembar, kantong bertakik V, dan tutup berengsel dengan segel */
+function ppEnvelope(st, card){
+  const FRONT = facing([1,0,0]), BACK = facing([-1,0,0]), TOP = facing([0,0,1]);
+  const open = ease(Math.min(1, st.flap));
+  const th = st.flap * Math.PI * 1.1;                              // 0 = tertutup ke kantong, terbuka: rebah sedikit ke belakang
+  // engsel ada di lembar belakang; saat tertutup tutupnya melewati tepi atas sampai rata dengan kantong
+  const hx = PP_EX1 + .15 + (PP_EX0 - PP_EX1 - .15) * open;
+  const apex = [hx + PP_FLAP * Math.sin(th), ppMid, PP_EZ1 - PP_FLAP * Math.cos(th)];
+  const hinge = [[hx, PP_EY0, PP_EZ1], [hx, PP_EY1, PP_EZ1]];
+  const flapN = norm(cross(sub(apex, hinge[0]), sub(hinge[1], hinge[0])));   // sisi luar tutup
+  const flapOut = facing(flapN);
+  const flapSvg = () => {
+    const q = [hinge[0], hinge[1], apex];
+    let s = shape(q, flapOut ? tone(flapN, PP_PINK) : PP_PINK.m, 1.4);
+    if (flapOut){
+      // segel lilin dekat ujung tutup
+      const c = [apex[0] + (hx - apex[0]) * .2 + .2 * flapN[0], ppMid, apex[2] + (PP_EZ1 - apex[2]) * .2];
+      const e1 = [0, 1, 0], e2 = norm(sub(hinge[0].map((v, i) => (hinge[0][i] + hinge[1][i]) / 2), apex));
+      const ring = (r, k = 18) => Array.from({ length: k }, (_, i) => { const t = i / k * Math.PI * 2; return c.map((v, j) => v + e1[j] * Math.cos(t) * r + e2[j] * Math.sin(t) * r + flapN[j] * .3); });
+      s += shape(ring(7.4), PP_SEAL, 1.1) + fill(pd(ring(5.2)), '#b8321f');
+      const h = (du, dv) => c.map((v, j) => v + e1[j] * du + e2[j] * dv + flapN[j] * .5);
+      s += fill(pd([h(0, -3), h(-3, .4), h(-1.7, 2.6), h(0, 1.4), h(1.7, 2.6), h(3, .4)]), '#f3a6bb');
+    }
+    return s;
+  };
+  // lembar belakang: utuh; dari belakang terlihat perangko dan baris alamat
+  let rear = box(PP_EX0, PP_EY0, PP_EZ0, PP_EX0 + .8, PP_EY1, PP_EZ1, PP_PINK, tone, 1.2);
+  if (BACK){
+    const x = PP_EX0 - .1, py = y => PP_EY1 - (y - PP_EY0);        // dari belakang, y kecil ada di kiri layar
+    rear += shape(on(PX(x), rectUV(py(92), 58, py(78), 70)), '#fff4d6', .9) + shape(on(PX(x - .05), rectUV(py(90), 60, py(80), 68)), '#2f74d0', .5);
+    for (const [y0, y1, z] of [[36, 76, 42], [36, 82, 34], [36, 66, 26]]) rear += line(on(PX(x), [[py(y0), z], [py(y1), z]]), 1.2);
+  }
+  // kantong: takikan V dari kedua sudut atas sampai ke tengah; bagian dalam lembar belakang terlihat lewat takikan
+  const V = [[PP_EY1, PP_EZ0], [PP_EY0, PP_EZ0], [PP_EY0, PP_EZ1], [ppMid, PP_VZ], [PP_EY1, PP_EZ1]];
+  const px = PP_EX1, sideZ = [PP_EZ0, PP_EZ1];
+  let pocket = '';
+  for (const y of [PP_EY0, PP_EY1]) if (facing([0, y === PP_EY0 ? -1 : 1, 0]))
+    pocket += shape([[PP_EX0, y, sideZ[0]], [px, y, sideZ[0]], [px, y, sideZ[1]], [PP_EX0, y, sideZ[1]]], tone([0, y === PP_EY0 ? -1 : 1, 0], PP_PINK), .9);
+  if (FRONT){
+    pocket += shape(on(PX(px), V), tone([1,0,0], PP_PINK), 1.2);
+    // lipatan: dua sayap samping bertemu lipatan bawah di dasar takikan
+    pocket += `<path d="${pd(on(PX(px + .1), [[PP_EY0 + .8, PP_EZ0 + .8], [ppMid, PP_VZ - 2], [PP_EY1 - .8, PP_EZ0 + .8]]), false)}" fill="none" stroke="${ppInk}" stroke-width=".9" stroke-linejoin="round"/>`;
+  } else pocket += shape(on(PX(px), V), mix(PP_PINK.m, '#ffffff', .1), .9);
+  if (TOP) pocket += line(on(PZ(PP_EZ0), [[px, PP_EY0], [px, PP_EY1]]), .4);
+  // dari depan: tutup terbuka, lembar belakang, kartu, kantong, tutup tertutup. Dari belakang urutannya dibalik.
+  const flap = flapSvg(), isOpen = st.flap > .5;
+  return FRONT
+    ? (isOpen ? flap : '') + rear + card + pocket + (isOpen ? '' : flap)
+    : (isOpen ? '' : flap) + pocket + card + rear + (isOpen ? flap : '');
+}
+
+function scene(st){
+  const H = PP_HOLD;
+  let s = board(...PP_BOARD, 3, 6, WOOD);
+  const cardTop = PP_EZ0 + 4 + 50 * st.rise + 12 * st.lift + PP_CH;
+  s += castShadow([[PP_EX0, PP_EY0, 3], [PP_EX1, PP_EY1, 3], [PP_EX0, PP_EY0, PP_EZ1], [PP_EX1, PP_EY1, PP_EZ1], [PP_EX1, PP_EY0, Math.max(PP_EZ1, cardTop)], [H[0], H[1], H[5]], [H[2], H[3], H[5]]], 3,
+    boardTop(...PP_BOARD, 3, 6));
+  // dudukan kayu dengan celah gelap di atasnya
+  const holder = box(H[0], H[1], H[4], H[2], H[3], H[5], WOOD, tone, 1.6)
+    + shape(on(PZ(H[5] + .05), rectUV(PP_EX0 - 1, PP_EY0 - 1, PP_EX1 + 1, PP_EY1 + 1)), '#3a2a1c', .8);
+  const env = ppEnvelope(st, st.rise > .01 ? ppCard(st) : '');
+  // dudukan di bawah amplop: yang lebih dekat ke pemirsa digambar belakangan
+  s += facing([1,0,0]) || facing([0,0,1]) ? holder + env : env + holder;
+  return s;
+}
+
+let ui;
+function ppTo(key, target, ms, done){
+  const st = ui.st, from = st[key], t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / ms); st[key] = from + (target - from) * ease(k); if (k >= 1 && done) done(); return k < 1; });
+}
+function bukaAmplop(st){
+  if (st.rise > .05) return ui.flash('Masukkan kartunya dulu sebelum menutup amplop');
+  ppTo('flap', st.flap > .5 ? 0 : 1, 700);
+}
+function tarikKartu(st){
+  if (st.flap < 1){ ppTo('flap', 1, 600, () => ppTo('rise', 1, 900)); return; }
+  if (st.spin) return;
+  ppTo('rise', st.rise > .5 ? 0 : 1, 900);
+}
+function putarKartu(st){
+  if (st.rise > 0 && st.rise < 1) return ui.flash('Tunggu kartunya keluar dulu');
+  if (st.rise < 1) return ui.flash(st.flap < 1 ? 'Buka amplop dan tarik kartunya dulu' : 'Tarik kartunya dulu');
+  const a0 = st.spin, t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / 1600); st.spin = a0 + Math.PI * 2 * ease(k); st.shine = k; st.lift = Math.sin(k * Math.PI);
+    if (k >= 1){ st.spin = 0; st.shine = 0; st.lift = 0; } return k < 1; });
+}
+
+ui = mountFigure({
+  fig:'01', turn:'full', credit:false, title:'PostPocket',
+  size:[PP_BOARD[2], PP_BOARD[3], PP_EZ0 + 4 + 50 + PP_CH], center:[(PP_BOARD[0] + PP_BOARD[2]) / 2, PP_BOARD[3] / 2], palette:'blush',
+  state:{ flap:0, rise:0, spin:0, shine:0, lift:0 },
+  scene,
+  buttons:[
+    { label:'Buka amplop', onClick:(st) => bukaAmplop(st) },
+    { label:'Tarik kartu', onClick:(st) => tarikKartu(st) },
+    { label:'Putar kartu', onClick:(st) => putarKartu(st) },
+  ],
+  params:(st, q) => { for (const k of ['flap', 'rise', 'spin', 'shine']) if (q.has(k)) st[k] = +q.get(k); },
+});
+</script></body></html>

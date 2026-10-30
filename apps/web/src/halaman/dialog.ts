@@ -12,6 +12,9 @@ import { svgLogo } from './merek'
 
 export type NamaDialog = 'proyek' | 'tentang' | 'tim' | 'kontak'
 
+/** sama dengan batas layar sempit build.py: di bawah ini figur menyusun tombolnya di atas gambar */
+const FIGUR_SEMPIT = 560
+
 const $ = <T extends HTMLElement>(s: string, akar: ParentNode = document) =>
   akar.querySelector(s) as T
 
@@ -69,6 +72,8 @@ export class Dialog {
       })
       d.addEventListener('close', () => {
         if (d.id === 'dlg-tim') void this.lanyard?.then((l) => l.berhenti())
+        // close dikirim belakangan: lembar yang sudah dibuka lagi jangan ikut dikosongkan
+        if (d.id === 'dlg-proyek' && !d.open) $('#pr-figur', d).replaceChildren()
         this.sumber?.focus({ preventScroll: true })
         this.sumber = null
       })
@@ -91,7 +96,7 @@ export class Dialog {
     const kanvas = d.querySelector<HTMLCanvasElement>('canvas.judul-sketsa')
     if (kanvas?.dataset.judul)
       gambarJudul(kanvas, kanvas.dataset.judul, this.tema(), (kanvas.dataset.warna as 'r') || 'r')
-    if (nama === 'proyek') this.gambarFitur(d)
+    if (nama === 'proyek' && id) this.pasangFigur(d, id)
     if (nama === 'tim') this.bukaTim()
     d.scrollTop = 0
   }
@@ -103,8 +108,9 @@ export class Dialog {
     const kanvas = d.querySelector<HTMLCanvasElement>('canvas.judul-sketsa')
     if (kanvas?.dataset.judul)
       gambarJudul(kanvas, kanvas.dataset.judul, this.tema(), (kanvas.dataset.warna as 'r') || 'r')
-    if (d.id === 'dlg-proyek') this.gambarFitur(d)
     if (d.id === 'dlg-tim') void this.lanyard?.then((l) => l.warnai(this.gayaTali()))
+    const figur = d.querySelector('iframe')?.contentDocument
+    if (figur) figur.documentElement.dataset.tema = this.tema()
   }
 
   private isiProyek(d: HTMLDialogElement, id: IdProyek) {
@@ -128,13 +134,11 @@ export class Dialog {
     fitur.replaceChildren(
       ...p.fitur.map((f) => {
         const li = document.createElement('li')
-        const c = document.createElement('canvas')
-        c.setAttribute('aria-hidden', 'true')
         const h = document.createElement('h3')
         h.textContent = f.judul
         const t = document.createElement('p')
         t.textContent = f.teks
-        li.append(c, h, t)
+        li.append(h, t)
         return li
       }),
     )
@@ -157,16 +161,36 @@ export class Dialog {
     })
   }
 
-  /** sketsa perangkat dengan layar ke-i untuk setiap fitur */
-  private gambarFitur(d: HTMLDialogElement) {
-    const p = PROYEK.find((x) => x.id === d.dataset.proyek)
-    if (!p) return
-    d.querySelectorAll<HTMLCanvasElement>('#pr-fitur canvas').forEach((c, i) => {
-      // di layar sempit gambar dan teksnya bersebelahan, kolom gambarnya 120 px
-      const sempit = matchMedia('(max-width: 560px)').matches
-      const lebar = sempit ? 120 : Math.max(110, Math.min(170, c.parentElement!.clientWidth - 8))
-      gambarKe(c, [...p.gambar(false), ...p.layar[i]()], `${p.id}-fitur-${i}`, this.tema(), lebar)
+  /**
+   * Figur interaktif aplikasi. Gambar diamnya tampil sampai halaman figur siap, dan tetap tampil
+   * kalau halaman itu gagal dimuat. Iframe dibuat baru setiap dibuka dan dibuang saat ditutup:
+   * mengganti src iframe yang sama akan menambah riwayat tombol Back browser.
+   */
+  private pasangFigur(d: HTMLDialogElement, id: IdProyek) {
+    const p = PROYEK.find((x) => x.id === id)!
+    const panggung = $('#pr-figur', d)
+    panggung.classList.remove('siap')
+    panggung.style.removeProperty('height')
+    const gambar = document.createElement('img')
+    gambar.src = `/figur/${id}.webp`
+    gambar.alt = ''
+    const bingkai = document.createElement('iframe')
+    bingkai.title = `${p.nama}: figur yang bisa diputar dan dicoba`
+    bingkai.src = `/figur/${id}.html?tema=${this.tema()}`
+    bingkai.addEventListener('load', () => {
+      const isi = bingkai.contentDocument
+      if (!isi?.getElementById('fig')) return
+      panggung.classList.add('siap')
+      // fokus di dalam iframe: Escape tidak sampai ke dialog di halaman induk
+      bingkai.contentWindow!.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') d.close()
+      })
+      new ResizeObserver(() => {
+        const sempit = bingkai.clientWidth <= FIGUR_SEMPIT
+        panggung.style.height = sempit ? `${isi.body.scrollHeight}px` : ''
+      }).observe(isi.body)
     })
+    panggung.replaceChildren(gambar, bingkai)
   }
 
   /** kartu nama berlanyard untuk setiap anggota tim, dan tautan GitHub di bawah panggung */

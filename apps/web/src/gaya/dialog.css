@@ -221,6 +221,51 @@ dialog :focus-visible {
 
 /* ---------- detail aplikasi ---------- */
 
+/* gambar diam di bawah iframe figur; iframe muncul setelah halamannya siap (dialog.ts) */
+.figur-panggung {
+  position: relative;
+  height: clamp(330px, 50vh, 430px);
+}
+
+.figur-panggung img,
+.figur-panggung iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transition: opacity 0.25s ease;
+}
+
+.figur-panggung img {
+  padding: 28px;
+  object-fit: contain;
+}
+
+.figur-panggung iframe {
+  opacity: 0;
+}
+
+.figur-panggung.siap img {
+  opacity: 0;
+}
+
+.figur-panggung.siap iframe {
+  opacity: 1;
+}
+
+:root[data-tema='matrix'] .figur-panggung > * {
+  filter: var(--figur-matrix);
+}
+
+.petunjuk-figur {
+  margin: 4px 0 14px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--tinta-lembut);
+}
+
 .fitur {
   list-style: none;
   padding: 0;
@@ -228,15 +273,6 @@ dialog :focus-visible {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-}
-
-.fitur li {
-  text-align: center;
-}
-
-.fitur canvas {
-  display: block;
-  margin: 0 auto 6px;
 }
 
 .fitur h3 {
@@ -291,17 +327,25 @@ dialog :focus-visible {
   .fitur {
     grid-template-columns: 1fr;
   }
-  .fitur li {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    grid-template-rows: auto 1fr;
-    column-gap: 12px;
-    text-align: left;
-    align-items: start;
+}
+
+/* layar lebar: figur di kiri, teks dan tautan di kanan, supaya semuanya terlihat tanpa scroll.
+   Kolom figur tetap lebih lebar dari 560 px (FIGUR_SEMPIT), supaya filter gambar tangannya aktif. */
+@media (min-width: 1040px) {
+  #dlg-proyek {
+    --lebar: 980px;
   }
-  .fitur canvas {
-    grid-row: span 2;
-    margin: 0;
+  .proyek-isi {
+    display: grid;
+    grid-template-columns: 582px minmax(0, 1fr);
+    gap: 26px;
+  }
+  .figur-panggung {
+    height: clamp(380px, 62vh, 444px);
+  }
+  .fitur {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 

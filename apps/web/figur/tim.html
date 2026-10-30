@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tim kami</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Tim kami: dua figur meja, Kall dan Bintang, saling tos di atas alas kayu. Figur ini hanya dipakai sebagai gambar
+   diam di halaman; lembar Tim kami tetap memakai kartu nama berlanyard.
+   x, y = alas, z = tinggi. Kedua figur berdiri di garis yang mendatar di layar pada sudut bawaan dan menghadap pemirsa.
+   Bagian:
+   ALAS    papan kayu berpojok bulat
+   FIGUR   sepatu . kaki . badan bertulisan FE atau BE . kepala . wajah . rambut (poni Kall, ikal Bintang) . dua lengan
+           (satu terangkat tos, satu santai) . dua tangan
+   TOS     kilau kuning di titik kedua tangan bertemu */
+const TM_BOARD = [0, 0, 78, 78], TM_Z = 3;
+const TM_C = [39, 39], TM_GAP = 14.5;                              // pusat alas, jarak figur dari pusat tiap sumbu
+const TM_SKIN = { l:'#f5cfa8', m:'#e3b68b', d:'#b98a62' }, TM_PANTS = { l:'#5a6072', m:'#454a5a', d:'#2c3040' };
+const TM_HAIR = { l:'#4a3f35', m:'#372e26', d:'#231c16' }, TM_SHOE = { l:'#f4efe4', m:'#d9d2c2', d:'#a8a090' };
+const TM_SIDE = norm([1, -1, 0]), TM_FACE = norm([1, 1, 0]), TM_UP = [0, 0, 1];   // arah ke kanan layar, ke pemirsa, ke atas
+const tmAdd = (p, ...v) => v.reduce((q, [d, k]) => q.map((a, i) => a + d[i] * k), p);
+
+/* lingkaran di permukaan bola: sudut th dari sumbu A, B dan N tegak lurus A */
+const tmRing = (c, r, A, B, N, th, n = 16, mod = null) => Array.from({ length: n }, (_, i) => { const t = i / n * Math.PI * 2, h = th * (mod ? mod(t) : 1), sn = Math.sin(h) * r, cs = Math.cos(h) * r;
+  return c.map((v, j) => v + A[j] * cs + B[j] * sn * Math.cos(t) + N[j] * sn * Math.sin(t)); });
+
+/* bola, atau tudung bola dari sumbu A sampai sudut thMax (mod mengubah tepinya, untuk poni) */
+function tmDome(c, r, m, A = TM_UP, thMax = Math.PI, w = 1.2, mod = null, n = 7){
+  const B = norm(cross(A, Math.abs(A[2]) > .9 ? [1,0,0] : [0,0,1])), N = cross(A, B), rings = [];
+  for (let i = 0; i <= n; i++){ const th = .1 + (thMax - .1) * i / n; rings.push(tmRing(c, r, A, B, N, th, 16, mod && i === n ? mod : (mod ? (t => 1 + (mod(t) - 1) * i / n) : null))); }
+  let s = facing(A) ? fill(pd(rings[0]), toneI(A, m)) : '';
+  for (let i = 0; i < n; i++) s += loft(rings[i], rings[i + 1], nr => toneI(nr, m));
+  return s + hullInk(rings.flat(), w);
+}
+
+/* badan: dari pinggang sampai bahu, bertulisan FE atau BE di dada */
+function tmBody(x, y, m, kata){
+  const z = TM_Z + 9, rs = [[0, 8.6], [5, 9.4], [11, 8.8], [15, 6.6]], rings = rs.map(([dz, r]) => on(PZ(z + dz), ellUV(x, y, r, r, 18)));
+  let s = '';
+  for (let i = 0; i < rings.length - 1; i++) s += loft(rings[i], rings[i + 1], nr => tone(nr, m));
+  s += fill(pd(rings[3]), tone(TM_UP, m)) + hullInk(rings.flat(), 1.8);
+  if (facing(TM_FACE)){
+    const o = tmAdd([x, y, z + 3.4], [TM_FACE, 9.5]);
+    s += `<text transform="${txM(P(...o), Dv(...TM_SIDE), Dv(0,0,-1))}" font-size="6.6" fill="#ffffff" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="800">${kata}</text>`;
+  }
+  return s;
+}
+
+/* wajah di bagian kepala yang menghadap pemirsa pada sudut bawaan: mata dan senyum */
+function tmFace(c, r){
+  const onHead = (a, b, rr = r) => tmAdd(c, [norm(tmAdd([0,0,0], [TM_FACE, Math.cos(a) * Math.cos(b)], [TM_SIDE, Math.sin(a) * Math.cos(b)], [TM_UP, Math.sin(b)])), rr + .1]);
+  let s = '';
+  for (const a of [-.42, .42]){ const n = norm(sub(onHead(a, .08), c)); if (!facing(n) || !facing(TM_FACE)) continue;
+    const e1 = norm(cross(TM_UP, n)), e2 = cross(n, e1), k = onHead(a, .08);
+    s += fill(pd(Array.from({ length: 10 }, (_, i) => { const t = i / 10 * Math.PI * 2; return tmAdd(k, [e1, Math.cos(t) * 1.25], [e2, Math.sin(t) * 1.55]); })), INK); }
+  if (facing(TM_FACE)) s += `<path d="${pd(Array.from({ length: 7 }, (_, i) => onHead(-.34 + .68 * i / 6, -.32 - .1 * Math.sin(i / 6 * Math.PI))), false)}" fill="none" stroke="${INK}" stroke-width="1.1" stroke-linecap="round"/>`;
+  return s;
+}
+
+/* satu figur. sisi = -1 berdiri di kiri layar, 1 di kanan; tangan dalam terangkat ke titik tos */
+function tmDoll(sisi, warna, kata, rambut){
+  const [cx, cy] = tmAdd([TM_C[0], TM_C[1], 0], [TM_SIDE, sisi * TM_GAP * Math.SQRT2]), z0 = TM_Z;
+  const hip = z0 + 9, shoulder = z0 + 22, head = [cx, cy, z0 + 37], HR = 11.5, parts = [];
+  const put = (svg, a, b) => parts.push({ box: [a.map((v, i) => Math.min(v, b[i])), a.map((v, i) => Math.max(v, b[i]))], svg });
+  // sepatu dan kaki
+  for (const k of [-1, 1]){
+    const [fx, fy] = tmAdd([cx, cy, 0], [TM_SIDE, k * 3.8]);
+    put(cyl(fx, fy, z0, z0 + 2.4, 3.6, TM_SHOE, toneI, 1, 12), [fx - 3.6, fy - 3.6, z0], [fx + 3.6, fy + 3.6, z0 + 2.4]);
+    put(rod([fx, fy, z0 + 2.4], [fx, fy, hip], 2.7, TM_PANTS, tone, 1.2), [fx - 2.7, fy - 2.7, z0 + 2.4], [fx + 2.7, fy + 2.7, hip]);
+  }
+  put(tmBody(cx, cy, warna, kata), [cx - 9.4, cy - 9.4, hip], [cx + 9.4, cy + 9.4, hip + 15]);
+  // lengan: yang dalam terangkat tos, yang luar santai di samping badan
+  const inner = tmAdd([cx, cy, shoulder], [TM_SIDE, -sisi * 7.4]), hand = tmAdd([TM_C[0], TM_C[1], z0 + 52], [TM_SIDE, sisi * 2.2]);
+  const outer = tmAdd([cx, cy, shoulder], [TM_SIDE, sisi * 7.4]), rest = tmAdd([cx, cy, z0 + 9], [TM_SIDE, sisi * 12.5], [TM_FACE, 1.5]);
+  put(rod(inner, hand, 2.8, warna, tone, 1.3), inner, hand);
+  put(tmDome(hand, 3.5, TM_SKIN, TM_UP, Math.PI, 1), hand.map(v => v - 3.5), hand.map(v => v + 3.5));
+  put(rod(outer, rest, 2.8, warna, tone, 1.3), outer, rest);
+  put(tmDome(rest, 3.3, TM_SKIN, TM_UP, Math.PI, 1), rest.map(v => v - 3.3), rest.map(v => v + 3.3));
+  // kepala, wajah, rambut
+  put(tmDome(head, HR, TM_SKIN, TM_UP, Math.PI, 1.8) + tmFace(head, HR) + rambut(head, HR), head.map(v => v - HR - 3), head.map(v => v + HR + 3));
+  return parts;
+}
+
+/* rambut Kall: tudung ke belakang kepala dengan poni bergerigi di dahi */
+function tmPoni(c, r){
+  const A = norm(tmAdd(TM_UP, [TM_FACE, -.42]));
+  return tmDome(c, r + .7, TM_HAIR, A, 1.58, 1.4, t => 1 + .12 * Math.abs(Math.sin(t * 5.5)) - .06);
+}
+/* rambut Bintang: tudung dan gumpalan ikal di sekeliling kepala */
+function tmIkal(c, r){
+  const A = norm(tmAdd(TM_UP, [TM_FACE, -.5])), B = TM_SIDE, N = norm(cross(A, B)), blobs = [];
+  const put = (th, t, rr) => { const p = tmAdd(c, [A, Math.cos(th) * (r + .4)], [B, Math.sin(th) * Math.cos(t) * (r + .4)], [N, Math.sin(th) * Math.sin(t) * (r + .4)]);
+    blobs.push({ at: p, svg: tmDome(p, rr, TM_HAIR, TM_UP, Math.PI, 1, null, 5) }); };
+  for (let i = 0; i < 9; i++) put(1.34, i / 9 * Math.PI * 2 + .3, 4);
+  for (let i = 0; i < 5; i++) put(.72, i / 5 * Math.PI * 2, 4.2);
+  put(0, 0, 4.4);
+  return tmDome(c, r + .4, TM_HAIR, A, 1.42, 1.2) + byDepth(blobs);
+}
+
+/* kilau di titik tos: bintang empat ujung dan garis kecil, selalu menghadap layar */
+function tmSpark(){
+  const [cx, cy] = P(TM_C[0], TM_C[1], TM_Z + 62), R = 11, r = 2.6, pts = [];
+  for (let i = 0; i < 8; i++){ const a = i / 8 * Math.PI * 2 - Math.PI / 2, q = i % 2 ? r : R; pts.push([cx + Math.cos(a) * q, cy + Math.sin(a) * q]); }
+  let s = `<path d="${sp(pts)}" fill="#f6c33c" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>`;
+  for (const a of [-2.3, -.84, -1.57 + 1.2, -1.57 - 1.2]){ const c0 = Math.cos(a), s0 = Math.sin(a);
+    s += `<path d="M${f(cx + c0 * 14)} ${f(cy + s0 * 14)}L${f(cx + c0 * 19)} ${f(cy + s0 * 19)}" stroke="#ee7a24" stroke-width="1.8" stroke-linecap="round"/>`; }
+  return s;
+}
+
+function scene(){
+  let s = board(...TM_BOARD, TM_Z, 14, WOOD);
+  const top = boardTop(...TM_BOARD, TM_Z, 14);
+  for (const k of [-1, 1]){ const [cx, cy] = tmAdd([TM_C[0], TM_C[1], 0], [TM_SIDE, k * TM_GAP * Math.SQRT2]);
+    s += castShadow([...on(PZ(TM_Z), ellUV(cx, cy, 9, 9, 12)), ...on(PZ(TM_Z + 26), ellUV(cx, cy, 9, 9, 12)), ...on(PZ(TM_Z + 48), ellUV(cx, cy, 11, 11, 12))], TM_Z, top); }
+  const blue = { l:'#76a0e2', m:'#5a82c6', d:'#2f4f8a' }, green = { l:'#7fcf9d', m:'#58ad7c', d:'#2c6b4a' };
+  s += byDepth([...tmDoll(-1, blue, 'FE', tmPoni), ...tmDoll(1, green, 'BE', tmIkal)]);
+  return s + tmSpark();
+}
+
+mountFigure({
+  fig:'05', turn:'full', credit:false, title:'Tim kami',
+  size:[TM_BOARD[2], TM_BOARD[3], TM_Z + 74], center:[TM_BOARD[2] / 2, TM_BOARD[3] / 2], palette:'cobalt',
+  state:{}, scene,
+});
+</script></body></html>

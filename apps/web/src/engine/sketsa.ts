@@ -1,10 +1,12 @@
-// Sketsa = satu gambar di kanvasnya sendiri. Bisa digambar sedikit demi sedikit (progres 0..1),
-// digambar ulang penuh setelah tema atau ukuran berubah, dan punya layar yang berganti-ganti.
+// Sketsa = satu gambar di kanvasnya sendiri. Bisa digambar sedikit demi sedikit (progres 0..1) dan
+// digambar ulang penuh setelah tema atau ukuran berubah. Sketsa boleh punya figur: gambar berwarna
+// di kanvas terpisah di bawah goresan, yang muncul mengikuti coretan krayon.
 // Goresannya baru dikompilasi saat dibutuhkan (siapkan), karena mengompilasi semua sketsa
 // sekaligus mengunci main thread saat halaman dibuka.
 
 import { batasGoresan, kompilasi, type Goresan, type Op } from './goresan'
-import { hashTeks } from './acak'
+import { buatAcak, hashTeks } from './acak'
+import { sampelUlang, type Garis, type Titik } from './jalur'
 import { gambarRentang, TINTA, type Kanvas, type Tema } from './kuas'
 
 export const DPR = () => Math.min(typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, 2)
@@ -60,29 +62,53 @@ export interface Penempatan {
   r: number
 }
 
+/** gambar berwarna di bawah goresan sketsa; posisi dan ukuran dalam satuan gambar */
+export interface Figur {
+  src: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/** arsiran krayon miring yang menutup kotak 0..1, dari pojok kiri atas ke pojok kanan bawah */
+export function jalurKrayon(benih: number, baris = 10): Garis {
+  const acak = buatAcak(benih)
+  const miring = (v: number) => v + acak(-0.04, 0.04)
+  const zig: Garis = []
+  for (let i = 0; i <= baris; i++) {
+    const s = (2 * i) / baris
+    const a: Titik = s < 1 ? [miring(s), 0] : [1, miring(s - 1)]
+    const b: Titik = s < 1 ? [0, miring(s)] : [miring(s - 1), 1]
+    zig.push(...(i % 2 ? [b, a] : [a, b]))
+  }
+  return sampelUlang(zig, 0.04)
+}
+
 export class Sketsa {
   readonly id: string
   readonly el: HTMLElement
   readonly kanvas: HTMLCanvasElement
   readonly ctx: CanvasRenderingContext2D
   private buatOps: () => Op[]
-  private buatLayar: (() => Op[])[]
   private dasar?: Lapisan
-  private daftarLayar: Lapisan[] = []
   private kotak = { x: 0, y: 0, w: 0, h: 0 }
   /** tempatkan() dipanggil sebelum goresan siap; diterapkan begitu siapkan() selesai */
   private tertunda = false
-  private layarKanvas?: HTMLCanvasElement
-  private layarCtx?: CanvasRenderingContext2D
-  layarAktif = -1
+  private figur?: Figur
+  private figurKanvas?: HTMLCanvasElement
+  private figurCtx?: CanvasRenderingContext2D
+  /** terisi setelah gambar figur selesai dimuat */
+  private figurGambar?: HTMLImageElement
+  private krayon: Garis = []
   tempat: Penempatan = { x: 0, y: 0, skala: 1, r: 0 }
   progres = 0
   private tema: Tema = 'terang'
 
-  constructor(id: string, ops: () => Op[], layar: (() => Op[])[] = [], el?: HTMLElement) {
+  constructor(id: string, ops: () => Op[], figur?: Figur, el?: HTMLElement) {
     this.id = id
     this.buatOps = ops
-    this.buatLayar = layar
+    this.figur = figur
     this.el = el ?? document.createElement('div')
     this.el.classList.add('sketsa')
     this.el.dataset.sketsa = id
@@ -93,31 +119,36 @@ export class Sketsa {
     this.kanvas.setAttribute('aria-hidden', 'true')
     this.el.appendChild(this.kanvas)
     this.ctx = this.kanvas.getContext('2d')!
-    if (layar.length) {
-      this.layarKanvas = document.createElement('canvas')
-      this.layarKanvas.className = 'layar'
-      this.layarKanvas.setAttribute('aria-hidden', 'true')
-      this.el.appendChild(this.layarKanvas)
-      this.layarCtx = this.layarKanvas.getContext('2d')!
+    if (figur) {
+      this.figurKanvas = document.createElement('canvas')
+      this.figurKanvas.className = 'figur'
+      this.figurKanvas.setAttribute('aria-hidden', 'true')
+      this.el.prepend(this.figurKanvas)
+      this.figurCtx = this.figurKanvas.getContext('2d')!
+      const img = new Image()
+      img.src = figur.src
+      img
+        .decode()
+        .then(() => {
+          this.figurGambar = img
+          this.gambarFigur()
+        })
+        // gambar gagal dimuat: nama sketsanya tetap tergambar
+        .catch(() => {})
     }
-  }
-
-  get jumlahLayar() {
-    return this.buatLayar.length
   }
 
   get siap() {
     return this.dasar !== undefined
   }
 
-  /** kompilasi goresan dasar dan semua layar, sekali saja */
+  /** kompilasi goresan, sekali saja */
   siapkan() {
     if (this.dasar) return
     const benih = hashTeks(this.id)
     this.dasar = lapisan(this.buatOps(), benih)
-    this.daftarLayar = this.buatLayar.map((l, i) => lapisan(l(), benih + 101 * (i + 1)))
-    const semua = [...this.dasar.goresan, ...this.daftarLayar.flatMap((l) => l.goresan)]
-    this.kotak = batasGoresan(semua)
+    this.kotak = batasGoresan(this.dasar.goresan)
+    if (this.figur) this.krayon = jalurKrayon(benih)
     if (this.tertunda) {
       this.tertunda = false
       this.tempatkan(this.tempat, this.tema)
@@ -145,8 +176,7 @@ export class Sketsa {
     const lebar = this.kotak.w * t.skala
     const tinggi = this.kotak.h * t.skala
     const dpr = DPR()
-    for (const c of [this.kanvas, this.layarKanvas]) {
-      if (!c) continue
+    for (const c of this.semuaKanvas) {
       c.width = Math.max(1, Math.ceil(lebar * dpr))
       c.height = Math.max(1, Math.ceil(tinggi * dpr))
       c.style.width = lebar + 'px'
@@ -175,13 +205,6 @@ export class Sketsa {
     kosongkan(this.dasar!)
     this.progres = 0
     if (p > 0) this.gambar(p)
-    if (this.layarCtx && this.layarAktif >= 0) {
-      const l = this.daftarLayar[this.layarAktif]
-      const sudah = l.tergambar
-      this.layarCtx.clearRect(0, 0, this.layarKanvas!.width, this.layarKanvas!.height)
-      kosongkan(l)
-      gambarLapisanSampai(l, sudah, this.kanvasInfo(this.layarCtx), this.tema)
-    }
   }
 
   /** gambar sampai progres p (0..1); hanya bagian yang belum tergambar yang ditambahkan */
@@ -191,33 +214,41 @@ export class Sketsa {
     this.progres = p
     const dasar = this.dasar!
     gambarLapisanSampai(dasar, dasar.total * p, this.kanvasInfo(this.ctx), this.tema)
+    this.gambarFigur()
+  }
+
+  /** figur sebanyak progres: krayon digoreskan dulu, lalu gambarnya mengisi bagian yang tercoret */
+  private gambarFigur() {
+    const g = this.figurCtx
+    const f = this.figur
+    const img = this.figurGambar
+    if (!g || !f || !img || !this.progres) return
+    const k = this.tempat.skala * DPR()
+    const x = (f.x - this.kotak.x) * k
+    const y = (f.y - this.kotak.y) * k
+    const w = f.w * k
+    const h = f.h * k
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height)
+    g.save()
+    if (this.progres < 1) {
+      g.lineCap = 'round'
+      g.lineJoin = 'round'
+      g.lineWidth = Math.max(w, h) * 0.2
+      g.beginPath()
+      const n = Math.ceil(this.krayon.length * this.progres)
+      for (let i = 0; i < n; i++) g.lineTo(x + this.krayon[i][0] * w, y + this.krayon[i][1] * h)
+      g.stroke()
+      g.globalCompositeOperation = 'source-in'
+    }
+    g.drawImage(img, x, y, w, h)
+    g.restore()
   }
 
   /** kosongkan kanvas dan mulai dari nol */
   ulang() {
     this.progres = 0
     if (this.dasar) kosongkan(this.dasar)
-    this.ctx.clearRect(0, 0, this.kanvas.width, this.kanvas.height)
-    this.hapusLayar()
-    this.layarAktif = -1
-  }
-
-  hapusLayar() {
-    if (!this.layarCtx) return
-    this.layarCtx.clearRect(0, 0, this.layarKanvas!.width, this.layarKanvas!.height)
-    for (const l of this.daftarLayar) kosongkan(l)
-  }
-
-  /** mulai layar ke-i dari nol; kembalikan fungsi progres untuk digambar bertahap */
-  pilihLayar(i: number) {
-    this.siapkan()
-    this.hapusLayar()
-    this.layarAktif = i
-    const l = this.daftarLayar[i]
-    return (p: number) => {
-      if (this.layarAktif !== i || !this.layarCtx) return
-      gambarLapisanSampai(l, l.total * p, this.kanvasInfo(this.layarCtx), this.tema)
-    }
+    for (const c of this.semuaKanvas) c.getContext('2d')!.clearRect(0, 0, c.width, c.height)
   }
 
   /** ubah titik layar (piksel CSS relatif papan) ke koordinat piksel kanvas sketsa */
@@ -237,9 +268,9 @@ export class Sketsa {
     return [(w / 2 + dx * c - dy * s) * dpr, (h / 2 + dx * s + dy * c) * dpr]
   }
 
-  /** semua kanvas sketsa ini (dasar dan layar) */
+  /** semua kanvas sketsa ini (figur dan goresan) */
   get semuaKanvas() {
-    return this.layarKanvas ? [this.kanvas, this.layarKanvas] : [this.kanvas]
+    return this.figurKanvas ? [this.figurKanvas, this.kanvas] : [this.kanvas]
   }
 }
 

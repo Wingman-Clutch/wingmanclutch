@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>goRute</title></head><body>
+<script src="core.js"></script>
+<script>
+/* goRute: halte TransJakarta. Papan rute di tiang halte, bus koridor 1 yang datang, pintunya membuka ke halte.
+   Cara kerja nyatanya: penumpang mencari rute (papan menyalakan jalur dan halte transit), menunggu bus di halte
+   yang lantainya setinggi pintu bus, bus berhenti sejajar ubin peringatan kuning, lalu pintu geser terbuka.
+   x = panjang bus (depan di x besar), y = lebar (halte di sisi +y), z = tinggi. Satuan kira-kira 10 cm.
+   Bagian:
+   BUS     badan berprofil bulat . kaca samping . kaca depan . papan tujuan . lampu depan . garis kuning . pintu geser
+           dua daun . empat roda . dua kotak AC di atap . lampu belakang
+   HALTE   lantai beton . ubin peringatan kuning di tepi . tiang . papan rute (layar, kepala biru, jalur, halte, ETA) */
+const GR_BL = 118, GR_BW = 30, GR_Z0 = 7, GR_BH = 44;              // bus: panjang, lebar, bawah badan, atap
+const GR_PROF = rrUV(0, GR_Z0, GR_BW, GR_BH, 6);                 // profil badan (y, z), disapu sepanjang x
+const GR_HX0 = 10, GR_HX1 = 124, GR_HY0 = 31.5, GR_HY1 = 62, GR_HH = 7;  // halte: lantai beton setinggi lantai bus
+const GR_POLE = [118, 47], GR_SX = 120, GR_SY0 = 34, GR_SY1 = 60, GR_SZ0 = 44, GR_SZ1 = 68;   // tiang dan papan rute (menghadap depan)
+const GR_DOOR = [28, 44];                                        // pintu di sisi halte (x0, x1)
+const GR_BLUE = { l:'#5b97e6', m:'#2f74d0', d:'#1c3f73' }, GR_GLASS = { l:'#5f7d96', m:'#3d5a73', d:'#243848' };
+const GR_TIRE = { l:'#55504a', m:'#3d3935', d:'#272421' }, GR_CON = { l:'#e6e2d8', m:'#cbc5b7', d:'#a59e8e' };
+const GR_YEL = '#efb21a', GR_SCREEN = '#1d2a26';
+const GR_STOPS = [['BLOK M', 0], ['', .2], ['', .4], ['TRANSIT', .58], ['', .8], ['KOTA', 1]];
+
+const grBoxOf = pts => [[0,1,2].map(i => Math.min(...pts.map(p => p[i]))), [0,1,2].map(i => Math.max(...pts.map(p => p[i])))];
+
+/* ---------- bus (dx = geser sepanjang x saat datang) ---------- */
+function grBus(st, dx){
+  const FRONT = facing([1,0,0]), BACK = facing([-1,0,0]), SIDE = facing([0,1,0]), FAR = facing([0,-1,0]);
+  const X = x => x + dx, m = GR_BLUE, parts = [];
+  const put = (box, svg) => parts.push({ box, svg });
+  const body = [...on(PX(X(0)), GR_PROF), ...on(PX(X(GR_BL)), GR_PROF)];
+  // roda: tabung pendek sepanjang y, di bawah badan
+  for (const x of [20, 96]) for (const y of [0, GR_BW]){
+    const y0 = y === 0 ? -1.5 : y - 3.5, y1 = y === 0 ? 3.5 : y + 1.5;
+    put([[X(x - 7), y0, 0], [X(x + 7), y1, 14]], rod([X(x), y0, 7], [X(x), y1, 7], 7, GR_TIRE, toneI, 1.4)
+      + (y === GR_BW && SIDE ? shape(on(PY(y1 + .05), ellUV(X(x), 7, 3.2, 3.2, 16)), METAL.m, .8) : ''));
+  }
+  // badan, lalu semua yang menempel di sisinya
+  let s = extrude(GR_PROF, X(0), X(GR_BL), m);
+  if (FRONT){
+    s += fill(pd(on(PX(X(GR_BL)), GR_PROF)), tone([1,0,0], m));
+    s += shape(on(PX(X(GR_BL) + .1), rrUV(3, 23, 27, 40, 3)), GR_GLASS.m, 1.2);                   // kaca depan
+    s += fill(pd(on(PX(X(GR_BL) + .2), rrUV(5, 33, 9, 39, 1))), '#ffffff', 'opacity=".35"');
+    s += shape(on(PX(X(GR_BL) + .15), rectUV(7, 40.5, 23, 43.2)), '#151413', .7);                  // papan tujuan
+    s += tx(X(GR_BL) + .25, 15, 41.2, '1 BLOK M', 1.9, '#f59447', 800);
+    for (const y of [5, 25]) s += shape(on(PX(X(GR_BL) + .15), ellUV(y, 13, 2.2, 1.8, 12)), '#fff4d6', .7);
+    s += shape(on(PX(X(GR_BL) + .12), rectUV(2, 17, 28, 19)), GR_YEL, .5);
+    s += ink(pd(on(PX(X(GR_BL)), GR_PROF)), 2);
+  }
+  if (BACK){
+    s += fill(pd(on(PX(X(0)), GR_PROF)), tone([-1,0,0], m));
+    s += shape(on(PX(X(0) - .1), rrUV(5, 28, 25, 40, 2)), GR_GLASS.m, 1);
+    for (const y of [4, 26]) s += shape(on(PX(X(0) - .15), rectUV(y - 2, 12, y + 2, 16)), '#e2483d', .7);
+    s += ink(pd(on(PX(X(0)), GR_PROF)), 2);
+  }
+  if (SIDE){
+    const yS = GR_BW + .15, sm = tone([0,1,0], m);
+    // kaca samping sepanjang badan, kecuali di pintu
+    for (const [x0, x1] of [[6, 22], [47, 63], [66, 82], [85, 98], [101, 110]]){
+      s += shape(on(PY(yS), rrUV(X(x0), 24, X(x1), 38, 2)), GR_GLASS.m, 1);
+      s += fill(pd(on(PY(yS + .05), rectUV(X(x0 + 2), 34, X(x0 + 4), 37))), '#ffffff', 'opacity=".3"');
+    }
+    s += shape(on(PY(yS), rectUV(X(2), 18, X(GR_DOOR[0] - 1), 21)), GR_YEL, .6);                   // garis kuning
+    s += shape(on(PY(yS), rectUV(X(GR_DOOR[1] + 1), 18, X(GR_BL - 2), 21)), GR_YEL, .6);
+    s += txY(X(76), yS + .05, 11.5, 'TRANSJAKARTA', 3.6, mix(sm, '#ffffff', .75), 800);
+    // pintu geser dua daun: bergeser ke luar saat terbuka
+    const o = st.door * 7, mid = (GR_DOOR[0] + GR_DOOR[1]) / 2;
+    s += shape(on(PY(yS - .05), rectUV(X(GR_DOOR[0]), 8, X(GR_DOOR[1]), 40)), '#151413', .9);       // lubang pintu
+    if (st.door > .02) s += fill(pd(on(PY(yS - .02), rectUV(X(GR_DOOR[0] + 1), 9, X(GR_DOOR[1] - 1), 39))), '#d8d1c0', `opacity="${f(.8*st.door)}"`);
+    for (const [a, b] of [[GR_DOOR[0], mid], [mid, GR_DOOR[1]]]){
+      const sh = a === GR_DOOR[0] ? -o : o;
+      s += shape(on(PY(yS + .1), rectUV(X(a + sh), 8.5, X(b + sh), 39.5)), mix(sm, '#ffffff', .1), 1);
+      s += shape(on(PY(yS + .15), rrUV(X(a + sh + 1.5), 22, X(b + sh - 1.5), 37, 1.5)), GR_GLASS.m, .8);
+    }
+  }
+  if (FAR){
+    for (const [x0, x1] of [[6, 22], [25, 41], [44, 60], [63, 79], [82, 98], [101, 110]])
+      s += shape(on(PY(-.15), rrUV(X(x0), 24, X(x1), 38, 2)), GR_GLASS.m, 1);
+    s += shape(on(PY(-.15), rectUV(X(2), 18, X(GR_BL - 2), 21)), GR_YEL, .6);
+  }
+  // atap: dua kotak AC
+  const roof = byDepth([28, 70].map(x => ({ box: [[X(x), 6, GR_BH], [X(x + 22), 24, GR_BH + 4]],
+    svg: box(X(x), 6, GR_BH, X(x + 22), 24, GR_BH + 4, matOf('#e6e9ea'), tone, 1) })));
+  s += hullInk(body, 2.8);
+  const wheels = byDepth(parts);
+  return { svg: wheels + s + roof, box: [[X(0), -2, 0], [X(GR_BL), GR_BW + 2, GR_BH + 4]], pts: body };
+}
+
+/* ---------- papan rute di tiang halte, menghadap depan ---------- */
+// tulisan di bidang x = konstan yang dibaca dari belakang (dari -x)
+const grTxB = (x,y,z,str,size,col=INK,weight=700) => `<text transform="${txM(P(x,y,z), Dv(0,1,0), Dv(0,0,-1))}" font-size="${size}" fill="${col}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="${weight}" letter-spacing=".04em">${str}</text>`;
+function grSign(st){
+  const FRONT = facing([1,0,0]), BACK = facing([-1,0,0]);
+  const pole = cyl(GR_POLE[0], GR_POLE[1], GR_HH, GR_SZ0, 1.6, METAL, toneI, 1.2);
+  let s = box(GR_SX - 3, GR_SY0, GR_SZ0, GR_SX, GR_SY1, GR_SZ1, GR_TIRE, tone, 1.6);
+  if (FRONT){
+    const x = GR_SX + .1, ly = p => GR_SY1 - 3 - (GR_SY1 - GR_SY0 - 6) * p;
+    s += shape(on(PX(x), rectUV(GR_SY0 + 1.5, GR_SZ0 + 1.5, GR_SY1 - 1.5, GR_SZ1 - 1.5)), GR_SCREEN, 1);
+    s += shape(on(PX(x + .05), rectUV(GR_SY0 + 1.5, GR_SZ1 - 6.5, GR_SY1 - 1.5, GR_SZ1 - 1.5)), '#2f74d0', .8);
+    s += tx(x + .1, (GR_SY0 + GR_SY1) / 2, GR_SZ1 - 5.2, 'BLOK M - KOTA', 2.4, '#ffffff', 800);
+    // jalur dua koridor: menyala sedikit demi sedikit saat rute dicari
+    const zl = 56, k = st.rute;
+    s += `<path d="${pd([[x + .1, ly(0), zl], [x + .1, ly(1), zl]], false)}" stroke="#3d4a47" stroke-width="1.4" fill="none"/>`;
+    if (k > 0){
+      s += `<path d="${pd([[x + .12, ly(0), zl], [x + .12, ly(Math.min(k, .58)), zl]], false)}" stroke="#5b97e6" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+      if (k > .58) s += `<path d="${pd([[x + .12, ly(.58), zl], [x + .12, ly(k), zl]], false)}" stroke="#f59447" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+    }
+    for (const [name, p] of GR_STOPS){
+      const lit = k >= p - .001, big = name !== '';
+      s += shape(on(PX(x + .15), ellUV(ly(p), zl, big ? 1.3 : .9, big ? 1.3 : .9, 12)), lit ? (p > .58 ? '#f59447' : p === .58 ? '#ffffff' : '#5b97e6') : '#56635f', .4);
+      if (big) s += tx(x + .15, ly(p), p === .58 ? zl + 2.6 : zl - 4, name, 1.7, lit ? '#8af0ae' : '#6d7a76', 700);
+    }
+    // waktu tiba bus
+    const eta = st.bus >= 1 ? 'TIBA' : st.bus > 0 ? `${Math.max(1, Math.ceil(3 * (1 - st.bus)))} MNT` : st.rute >= 1 ? '3 MNT' : '- MNT';
+    s += tx(x + .15, GR_SY1 - 6.5, GR_SZ0 + 3.8, 'BUS 1', 2.1, '#8af0ae', 700);
+    s += tx(x + .15, GR_SY0 + 6.5, GR_SZ0 + 3.8, eta, 2.1, st.bus >= 1 ? GR_YEL : '#8af0ae', 800);
+  }
+  if (BACK) s += shape(on(PX(GR_SX - 3.1), rrUV(GR_SY0 + 5, GR_SZ0 + 5, GR_SY1 - 5, GR_SZ1 - 5, 2)), '#e8e4da', .9)
+    + grTxB(GR_SX - 3.15, (GR_SY0 + GR_SY1) / 2, (GR_SZ0 + GR_SZ1) / 2 - 1.4, 'HALTE', 3.8, INK, 800);
+  return byDepth([
+    { box: [[GR_POLE[0] - 1.6, GR_POLE[1] - 1.6, GR_HH], [GR_POLE[0] + 1.6, GR_POLE[1] + 1.6, GR_SZ0]], svg: pole },
+    { box: [[GR_SX - 3, GR_SY0, GR_SZ0], [GR_SX, GR_SY1, GR_SZ1]], svg: s } ]);
+}
+
+/* ---------- lantai halte ---------- */
+function grHalte(){
+  let s = board(GR_HX0, GR_HY0, GR_HX1, GR_HY1, GR_HH, 3, GR_CON);
+  // ubin peringatan kuning di tepi yang menghadap bus
+  s += shape(on(PZ(GR_HH + .05), rectUV(GR_HX0 + 2, GR_HY0 + 1.5, GR_HX1 - 2, GR_HY0 + 5)), GR_YEL, .7);
+  let dots = '';
+  for (let x = GR_HX0 + 5; x < GR_HX1 - 3; x += 4) dots += pd(on(PZ(GR_HH + .1), ellUV(x, GR_HY0 + 3.25, .7, .7, 8)));
+  return s + fill(dots, '#c98f10');
+}
+
+/* ---------- adegan ---------- */
+function scene(st){
+  // bus datang dari luar bingkai sepanjang jalurnya, lalu berhenti sejajar ubin kuning
+  const dx = -180 * (1 - ease(Math.min(1, st.bus))), ada = st.bus > 0;
+  const bus = grBus(st, dx);
+  const halteTop = boardTop(GR_HX0, GR_HY0, GR_HX1, GR_HY1, GR_HH, 3);
+  let s = castShadow([...on(PZ(0), rrUV(GR_HX0, GR_HY0, GR_HX1, GR_HY1, 3)), ...on(PZ(GR_HH), rrUV(GR_HX0, GR_HY0, GR_HX1, GR_HY1, 3))]);
+  if (ada) s += castShadow(bus.pts);
+  const signShadow = castShadow([[GR_POLE[0], GR_POLE[1], GR_HH], [GR_POLE[0], GR_POLE[1], GR_SZ0], [GR_SX, GR_SY0, GR_SZ1], [GR_SX, GR_SY1, GR_SZ1], [GR_SX - 3, GR_SY0, GR_SZ0], [GR_SX - 3, GR_SY1, GR_SZ0]], GR_HH, halteTop);
+  s += byDepth([
+    { box: [[GR_HX0, GR_HY0, 0], [GR_HX1, GR_HY1, GR_HH]], svg: grHalte() + signShadow },
+    { box: [[GR_SX - 3, GR_SY0, GR_HH], [GR_SX, GR_SY1, GR_SZ1]], svg: grSign(st) },
+    ada ? { box: bus.box, svg: bus.svg } : null ]);
+  return s;
+}
+
+/* ---------- perilaku ---------- */
+let ui;
+function grRun(key, ms, done){
+  const st = ui.st, from = st[key], t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / ms); st[key] = from + (1 - from) * k; if (k >= 1 && done) done(); return k < 1; });
+}
+// tombol yang ditekan di luar urutan menjalankan langkah yang kurang dulu, lalu lanjut sendiri
+function cariRute(st, lanjut){
+  if (st.rute >= 1) return lanjut ? lanjut() : ui.flash('Rutenya sudah ketemu: Blok M ke Kota, transit sekali');
+  grRun('rute', 1400, lanjut);
+}
+function panggilBus(st, lanjut){
+  if (st.rute < 1) return cariRute(st, () => panggilBus(st, lanjut));
+  if (st.bus >= 1) return lanjut ? lanjut() : ui.flash('Busnya sudah di halte');
+  if (st.bus > 0) return;
+  grRun('bus', 2600, lanjut);
+}
+function pintu(st){
+  if (st.bus > 0 && st.bus < 1) return ui.flash('Tunggu busnya berhenti dulu');
+  if (st.bus < 1) return panggilBus(st, () => pintu(st));
+  const target = st.door > .5 ? 0 : 1, from = st.door, t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / 600); st.door = from + (target - from) * ease(k); return k < 1; });
+}
+
+ui = mountFigure({
+  fig:'02', turn:'full', credit:false, title:'goRute',
+  size:[GR_HX1, GR_HY1, GR_SZ1 + 2], center:[GR_HX1 / 2, GR_HY1 / 2], palette:'cobalt',
+  state:{ rute:0, bus:0, door:0 },
+  scene,
+  buttons:[
+    { label:'Cari rute', onClick:(st) => cariRute(st) },
+    { label:'Panggil bus', onClick:(st) => panggilBus(st) },
+    { label:'Buka pintu', onClick:(st) => pintu(st) },
+  ],
+  params:(st, q) => { for (const k of ['rute', 'bus', 'door']) if (q.has(k)) st[k] = +q.get(k); },
+});
+</script></body></html>

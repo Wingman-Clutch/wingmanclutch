@@ -18,6 +18,14 @@ export async function bukaHalaman(page: Page) {
   return galat
 }
 
+/** buka lembar detail sebuah aplikasi dan tunggu figurnya siap dipakai */
+export async function bukaLembar(page: Page, nama: string) {
+  await page.getByRole('button', { name: new RegExp(`^${nama}:`) }).click({ force: true })
+  const d = page.getByRole('dialog', { name: nama })
+  await expect(d.locator('#pr-figur')).toHaveClass(/siap/)
+  return { d, figur: d.frameLocator('iframe') }
+}
+
 /** jumlah piksel bertinta di sebuah kanvas */
 export async function pikselTinta(page: Page, pemilih: string) {
   return page

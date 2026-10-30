@@ -42,7 +42,7 @@ async function keWebp(png, kualitas = 0.86) {
 async function halaman(opsi) {
   const p = await browser.newPage(opsi)
   await p.goto(url, { waitUntil: 'networkidle' })
-  // tunggu semua sketsa selesai dan layar perangkat sempat tergambar
+  // tunggu semua sketsa dan figur selesai digambar
   await p.waitForTimeout(5200)
   return p
 }
@@ -70,7 +70,10 @@ for (const tema of ['light', 'dark']) {
   const p = await halaman({ ...hp, colorScheme: 'light' })
   await simpan(p, 'hp-1-halaman.webp')
   await p.getByRole('button', { name: /^goRute:/ }).click({ force: true })
-  await p.waitForTimeout(900)
+  await p.locator('#pr-figur.siap').waitFor()
+  // satu tombol menjalankan semua langkahnya: cari rute, panggil bus, buka pintu
+  await p.frameLocator('#pr-figur iframe').getByRole('button', { name: 'Buka pintu' }).click()
+  await p.waitForTimeout(5200)
   await simpan(p, 'hp-2-detail.webp')
   await p.keyboard.press('Escape')
   await p.getByRole('button', { name: /Kenalan sama tim/ }).click({ force: true })
