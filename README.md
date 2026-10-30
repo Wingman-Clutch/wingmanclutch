@@ -26,7 +26,7 @@ Digambar di depan mata, bendanya bisa diputar dan dicoba, dan pengunjung boleh i
 </div>
 
 > [!NOTE]
-> **Halamannya sudah live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026**, dan Vercel men-deploy `main` ke produksi. Backend (`/api/kontak` dan `/api/proyek`) sedang dikerjakan Bintang mengikuti [kontrak](docs/api/openapi.yaml); sampai itu jadi, form kontak mengarahkan ke email dan baris statistik disembunyikan. Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
+> **Halamannya sudah live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026**, dan Vercel men-deploy `main` ke produksi. Backend buatan Bintang (`/api/kontak` dan `/api/proyek`) juga sudah live mengikuti [kontrak](docs/api/openapi.yaml): pesan dari form kontak sampai ke email tim lewat Resend dengan batas kirim di Upstash, dan lembar detail menampilkan statistik GitHub. Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/halaman-gelap.webp" />
