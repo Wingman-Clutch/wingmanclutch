@@ -17,6 +17,8 @@ interface Kotak {
 export const KOTAK_APLIKASI: Kotak = { x: -8, y: -22, w: 216, h: 216 }
 /** kotak figur tim di atas judul Tim kami */
 export const KOTAK_TIM: Kotak = { x: 28, y: -22, w: 144, h: 136 }
+/** kotak mug di sebelah kiri tulisan kopi hari ini */
+export const KOTAK_KOPI: Kotak = { x: -6, y: 16, w: 72, h: 74 }
 
 /** figur sebesar mungkin di dalam kotak: di tengah, menempel ke bawah kotak */
 export function letakFigur(id: keyof typeof UKURAN, k: Kotak): Figur {

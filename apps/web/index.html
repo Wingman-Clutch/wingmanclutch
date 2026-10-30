@@ -6,19 +6,19 @@
     <title>Wingman Clutch</title>
     <meta
       name="description"
-      content="Wingman Clutch: tim dua orang dari Indonesia yang bikin aplikasi web buat urusan sehari-hari. Setiap proyek mulai dari coretan di buku catatan."
+      content="Wingman Clutch itu Kall dan Bintang. Kami bikin aplikasi web buat urusan sehari-hari, dari bagi tagihan nongkrong sampai cari rute TransJakarta."
     />
     <meta name="theme-color" content="#f7f6f1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'sha256-PK6xKkFQwjIAH0x7ZyFS9zIYu6ZH/DPCIfzSfZwMLIA='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' 'sha256-7nyT7mJ0nywKkUMpF2Z6GJ+/m2vZP1RbO7i1YfVj1hY='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Wingman Clutch" />
     <meta property="og:title" content="Wingman Clutch" />
     <meta
       property="og:description"
-      content="Two is enough to win. Empat aplikasi web, dua orang, satu buku catatan."
+      content="Kall dan Bintang bikin aplikasi web buat urusan sehari-hari. Ini empat yang sudah jalan."
     />
     <meta property="og:url" content="https://wingmanclutch.vercel.app/" />
     <meta property="og:image" content="https://wingmanclutch.vercel.app/og.jpg" />
@@ -40,6 +40,13 @@
           t = matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang'
         akar.dataset.tema = t
         if (t === 'gelap') document.querySelector('meta[name="theme-color"]').content = '#161922'
+        // layar pembuka sekali per sesi, tidak pernah kalau pengguna memilih gerak dikurangi
+        var pembuka = null
+        try {
+          pembuka = sessionStorage.getItem('wc-pembuka')
+        } catch (e) {}
+        if (!pembuka && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+          akar.classList.add('pembuka')
         // Sama dengan hitungUkuran() dan atasKaki() di src/halaman/tata-letak.ts (dijaga
         // test/tata-letak.test.ts), supaya kaki halaman tidak melompat saat skrip utama jalan.
         var w = innerWidth
@@ -56,12 +63,20 @@
     </script>
   </head>
   <body>
+    <div id="pembuka" aria-hidden="true">
+      <div class="latar"></div>
+      <div class="panggung">
+        <span class="bayang"></span>
+        <img class="lambang" src="/figur/logo.webp" alt="" width="720" height="433" />
+      </div>
+    </div>
     <main id="app">
       <h1 class="sr">Wingman Clutch, tim dua orang yang bikin aplikasi web</h1>
       <canvas id="kertas" aria-hidden="true"></canvas>
       <canvas id="noda" aria-hidden="true"></canvas>
       <canvas id="hujan" aria-hidden="true"></canvas>
       <div id="papan" role="group" aria-label="Halaman buku catatan"></div>
+      <div id="lampu"></div>
       <canvas id="coretan" aria-label="Area coretan"></canvas>
       <canvas id="remah" aria-hidden="true"></canvas>
       <div id="baki">
@@ -69,7 +84,7 @@
           <span class="badan"></span>
         </button>
         <p id="kaki">
-          © 2026 Wingman Clutch · setiap proyek mulai dari coretan<span class="tautan"
+          © 2026 Wingman Clutch<span class="tautan"
             ><span class="pisah" aria-hidden="true"> · </span
             ><a href="https://github.com/Wingman-Clutch" target="_blank" rel="noopener">GitHub</a
             ><span class="pisah" aria-hidden="true"> · </span
@@ -132,20 +147,17 @@
         <h2 id="tt-judul" class="sr">Tentang kami</h2>
       </header>
       <p>
-        Wingman Clutch itu tim dua orang dari Indonesia. Kami bikin aplikasi web buat urusan
-        sehari-hari: semuanya PWA, langsung jalan di browser HP, tanpa akun.
+        Wingman Clutch itu Kall dan Bintang. Kami bikin aplikasi web buat urusan sehari-hari yang
+        sering bikin ribet: nentuin tempat ketemuan, nyari rute TransJakarta, sampai bagi tagihan
+        nongkrong.
       </p>
-      <ol class="langkah">
-        <li><mark>Coret dulu.</mark> Setiap ide mulai dari buku catatan, kasar dan cepat.</li>
-        <li>
-          <mark>Bagi dua.</mark> Satu pegang frontend, satu pegang backend, kontraknya disepakati
-          duluan.
-        </li>
-        <li><mark>Kirim.</mark> Lalu dipoles sampai enak dipakai setiap hari.</li>
-      </ol>
+      <p>
+        Biasanya satu orang pegang tampilan, satu lagi pegang server. Semua aplikasinya langsung
+        jalan di browser HP, nggak perlu dipasang dulu.
+      </p>
       <div class="aksi">
         <button type="button" class="btn" data-buka="tim">kenalan sama tim →</button>
-        <button type="button" class="btn utama" data-buka="kontak">sapa kami →</button>
+        <button type="button" class="btn utama" data-buka="kontak">kirim pesan →</button>
       </div>
     </dialog>
 
@@ -158,7 +170,7 @@
       <header>
         <canvas class="judul-sketsa" aria-hidden="true" data-judul="tim kami"></canvas>
         <h2 id="tm-judul" class="sr">Tim kami</h2>
-        <p class="slogan">Two is enough to win. Dua orang, empat aplikasi.</p>
+        <p class="slogan">Two is enough to win.</p>
       </header>
       <div class="lanyard" id="tm-daftar"></div>
       <p class="tm-bawah">
@@ -180,7 +192,10 @@
         <canvas class="judul-sketsa" aria-hidden="true" data-judul="let's clutch it!"></canvas>
         <h2 id="kt-judul" class="sr">Hubungi Wingman Clutch</h2>
       </header>
-      <p>Punya ide, brief, atau coretan setengah jadi? Ceritain aja, nanti kami balas.</p>
+      <p>
+        Mau ngajak bikin sesuatu, atau cuma mau nanya? Tulis aja di sini, nanti kami balas lewat
+        email.
+      </p>
       <form id="form-kontak" novalidate>
         <label>
           <span>nama kamu</span>
@@ -204,14 +219,14 @@
           />
         </label>
         <label>
-          <span>mau bikin apa?</span>
+          <span>pesan kamu</span>
           <textarea
             name="pesan"
             rows="4"
             minlength="10"
             maxlength="2000"
             required
-            placeholder="aplikasi yang…"
+            placeholder="Ceritain di sini…"
           ></textarea>
         </label>
         <label class="madu" aria-hidden="true">
@@ -222,15 +237,15 @@
         <button type="submit" class="btn utama">kirim →</button>
       </form>
       <div id="kt-terkirim" hidden>
-        <p class="sukses" role="status">Terkirim! Kami balas ke email kamu secepatnya.</p>
+        <p class="sukses" role="status">Pesannya sudah sampai. Nanti kami balas ke email kamu.</p>
       </div>
       <div id="kt-cadangan" hidden>
         <p class="galat" role="alert">
-          Belum bisa terkirim dari sini. Kirim lewat email aja, catatannya sudah kami siapkan:
+          Pesannya belum bisa terkirim dari sini. Kirim lewat email aja, isinya sudah kami siapkan:
         </p>
         <p class="aksi">
           <a class="btn utama" id="kt-mailto">buka email →</a>
-          <button type="button" class="btn" id="kt-salin-catatan">salin catatan</button>
+          <button type="button" class="btn" id="kt-salin-pesan">salin pesan</button>
         </p>
       </div>
       <p class="email">

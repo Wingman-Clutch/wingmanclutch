@@ -8,12 +8,11 @@ import { Sketsa, type Figur } from '../engine/sketsa'
 import { PROYEK, type IdProyek } from '../data/proyek'
 import { DASAR_LABEL, label } from '../sketsa/bantu'
 import {
-  bulan,
+  FIGUR_KOPI,
   FIGUR_TIM,
   kilauKecil,
   kopi,
   kotakKontak,
-  matahari,
   petunjukKetuk,
   petunjukPensil,
   rumus,
@@ -22,13 +21,18 @@ import {
   tim,
 } from '../sketsa/catatan'
 import { bingkai, KOTAK_APLIKASI, letakFigur } from '../sketsa/figur'
-import { DASAR_LOGO, JUMLAH_KEPAK, kepakAwal, kepakTambahan, logo } from '../sketsa/logo'
+import {
+  DASAR_LOGO,
+  FIGUR_LOGO,
+  JUMLAH_KEPAK,
+  kepakAwal,
+  kepakTambahan,
+  merek,
+} from '../sketsa/logo'
 import { atasItem, type Ukuran } from './tata-letak'
 
 export type Aksi =
-  | { jenis: 'proyek'; id: IdProyek }
-  | { jenis: 'tentang' | 'tim' | 'kontak' }
-  | { jenis: 'tema' | 'logo' }
+  { jenis: 'proyek'; id: IdProyek } | { jenis: 'tentang' | 'tim' | 'kontak' } | { jenis: 'logo' }
 
 export interface Def {
   id: string
@@ -47,7 +51,8 @@ export interface Def {
 /** urutan menggambar saat halaman dibuka: [id, tunda ms, durasi ms] */
 const URUTAN: [string, number, number][] = [
   ['tanggal', 150, 600],
-  ['logo', 300, 2300],
+  ['logo', 300, 900],
+  ['merek', 500, 2100],
   ['kepak', 2680, 420],
   ['postpocket', 650, 1250],
   ['gorute', 820, 1250],
@@ -63,22 +68,22 @@ const URUTAN: [string, number, number][] = [
   ['rumus', 2250, 800],
   ['kilau1', 2000, 400],
   ['kilau2', 2200, 400],
-  ['saklar-bulan', 2350, 650],
-  ['saklar-matahari', 2350, 650],
 ]
 
 export function daftarDef(): Def[] {
   const defs: Def[] = [
     {
       id: 'logo',
-      ops: logo,
+      ops: () => [bingkai(FIGUR_LOGO)],
+      figur: FIGUR_LOGO,
       dasar: DASAR_LOGO,
       tombol: {
-        label: 'Wingman Clutch. Ketuk logonya buat mengepakkan sayapnya',
+        label: 'Logo Wingman Clutch. Ketuk buat mengepakkan sayapnya',
         aksi: { jenis: 'logo' },
       },
       kelas: 'logo',
     },
+    { id: 'merek', tempat: 'logo', ops: merek, dasar: DASAR_LOGO },
     { id: 'kepak', tempat: 'logo', ops: kepakAwal, dasar: DASAR_LOGO, kelas: 'kepak' },
     ...Array.from({ length: JUMLAH_KEPAK }, (_, i) => ({
       id: 'kepak' + (i + 1),
@@ -114,7 +119,7 @@ export function daftarDef(): Def[] {
       ops: tim,
       figur: FIGUR_TIM,
       dasar: 150,
-      tombol: { label: 'Kenalan sama tim: 2 orang', aksi: { jenis: 'tim' } },
+      tombol: { label: 'Tim kami: Kall dan Bintang', aksi: { jenis: 'tim' } },
     },
     {
       id: 'kontak',
@@ -126,26 +131,10 @@ export function daftarDef(): Def[] {
     { id: 'petunjukBawah', ops: () => petunjukKetuk('bawah'), dasar: 32 },
     { id: 'petunjukSamping', ops: () => petunjukKetuk('samping'), dasar: 32 },
     { id: 'petunjukPensil', ops: petunjukPensil, dasar: 30 },
-    { id: 'kopi', ops: kopi, dasar: 0 },
+    { id: 'kopi', ops: kopi, figur: FIGUR_KOPI, dasar: 0 },
     { id: 'rumus', ops: rumus, dasar: 34 },
     { id: 'kilau1', ops: kilauKecil, dasar: 0 },
     { id: 'kilau2', tempat: 'kilau1', ops: kilauKecil, dasar: 0 },
-    {
-      id: 'saklar-bulan',
-      tempat: 'saklar',
-      ops: bulan,
-      dasar: 0,
-      tombol: { label: 'Ganti ke mode gelap', aksi: { jenis: 'tema' } },
-      kelas: 'saklar',
-    },
-    {
-      id: 'saklar-matahari',
-      tempat: 'saklar',
-      ops: matahari,
-      dasar: 0,
-      tombol: { label: 'Ganti ke mode terang', aksi: { jenis: 'tema' } },
-      kelas: 'saklar',
-    },
   ]
   // kilau2 punya posisi sendiri di potret
   defs.find((d) => d.id === 'kilau2')!.tempat = 'kilau2'
@@ -156,8 +145,6 @@ export class Papan {
   readonly el: HTMLElement
   readonly sketsa = new Map<string, Sketsa>()
   private defs = new Map<string, Def>()
-  private ukuran?: Ukuran
-  private tema: Tema = 'terang'
   private tugas: Tugas[] = []
   private kepakan = 0
   sibuk = false
@@ -195,13 +182,10 @@ export class Papan {
 
   /** tempatkan semua sketsa untuk ukuran layar dan tema ini */
   atur(u: Ukuran, tema: Tema) {
-    this.ukuran = u
-    this.tema = tema
     for (const [id, s] of this.sketsa) {
       const d = this.defs.get(id)!
       const t = u.L.item[d.tempat ?? id]
-      const saklarSalah = (id === 'saklar-bulan') !== (tema === 'terang') && id.startsWith('saklar')
-      s.el.hidden = !t || saklarSalah
+      s.el.hidden = !t
       if (!t) continue
       const atas = atasItem(u.L, t, d.dasar)
       s.tempatkan(
@@ -212,17 +196,15 @@ export class Papan {
   }
 
   warnai(tema: Tema) {
-    if (!this.ukuran) return
-    const ganti = (this.tema === 'terang') !== (tema === 'terang')
-    this.tema = tema
-    if (ganti) this.atur(this.ukuran, tema)
-    else
-      for (const [id, s] of this.sketsa)
-        if (!s.el.hidden) s.warnai(this.defs.get(id)!.temaTetap ?? tema)
+    for (const [id, s] of this.sketsa)
+      if (!s.el.hidden) s.warnai(this.defs.get(id)!.temaTetap ?? tema)
   }
 
-  /** gambar semua sketsa dari awal sesuai URUTAN */
-  pembukaan() {
+  /**
+   * Gambar semua sketsa dari awal sesuai URUTAN. `logoSiap` = lambang baru saja mendarat dari layar
+   * pembuka, jadi langsung tampil utuh tanpa krayon.
+   */
+  pembukaan({ logoSiap = false } = {}) {
     this.hentikan()
     for (const s of this.sketsa.values()) {
       s.ulang()
@@ -232,6 +214,11 @@ export class Papan {
     for (const [id, tunda, durasi] of URUTAN) {
       const s = this.sketsa.get(id)
       if (!s) continue
+      if (logoSiap && id === 'logo') {
+        s.gambar(1)
+        s.el.classList.add('selesai')
+        continue
+      }
       this.tugas.push(
         jadwalkan(
           tunda,

@@ -24,17 +24,22 @@ test('pensil mencoret halaman, penghapus membersihkan lalu menggambar ulang', as
   await page.getByRole('button', { name: 'Hapus halaman lalu gambar ulang' }).click()
   // setelah penghapus lewat, coretan hilang dan sketsa digambar ulang dari awal
   await expect.poll(() => pikselTinta(page, '#coretan'), { timeout: 8000 }).toBe(0)
-  await expect(page.locator('[data-sketsa="kontak"]')).toHaveClass(/selesai/, { timeout: 10_000 })
-  expect(await pikselTinta(page, '[data-sketsa="logo"] canvas')).toBeGreaterThan(500)
+  // kelas `selesai` lama masih menempel sesaat sebelum halaman digambar ulang, jadi tunggu tintanya
+  await expect
+    .poll(() => pikselTinta(page, '[data-sketsa="merek"] canvas'), { timeout: 10_000 })
+    .toBeGreaterThan(500)
   await expect
     .poll(() => pikselTinta(page, '[data-sketsa="gorute"] canvas.figur'))
     .toBeGreaterThan(2000)
+  await expect(page.locator('[data-sketsa="kontak"]')).toHaveClass(/selesai/, { timeout: 10_000 })
 })
 
 test('gerak dikurangi: semua sketsa langsung tergambar', async ({ browser }) => {
   const konteks = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await konteks.newPage()
   await page.goto('/')
+  // tanpa layar pembuka dan tanpa animasi menggambar
+  await expect(page.locator('#pembuka')).toBeHidden()
   await expect(page.locator('[data-sketsa="kontak"]')).toHaveClass(/selesai/, { timeout: 1500 })
   expect(await pikselTinta(page, '[data-sketsa="postpocket"] canvas:not(.figur)')).toBeGreaterThan(
     500,

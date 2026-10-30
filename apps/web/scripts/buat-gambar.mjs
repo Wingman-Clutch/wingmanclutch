@@ -41,6 +41,8 @@ async function keWebp(png, kualitas = 0.86) {
 
 async function halaman(opsi) {
   const p = await browser.newPage(opsi)
+  // layar pembuka dilewati seperti kunjungan kedua di sesi yang sama
+  await p.addInitScript(() => sessionStorage.setItem('wc-pembuka', '1'))
   await p.goto(url, { waitUntil: 'networkidle' })
   // tunggu semua sketsa dan figur selesai digambar
   await p.waitForTimeout(5200)
@@ -76,7 +78,7 @@ for (const tema of ['light', 'dark']) {
   await p.waitForTimeout(5200)
   await simpan(p, 'hp-2-detail.webp')
   await p.keyboard.press('Escape')
-  await p.getByRole('button', { name: /Kenalan sama tim/ }).click({ force: true })
+  await p.getByRole('button', { name: /^Tim kami/ }).click({ force: true })
   // kartu nama berlanyard dimuat lalu masuk sambil berayun; tunggu sampai tenang
   await p.getByRole('button', { name: /^Kartu nama Kall/ }).waitFor()
   await p.waitForTimeout(3500)

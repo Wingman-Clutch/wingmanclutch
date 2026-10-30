@@ -35,7 +35,7 @@ const APLIKASI = [
 test('halaman terbuka tanpa galat dan semua sketsa tergambar', async ({ page }) => {
   const galat = await bukaHalaman(page)
   for (const id of [
-    'logo',
+    'merek',
     'postpocket',
     'gorute',
     'tikoem',
@@ -47,10 +47,17 @@ test('halaman terbuka tanpa galat dan semua sketsa tergambar', async ({ page }) 
     const goresan = `[data-sketsa="${id}"] canvas:not(.figur)`
     expect.soft(await pikselTinta(page, goresan), id).toBeGreaterThan(500)
   }
-  for (const id of [...APLIKASI.map((a) => a.id), 'tim'])
+  for (const id of [...APLIKASI.map((a) => a.id), 'tim', 'logo'])
     await expect
       .poll(() => pikselTinta(page, `[data-sketsa="${id}"] canvas.figur`), `figur ${id}`)
       .toBeGreaterThan(2000)
+  // mug kopi hanya ada di tata letak lanskap
+  if (await page.locator('[data-sketsa="kopi"]').isVisible())
+    await expect
+      .poll(() => pikselTinta(page, '[data-sketsa="kopi"] canvas.figur'), 'figur kopi')
+      .toBeGreaterThan(500)
+  await expect(page.locator('#lampu img.nyala')).toHaveJSProperty('complete', true)
+  await expect(page.getByRole('button', { name: 'Matikan lampu' })).toBeVisible()
   await expect(page.locator('.pensil')).toHaveCount(5)
   await expect(page.getByRole('button', { name: 'Hapus halaman lalu gambar ulang' })).toBeVisible()
   expect(galat).toEqual([])
@@ -153,7 +160,7 @@ test('tentang kami, lalu tim, lalu kontak', async ({ page }) => {
   await bukaHalaman(page)
   await page.getByRole('button', { name: 'Tentang kami' }).click({ force: true })
   const tentang = page.getByRole('dialog', { name: 'Tentang kami' })
-  await expect(tentang).toContainText('tim dua orang')
+  await expect(tentang).toContainText('Kall dan Bintang')
   await tentang.getByRole('button', { name: 'kenalan sama tim →' }).click()
   const tim = page.getByRole('dialog', { name: 'Tim kami' })
   await expect(tim).toBeVisible()
@@ -178,7 +185,7 @@ test('kartu nama tim: dibalik dengan Enter atau ketukan, diseret tanpa terbalik'
   // di titik yang pasti
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const galat = await bukaHalaman(page)
-  await page.getByRole('button', { name: /^Kenalan sama tim/ }).click({ force: true })
+  await page.getByRole('button', { name: /^Tim kami/ }).click({ force: true })
   const tim = page.getByRole('dialog', { name: 'Tim kami' })
   const kall = tim.getByRole('button', { name: /^Kartu nama Kall/ })
   const bintang = tim.getByRole('button', { name: /^Kartu nama Bintang/ })
@@ -215,7 +222,7 @@ test('kartu nama tim: dibalik dengan Enter atau ketukan, diseret tanpa terbalik'
   // lanyard berhenti saat dialog ditutup dan jalan lagi saat dibuka
   await page.keyboard.press('Escape')
   await expect(tim).toBeHidden()
-  await page.getByRole('button', { name: /^Kenalan sama tim/ }).click({ force: true })
+  await page.getByRole('button', { name: /^Tim kami/ }).click({ force: true })
   await expect(bintang).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(() => pikselTinta(page, '#tm-daftar canvas.tali')).toBeGreaterThan(5_000)
   expect(galat).toEqual([])
@@ -234,16 +241,16 @@ test('form kontak: cek kolom, terkirim, lalu cadangan email saat backend gagal',
 
   await d.getByLabel('nama kamu').fill('Sari')
   await d.getByLabel('email kamu').fill('sari@contoh.com')
-  await d.getByLabel('mau bikin apa?').fill('Mau bikin aplikasi kasir buat warung kopi.')
+  await d.getByLabel('pesan kamu').fill('Mau bikin aplikasi kasir buat warung kopi.')
   await d.getByRole('button', { name: 'kirim →' }).click()
-  await expect(d.getByRole('status')).toContainText('Terkirim!')
+  await expect(d.getByRole('status')).toContainText('Pesannya sudah sampai')
   await page.keyboard.press('Escape')
 
   await page.getByRole('button', { name: /Hubungi kami/ }).click({ force: true })
   await expect(d.getByRole('button', { name: 'kirim →' })).toBeVisible()
   await d.getByLabel('nama kamu').fill('Sari')
   await d.getByLabel('email kamu').fill('sari@contoh.com')
-  await d.getByLabel('mau bikin apa?').fill('Tolong cek pesan ini #gagal')
+  await d.getByLabel('pesan kamu').fill('Tolong cek pesan ini #gagal')
   await d.getByRole('button', { name: 'kirim →' }).click()
   const surel = d.getByRole('link', { name: 'buka email →' })
   await expect(surel).toBeVisible()
@@ -256,11 +263,75 @@ test('form kontak: cek kolom, terkirim, lalu cadangan email saat backend gagal',
 test('tema gelap tersimpan setelah halaman dibuka lagi', async ({ page }) => {
   await bukaHalaman(page)
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'terang')
-  await page.getByRole('button', { name: 'Ganti ke mode gelap' }).click({ force: true })
+  await page.getByRole('button', { name: 'Matikan lampu' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'gelap')
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'gelap')
-  await expect(page.getByRole('button', { name: 'Ganti ke mode terang' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Nyalakan lampu' })).toBeVisible()
+  await expect(page.locator('#lampu img.mati')).toBeVisible()
+})
+
+test('tali lampu: klik, Enter, dan tarikan mematikan atau menyalakan lampu', async ({
+  page,
+  isMobile,
+}) => {
+  await bukaHalaman(page)
+  const html = page.locator('html')
+  await expect(html).toHaveAttribute('data-tema', 'terang')
+  await page.getByRole('button', { name: 'Matikan lampu' }).click()
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+  await expect(page.locator('#lampu img.nyala')).toBeHidden()
+
+  await page.getByRole('button', { name: 'Nyalakan lampu' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(html).toHaveAttribute('data-tema', 'terang')
+  await expect(page.locator('#lampu img.nyala')).toBeVisible()
+
+  test.skip(isMobile, 'menarik tali dengan mouse hanya di desktop')
+  // pegang biji setelah tali dan lampu berhenti berayun, seperti tangan sungguhan
+  await expect(page.locator('#lampu')).not.toHaveClass(/bergerak/, { timeout: 15_000 })
+  const k = (await page.getByRole('button', { name: 'Matikan lampu' }).boundingBox())!
+  const [x, y] = [k.x + k.width / 2, k.y + k.height / 2]
+  await page.mouse.move(x, y)
+  await page.mouse.down()
+  // tarikan pendek belum memutar saklar
+  await page.mouse.move(x, y + 5, { steps: 3 })
+  await page.waitForTimeout(150)
+  await expect(html).toHaveAttribute('data-tema', 'terang')
+  await page.mouse.move(x - 10, y + 60, { steps: 8 })
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+  await page.mouse.up()
+  // klik yang menyusul seretan tidak dihitung sebagai tarikan kedua
+  await page.waitForTimeout(400)
+  await expect(html).toHaveAttribute('data-tema', 'gelap')
+})
+
+test('layar pembuka: lambang mendarat dulu, baru sketsa halaman digambar', async ({ page }) => {
+  const galat: string[] = []
+  page.on('pageerror', (e) => galat.push(e.message))
+  await page.goto('/')
+  const pembuka = page.locator('#pembuka')
+  await expect(pembuka).toBeVisible()
+  expect(await pikselTinta(page, '[data-sketsa="merek"] canvas')).toBe(0)
+  await expect(pembuka).toHaveCount(0, { timeout: 6000 })
+  await expect(page.locator('html')).not.toHaveClass(/pembuka/)
+  // lambang langsung utuh di tempatnya, tulisan di bawahnya menyusul digambar
+  await expect(page.locator('[data-sketsa="logo"]')).toHaveClass(/selesai/)
+  await expect
+    .poll(() => pikselTinta(page, '[data-sketsa="logo"] canvas.figur'))
+    .toBeGreaterThan(2000)
+  await expect(page.locator('[data-sketsa="merek"]')).toHaveClass(/selesai/, { timeout: 6000 })
+  expect(galat).toEqual([])
+})
+
+test('layar pembuka bisa dilewati dan tidak tampil lagi di sesi yang sama', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('#pembuka')).toBeVisible()
+  await page.mouse.click(30, 400)
+  await expect(page.locator('#pembuka')).toHaveCount(0, { timeout: 2000 })
+  await page.reload()
+  await expect(page.locator('html')).not.toHaveClass(/pembuka/)
+  await expect(page.locator('#pembuka')).toBeHidden()
 })
 
 test('sudut halaman dikupas ke Matrix lalu kembali', async ({ page }) => {
@@ -277,8 +348,11 @@ test('logo diketuk mengepakkan sayap', async ({ page }) => {
   await bukaHalaman(page)
   const sebelum = await pikselTinta(page, '[data-sketsa="kepak1"] canvas')
   expect(sebelum).toBe(0)
-  await page.getByRole('button', { name: /Ketuk logonya/ }).click({ force: true })
+  const pose = page.waitForResponse((r) => r.url().endsWith('/figur/logo-naik.webp'))
+  await page.getByRole('button', { name: /^Logo Wingman Clutch/ }).click({ force: true })
   await expect.poll(() => pikselTinta(page, '[data-sketsa="kepak1"] canvas')).toBeGreaterThan(100)
+  // sayap lambang ikut mengepak: pose sayap naik dimuat saat pertama kali diketuk
+  expect((await pose).ok()).toBe(true)
 })
 
 test('keyboard: Enter membuka sketsa, Escape mengembalikan fokus', async ({ page }) => {

@@ -29,7 +29,7 @@ test('halaman tanpa pelanggaran axe di tema terang, gelap, dan Matrix', async ({
   await bukaHalaman(page)
   expect(await periksa(page), 'terang').toEqual([])
 
-  await page.getByRole('button', { name: 'Ganti ke mode gelap' }).click({ force: true })
+  await page.getByRole('button', { name: 'Matikan lampu' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'gelap')
   expect(await periksa(page), 'gelap').toEqual([])
 
@@ -94,13 +94,13 @@ test('form kontak tanpa pelanggaran axe saat galat, cadangan email, dan terkirim
 
   await d.getByLabel('nama kamu').fill('Sari')
   await d.getByLabel('email kamu').fill('sari@contoh.com')
-  await d.getByLabel('mau bikin apa?').fill('Tolong cek pesan ini #gagal')
+  await d.getByLabel('pesan kamu').fill('Tolong cek pesan ini #gagal')
   await d.getByRole('button', { name: 'kirim →' }).click()
   await expect(d.getByRole('link', { name: 'buka email →' })).toBeVisible()
   expect(await periksa(page, '#dlg-kontak'), 'cadangan email').toEqual([])
 
-  await d.getByLabel('mau bikin apa?').fill('Mau bikin aplikasi kasir buat warung kopi.')
+  await d.getByLabel('pesan kamu').fill('Mau bikin aplikasi kasir buat warung kopi.')
   await d.getByRole('button', { name: 'kirim →' }).click()
-  await expect(d.getByRole('status')).toContainText('Terkirim!')
+  await expect(d.getByRole('status')).toContainText('Pesannya sudah sampai')
   expect(await periksa(page, '#dlg-kontak'), 'terkirim').toEqual([])
 })

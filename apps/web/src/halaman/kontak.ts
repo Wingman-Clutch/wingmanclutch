@@ -92,8 +92,8 @@ export function pasangKontak() {
     cadangan.hidden = false
   })
 
-  $<HTMLButtonElement>('#kt-salin-catatan').addEventListener('click', (e) =>
-    salin(catatan, e.currentTarget as HTMLButtonElement, null, 'salin catatan'),
+  $<HTMLButtonElement>('#kt-salin-pesan').addEventListener('click', (e) =>
+    salin(catatan, e.currentTarget as HTMLButtonElement, null, 'salin pesan'),
   )
   $<HTMLButtonElement>('#kt-salin-email').addEventListener('click', (e) =>
     salin(STUDIO.email, e.currentTarget as HTMLButtonElement, $('#kt-email'), 'salin'),

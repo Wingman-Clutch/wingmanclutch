@@ -37,6 +37,11 @@ export interface TataLetak {
   /** tinggi area ketuk setiap pensil */
   tebalPensil: number
   penghapus: { x: number; y: number; w: number; h: number; r: number }
+  /**
+   * lampu gantung: pojok kiri atas gambar lampu, lebarnya, dan panjang tali tariknya; kabelnya naik
+   * sampai tepi atas layar
+   */
+  lampu: { x: number; y: number; w: number; tali: number }
   item: Record<string, TempatItem>
 }
 
@@ -65,10 +70,12 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
       { c: 'p', x: 658, y: 1938, panjang: 254, r: -94 },
     ],
     penghapus: { x: 858, y: 1986, w: 196, h: 84, r: -9 },
+    // di antara kertas tempel dan kolom tanggal, sedikit naik melewati tepi atas supaya tali yang
+    // ditarik penuh tetap di atas logo dan kilau kepakannya
+    lampu: { x: 308, y: -30, w: 120, tali: 58 },
     item: {
       tentang: { x: 96, y: 14, s: 0.74, r: -5 },
       tanggal: { x: 664, y: 104, s: 0.86 },
-      saklar: { x: 282, y: 26, s: 0.85 },
       logo: { x: 262, baris: 7.6, s: 0.54 },
       petunjukBawah: { x: 330, baris: 8.6, s: 0.86, r: -2 },
       postpocket: { x: 92, baris: 16.6, s: 1.45, r: -2 },
@@ -86,18 +93,18 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
     W: 1700,
     H: 1112,
     garis0: 212,
-    // kolom tanggal dan saklar sengaja jauh di kanan supaya kepakan logo yang terakhir tidak
-    // menimpa tulisan TANGGAL; saklar tetap di luar sudut yang terlipat
-    tanggal: { x0: 1204, x1: 1494, y: 74 },
+    // kolom tanggal sengaja jauh di kanan supaya kepakan logo yang terakhir tidak menimpa tulisan
+    // TANGGAL; lampu di kanannya tetap di luar sudut yang terlipat dan talinya di atas bus goRute
+    tanggal: { x0: 1204, x1: 1470, y: 74 },
     noda: [[1562, 1000, 60, 7]],
     kaki: 1070,
     tebalPensil: 60,
     pensil: PENSIL_LANSKAP,
     penghapus: { x: 866, y: 962, w: 196, h: 84, r: -6 },
+    lampu: { x: 1476, y: 10, w: 118, tali: 68 },
     item: {
       tentang: { x: 352, y: 22, s: 0.72, r: -6 },
       tanggal: { x: 1242, y: 74, s: 0.8 },
-      saklar: { x: 1506, y: 6, s: 0.72 },
       logo: { x: 636, baris: 5.5, s: 0.49 },
       petunjukSamping: { x: 850, baris: 7.2, s: 0.88 },
       postpocket: { x: 92, baris: 7, s: 1.3, r: -3 },
