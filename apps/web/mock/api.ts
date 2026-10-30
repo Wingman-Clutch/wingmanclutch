@@ -7,8 +7,8 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { periksaKontak } from '../src/api/kontrak'
-import type { DaftarStatistik, Galat } from '../src/api/kontrak'
+import { periksaKontak } from '../src/api/kontrak.ts'
+import type { DaftarStatistik, Galat } from '../src/api/kontrak.ts'
 
 function kirim(
   res: ServerResponse,

@@ -1,6 +1,6 @@
 // Bentuk data /api sesuai docs/api/openapi.yaml. Kalau kontrak berubah, ubah keduanya di PR yang sama.
 
-import type { IdProyek } from '../data/proyek'
+import type { IdProyek } from '../data/proyek.ts'
 
 export interface PesanKontak {
   nama: string
