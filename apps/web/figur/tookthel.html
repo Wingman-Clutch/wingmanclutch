@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tookthel</title></head><body>
+<script src="core.js"></script>
+<script>
+/* Tookthel: printer struk thermal di meja kasir dan setumpuk koin patungan.
+   Cara kerja nyata printer thermal: kertas thermal dari gulungan di dalam ditarik motor stepper lewat rol karet
+   (platen) yang menekannya ke kepala thermal; titik-titik panas di kepala menghitamkan kertas jadi tulisan. Kertas
+   keluar dari celah atas dan dipotong pisau di bawah celah. Lalu totalnya dibagi rata: tiap orang bayar bagiannya.
+   x = kedalaman (depan di x besar), y = lebar, z = tinggi.
+   Bagian:
+   MEJA      alas meja kasir
+   PRINTER   badan berprofil bulat . tutup atas . celah kertas . lampu status . tombol FEED . tulisan TOOKTHEL
+   DALAM     gulungan kertas di poros . jalur kertas . rol karet (platen) . kepala thermal di dudukan pegas .
+             motor stepper . roda gigi ke rol . pisau potong . papan kendali . colokan daya dan kabel
+   KOIN      sembilan koin yang dibagi jadi tiga tumpuk */
+const TT_BOARD = [0, 0, 96, 92];
+const TT_X0 = 10, TT_X1 = 58, TT_Y0 = 12, TT_Y1 = 68, TT_Z0 = 3, TT_Z1 = 38, TT_R = 8;
+const TT_PROF = rrUV(TT_Y0, TT_Z0, TT_Y1, TT_Z1, TT_R);
+const TT_GREEN = { l:'#93d3b0', m:'#71b693', d:'#2f6650' }, TT_PAPER = { l:'#fffdf6', m:'#efe9da', d:'#cfc6b0' };
+const TT_GOLD = { l:'#f6d36a', m:'#d9ad38', d:'#8a6a1c' }, TT_RUB = { l:'#55504a', m:'#3d3935', d:'#272421' };
+const TT_SLOT_X = 46, TT_PW = 40, TT_PY0 = (TT_Y0 + TT_Y1) / 2 - TT_PW / 2;   // celah kertas (x), lebar kertas, tepi kertas
+const TT_SLIP = { x0: 62, y0: 10, len: 30 };                       // potongan struk di meja
+const TT_ROWS = ['KOPI SUSU 3x', 'MIE GORENG', 'ES TEH 2x', 'KENTANG'];
+
+/* struk keluar dari celah: naik lurus, lalu melengkung sedikit ke depan; h = panjang yang sudah tercetak */
+function ttReceiptPath(h){
+  const pts = [[TT_SLOT_X, TT_Z1]]; let x = TT_SLOT_X, z = TT_Z1, a = 0;
+  const n = Math.max(2, Math.ceil(h / 3));
+  for (let i = 1; i <= n; i++){ const d = h / n, u = (i * d) / 60; a = Math.min(.55, u * u * .9);
+    x += Math.sin(a) * d; z += Math.cos(a) * d; pts.push([x, z]); }
+  return pts;
+}
+function ttReceipt(st){
+  const h = 56 * st.print * (st.torn ? 0 : 1) + (st.torn ? 4 : 0);
+  if (h < .5) return { svg: '', pts: [] };
+  const path = ttReceiptPath(h), y0 = TT_PY0, y1 = TT_PY0 + TT_PW;
+  let s = '';
+  const quads = [];
+  for (let i = 0; i < path.length - 1; i++){ const [xa, za] = path[i], [xb, zb] = path[i + 1];
+    quads.push([[xa, y0, za], [xa, y1, za], [xb, y1, zb], [xb, y0, zb]]); }
+  const nrm = q => norm(cross(sub(q[1], q[0]), sub(q[3], q[0])));
+  for (const q of quads){ let n = nrm(q); if (n[0] < 0) n = n.map(v => -v);   // sisi cetak menghadap depan (+x)
+    s += face(pd(q), facing(n) ? toneI(n, TT_PAPER) : toneI(n.map(v => -v), TT_PAPER)); }
+  // tulisan cetakan di sisi depan: dipetakan sepanjang lintasan (s = jarak dari celah)
+  const along = d => { let acc = 0; for (let i = 0; i < path.length - 1; i++){ const [xa, za] = path[i], [xb, zb] = path[i + 1], L = Math.hypot(xb - xa, zb - za);
+      if (acc + L >= d){ const t = (d - acc) / L; return [xa + (xb - xa) * t + .2, za + (zb - za) * t]; } acc += L; } const e = path[path.length - 1]; return [e[0] + .2, e[1]]; };
+  if (facing([1,0,0]) && !st.torn){
+    const lines = [[h - 6, 'STRUK', 2.6, 800], ...TT_ROWS.map((r, i) => [h - 13 - i * 5.2, r, 1.9, 700]), [h - 36, 'TOTAL  Rp126.000', 2, 800], [h - 43, 'BAGI 3 = Rp42.000', 2, 800]];
+    for (const [d, txt, size, w] of lines){ if (d < 2) continue; const [x, z] = along(d), [x2, z2] = along(d + .01);
+      s += `<text transform="${txM(P(x, (y0 + y1) / 2, z), Dv(0,-1,0), Dv(...norm([x2 - x, 0, z2 - z]).map(v => -v)))}" font-size="${size}" fill="#3a3632" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="${w}" letter-spacing=".02em">${txt}</text>`; }
+  }
+  const all = quads.flat();
+  s += hullInk(all, 1.2);
+  return { svg: s, pts: all };
+}
+
+/* potongan struk yang sudah disobek, tergeletak di meja di depan printer; dibaca dari sudut depan */
+function ttTorn(st){
+  if (!st.torn) return '';
+  const { x0, y0, len } = TT_SLIP, k = Math.min(1, st.torn), y1 = y0 + TT_PW, ym = (y0 + y1) / 2;
+  const q = [[x0, y0, 3.1], [x0 + len * k, y0, 3.1], [x0 + len * k, y1, 3.1], [x0, y1, 3.1]];
+  let s = shape(q, TT_PAPER.l, 1);
+  if (k >= 1){
+    const t = (x, str, size, w) => `<text transform="${txM(P(x, ym, 3.2), Dv(0,-1,0), Dv(1,0,0))}" font-size="${size}" fill="#3a3632" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="${w}">${str}</text>`;
+    s += t(x0 + 7, 'STRUK', 3, 800) + t(x0 + 24, 'BAGI 3 = Rp42.000', 2.6, 800);
+    for (let i = 0; i < 3; i++) s += line([[x0 + 11 + i * 3, y0 + 7, 3.15], [x0 + 11 + i * 3, y1 - 7, 3.15]], .5);
+  }
+  return s;
+}
+
+/* koin: sembilan koin; dibagi rata jadi tiga tumpuk */
+const TT_STACKS = [[71, 72], [86, 74], [78, 84]], TT_COIN_R = 5.4;
+function ttCoins(st){
+  const k = ease(Math.min(1, st.split)), parts = [];
+  for (let i = 0; i < 9; i++){
+    const g = i % 3, lvl = Math.floor(i / 3);
+    const sx = 78, sy = 76, sz = 3 + i * 1.7;                        // satu tumpuk
+    const tx2 = TT_STACKS[g][0], ty2 = TT_STACKS[g][1], tz = 3 + lvl * 1.7;
+    const x = sx + (tx2 - sx) * k, y = sy + (ty2 - sy) * k, z = sz + (tz - sz) * k + Math.sin(k * Math.PI) * 6 * (i % 3 ? 1 : 0);
+    parts.push({ box: [[x - TT_COIN_R, y - TT_COIN_R, z], [x + TT_COIN_R, y + TT_COIN_R, z + 1.5]], svg: cyl(x, y, z, z + 1.5, TT_COIN_R, TT_GOLD, toneI, .9, 18) });
+  }
+  return byDepth(parts);
+}
+
+/* ---------- see-through: isi printer thermal ---------- */
+let TT_LABELS = '';
+function ttMech(st){
+  const parts = [], put = (b, svg) => parts.push({ box: b, svg });
+  const ym = (TT_Y0 + TT_Y1) / 2, live = st.printing, sx = TT_SLOT_X, y0 = TT_PY0, y1 = TT_PY0 + TT_PW;
+  const platen = [sx - 2, 32], motorG = [sx - 8, 25];              // sumbu rol karet dan roda gigi motor (x, z)
+  // gulungan kertas di poros, di bagian belakang
+  const rollX = 23, rollZ = 18, rollR = 11 - 3 * st.print;
+  put([[rollX - rollR, y0, rollZ - rollR], [rollX + rollR, y1, rollZ + rollR]], rod([rollX, y0, rollZ], [rollX, y1, rollZ], rollR, TT_PAPER, toneI, 1) + rod([rollX, y0 - 3, rollZ], [rollX, y1 + 3, rollZ], 1.2, METAL, toneI, .6));
+  // jalur kertas dari gulungan ke rol karet
+  put([[rollX, y0, rollZ], [sx, y1, 34]], face(pd([[rollX, y0, rollZ + rollR], [rollX, y1, rollZ + rollR], [sx - 2, y1, 34.4], [sx - 2, y0, 34.4]]), TT_PAPER.m) + line([[rollX, y0, rollZ + rollR], [sx - 2, y0, 34.4]], .6));
+  // rol karet (platen) dan kepala thermal yang menekannya
+  put([[sx - 4.6, y0 - 3.5, 29], [sx + .6, y1 + 2, 35]], rod([platen[0], y0 - 3.5, platen[1]], [platen[0], y1 + 2, platen[1]], 2.6, TT_RUB, toneI, .8));
+  put([[sx + .5, y0, 28], [sx + 3, y1, 35]], box(sx + .5, y0, 28, sx + 3, y1, 35, matOf(live ? '#e2483d' : '#c6ccce'), toneI, .8));
+  put([[sx + 3, ym - 6, 26], [sx + 6, ym + 6, 32]], box(sx + 3, ym - 6, 26, sx + 6, ym + 6, 32, METAL, toneI, .6));   // dudukan pegas kepala
+  // pisau potong di bawah celah
+  put([[sx + 1, y0 - 1, 35.4], [sx + 5, y1 + 1, 36.6]], box(sx + 1, y0 - 1, 35.4, sx + 5, y1 + 1, 36.6, METAL, toneI, .6));
+  // motor stepper di bawah jalur kertas; roda giginya menggigit roda gigi di ujung rol karet
+  put([[motorG[0] - 5, y0 - 2.6, motorG[1] - 5], [motorG[0] + 5, y0 + 5, motorG[1] + 5]], box(motorG[0] - 5, y0 - 2.6, motorG[1] - 5, motorG[0] + 5, y0 + 5, motorG[1] + 5, TT_RUB, toneI, .8));
+  const ang = st.gear;
+  const gear = (cx, cz, r, n, dir) => { const pts = []; for (let i = 0; i < n * 2; i++){ const t = ang * dir + i / (n * 2) * Math.PI * 2, rr = i % 2 ? r : r + 1; pts.push([cx + Math.cos(t) * rr, y0 - 3.4, cz + Math.sin(t) * rr]); } return pts; };
+  put([[motorG[0] - 5, y0 - 3.6, motorG[1] - 5], [platen[0] + 6, y0 - 3.2, platen[1] + 6]], shape(gear(...motorG, 3, 8, 1), METAL.m, .6) + shape(gear(...platen, 5, 12, -.6), METAL.l, .6));
+  // papan kendali di dasar dan colokan daya di dinding belakang
+  put([[18, TT_Y0 + 4, 4], [54, TT_Y1 - 4, 6]], box(18, TT_Y0 + 4, 4, 54, TT_Y1 - 4, 5.2, matOf('#2f9a52'), toneI, .7)
+    + box(40, TT_Y0 + 14, 5.2, 46, TT_Y0 + 20, 6.6, TT_RUB, toneI, .5) + box(28, TT_Y0 + 22, 5.2, 34, TT_Y0 + 28, 6.2, matOf('#e6e9ea'), toneI, .5));
+  put([[TT_X0, TT_Y1 - 12, 6], [TT_X0 + 4, TT_Y1 - 6, 10]], box(TT_X0, TT_Y1 - 12, 6, TT_X0 + 4, TT_Y1 - 6, 10, TT_RUB, toneI, .6));
+  TT_LABELS = xrCallouts([
+    { at: [rollX, ym, rollZ + rollR], text: 'GULUNGAN KERTAS', on: live },
+    { at: [platen[0], y1, platen[1]], text: 'ROL KARET', on: live },
+    { at: [sx + 2, y0 + 4, 34], text: 'KEPALA THERMAL', on: live },
+    { at: [motorG[0], y0 + 5, motorG[1]], text: 'MOTOR STEPPER', on: live },
+    { at: [sx + 3, y1, 36.6], text: 'PISAU POTONG', on: st.cutting },
+    { at: [36, TT_Y1 - 4, 5], text: 'PAPAN KENDALI', on: live },
+  ], [TT_X0, TT_X1, TT_Y0, TT_Y1, TT_Z0, TT_Z1 + 20]);
+  return byDepth(parts);
+}
+
+function ttPrinter(st){
+  const FRONT = facing([1,0,0]), BACK = facing([-1,0,0]), LEFT = facing([0,1,0]);
+  let s = extrude(TT_PROF, TT_X0, TT_X1, TT_GREEN);
+  if (FRONT){
+    s += fill(pd(on(PX(TT_X1), TT_PROF)), tone([1,0,0], TT_GREEN));
+    s += shape(on(PX(TT_X1 + .1), ellUV(TT_Y1 - 12, 14, 2, 2, 12)), st.printing ? '#43c25c' : '#3d8f5c', .7);
+    s += shape(on(PX(TT_X1 + .1), rrUV(TT_Y0 + 8, 10, TT_Y0 + 24, 18, 2.4)), '#e8e4da', .8) + tx(TT_X1 + .2, TT_Y0 + 16, 12.8, 'FEED', 2.6, INK, 800);
+    s += ink(pd(on(PX(TT_X1), TT_PROF)), 2);
+  }
+  if (BACK){ s += fill(pd(on(PX(TT_X0), TT_PROF)), tone([-1,0,0], TT_GREEN)) + ink(pd(on(PX(TT_X0), TT_PROF)), 2); }
+  if (LEFT) s += txY((TT_X0 + TT_X1) / 2, TT_Y1 + .2, 17, 'TOOKTHEL', 6.2, mix(tone([0,1,0], TT_GREEN), '#ffffff', .82), 800);
+  // garis tutup atas dan celah kertas
+  s += line(on(PZ(TT_Z1 + .05), [[TT_X0 + 14, TT_Y0 + 3], [TT_X0 + 14, TT_Y1 - 3]]), .8);
+  s += shape(on(PZ(TT_Z1 + .08), rrUV(TT_SLOT_X - 1.4, TT_PY0 - 1.5, TT_SLOT_X + 1.4, TT_PY0 + TT_PW + 1.5, .8)), '#272421', .7);
+  s += hullInk([...on(PX(TT_X0), TT_PROF), ...on(PX(TT_X1), TT_PROF)], 2.8);
+  return s;
+}
+
+function scene(st){
+  let s = board(...TT_BOARD, 3, 6, BOARD);
+  const top = boardTop(...TT_BOARD, 3, 6), rec = ttReceipt(st);
+  s += castShadow([...on(PX(TT_X0), TT_PROF), ...on(PX(TT_X1), TT_PROF), ...rec.pts], 3, top);
+  // kabel daya tergeletak di meja, dari colokan belakang ke tepi meja
+  s += `<path d="${pd([[TT_X0, TT_Y1 - 9, 5], [5, TT_Y1 - 8, 3.6], [-.5, TT_Y1 - 4, 3.4]], false)}" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const k = ease(st.xr || 0);
+  let printer = ttPrinter(st);
+  if (k > 0) printer = xrGhost(printer, '', k, TT_PROF, TT_X0, TT_X1, TT_GREEN) + `<g opacity="${f(k)}">${ttMech(st)}</g>`;
+  // struk keluar dari atas printer, jadi selalu di atasnya; potongan struk dan koin di meja depan
+  s += byDepth([
+    { box: [[TT_X0, TT_Y0, 3], [TT_X1, TT_Y1, TT_Z1 + 60]], svg: printer + rec.svg },
+    { box: [[TT_SLIP.x0, TT_SLIP.y0, 3], [TT_SLIP.x0 + TT_SLIP.len, TT_SLIP.y0 + TT_PW, 3.2]], svg: ttTorn(st) },
+    { box: [[TT_STACKS[0][0] - 6, 66, 3], [92, 90, 20]], svg: ttCoins(st) } ]);
+  if (k > .6) s += TT_LABELS;
+  return s;
+}
+
+let ui;
+function ttTo(key, target, ms, done){
+  const st = ui.st, from = st[key], t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / ms); st[key] = from + (target - from) * k; if (k >= 1 && done) done(); return k < 1; });
+}
+function cetak(st){
+  if (st.printing) return;
+  if (st.print >= 1 && !st.torn) return ui.flash('Struknya sudah tercetak, sobek dulu');
+  st.torn = 0; st.print = 0; st.printing = true;
+  const t0 = performance.now();
+  ui.animate(() => { const k = Math.min(1, (performance.now() - t0) / 2200); st.print = k; st.gear = k * 18; if (k >= 1) st.printing = false; return k < 1; });
+}
+function sobek(st){
+  if (st.printing) return ui.flash('Tunggu sampai selesai dicetak');
+  if (st.print < 1 || st.torn) return ui.flash(st.torn ? 'Struknya sudah disobek' : 'Cetak struknya dulu');
+  st.cutting = true; ttTo('torn', 1, 600, () => { st.cutting = false; });
+}
+function bagi(st){
+  if (st.print < 1 && !st.torn) ui.flash('Totalnya dari struk: cetak dulu, nanti dibagi rata');
+  ttTo('split', st.split >= 1 ? 0 : 1, 900);
+}
+
+ui = mountFigure({
+  fig:'04', turn:'full', credit:false, title:'Tookthel',
+  size:[TT_BOARD[2], TT_BOARD[3], TT_Z1 + 56], center:[TT_BOARD[2] / 2, TT_BOARD[3] / 2], palette:'mint',
+  state:{ print:0, printing:false, gear:0, torn:0, cutting:false, split:0 },
+  scene,
+  stats: st => st.split >= 1 ? [{ label:'Per orang', value:'Rp42rb', small: true }] : [],
+  buttons:[
+    { label:'Cetak struk', onClick:(st) => cetak(st) },
+    { label:'Sobek struk', onClick:(st) => sobek(st) },
+    { label:'Bagi rata', onClick:(st) => bagi(st) },
+  ],
+  params:(st, q) => { for (const k of ['print', 'torn', 'split', 'gear']) if (q.has(k)) st[k] = +q.get(k); },
+});
+xrMount(() => ui, st => st.printing
+  ? 'Motor stepper memutar rol karet; kertas thermal ditekan ke kepala thermal yang panas, jadi titik-titiknya menghitam membentuk tulisan.'
+  : 'Di dalam: gulungan kertas thermal, rol karet yang ditekan ke kepala thermal, motor stepper dengan roda gigi, pisau potong, dan papan kendali.');
+</script></body></html>

@@ -5,3 +5,5 @@
 *.png binary
 *.webp binary
 *.woff2 binary
+apps/web/figur/colorfigures/** linguist-vendored
+apps/web/public/figur/*.html linguist-generated

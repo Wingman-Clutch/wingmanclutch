@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "font": "node scripts/buat-font.mjs",
+    "figur": "node scripts/buat-figur.mjs",
     "foto-tim": "node scripts/buat-foto-tim.mjs"
   },
   "devDependencies": {

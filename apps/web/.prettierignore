@@ -1,5 +1,9 @@
 dist
 src/data/font.json
 src/data/logo.json
+src/data/figur.json
+figur/colorfigures
+figur/*.html
+public/figur
 test-results
 playwright-report
