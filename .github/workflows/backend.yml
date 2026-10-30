@@ -1,0 +1,43 @@
+name: Backend
+
+# Lint, typecheck, dan unit test untuk api/, plus lint kontrak API dengan Redocly.
+
+on:
+  push:
+    branches: [main]
+    paths: [api/**, docs/api/**, pnpm-lock.yaml, .github/workflows/backend.yml]
+  pull_request:
+    paths: [api/**, docs/api/**, pnpm-lock.yaml, .github/workflows/backend.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @wingmanclutch/api lint
+
+      - name: Typecheck
+        run: pnpm --filter @wingmanclutch/api typecheck
+
+      - name: Unit test
+        run: pnpm --filter @wingmanclutch/api test
+
+      - name: Lint kontrak
+        run: npx @redocly/cli@1 lint docs/api/openapi.yaml

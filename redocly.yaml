@@ -1,0 +1,6 @@
+# Aturan lint kontrak API (npx @redocly/cli@1 lint docs/api/openapi.yaml).
+extends:
+  - recommended
+rules:
+  # Lisensi repo masih keputusan berdua (PRD bagian keputusan terbuka). Nyalakan lagi setelah diputuskan.
+  info-license: off
