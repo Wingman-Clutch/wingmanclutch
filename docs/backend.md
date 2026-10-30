@@ -20,7 +20,7 @@ Diputuskan Bintang di PR `feat/api-kontak`, mengikuti usulan awal.
 | Keputusan | Pilihan | Catatan |
 | --- | --- | --- |
 | Penyimpanan batas kirim | Upstash Redis (gratis) lewat `@upstash/ratelimit`, jendela geser 5 per jam | Batas di memori bisa ditembus karena instance Functions berganti-ganti, jadi hanya dipakai sebagai cadangan kalau env Upstash kosong (lokal). Kalau Upstash sedang mati, pesan tetap dikirim supaya form tidak tertutup |
-| Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com. Resend dipanggil lewat `fetch` langsung, tanpa SDK |
+| Pengirim email | Akun Resend didaftarkan dengan wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` | Tanpa domain sendiri, Resend hanya bisa mengirim ke email pemilik akun. Itu cukup, karena tujuannya memang wingmanclutch@gmail.com. Resend dipanggil lewat `fetch` langsung, tanpa SDK. Kalau log mencatat `Resend menjawab 400`, cek dulu isi `RESEND_API_KEY`: Resend menjawab `400` untuk key yang ikut tanda kutip, `RESEND_API_KEY=`, atau spasi, dan `401` untuk key salah yang bentuknya wajar. Nilainya Sensitive di Vercel dan tidak bisa dibaca ulang, jadi timpa saja dengan key mentah yang diawali `re_` |
 | Token GitHub | Fine-grained, hanya `Public Repositories (read-only)`, terpasang di Production sejak 30 Oktober 2026, **kedaluwarsa 29 Oktober 2027** | Kode tetap jalan tanpa token, tapi batas 60 permintaan per jam tanpa token dihitung per IP, dan IP keluar Vercel Functions dipakai bersama banyak proyek lain, jadi kuotanya bisa habis duluan walau cache kita satu jam. Org Wingman-Clutch menolak token fine-grained yang berlaku lebih dari 366 hari (GitHub menjawab 403), jadi token pengganti juga maksimal 366 hari. Ganti sebelum 29 Oktober 2027, karena token kedaluwarsa dijawab GitHub `401` (bukan `403` seperti penolakan kebijakan org) dan statistik jadi 503 |
 
 ## Struktur yang disarankan
@@ -108,5 +108,5 @@ Workflow `Backend` (`.github/workflows/backend.yml`) jalan di setiap PR dan push
 - [x] `GET /api/proyek`: GitHub dan cek status bersamaan, cache CDN, galat sebagian dan total
 - [x] Unit test semua jalur di atas, jawaban divalidasi dengan skema kontrak
 - [x] Workflow `Backend` di CI dan lint kontrak dengan Redocly
-- [ ] Env produksi di Vercel (`RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN`)
-- [ ] Cek produksi: pesan uji sampai ke wingmanclutch@gmail.com, kiriman ke-6 dalam satu jam ditolak, statistik tampil di lembar detail
+- [x] Env produksi di Vercel (`RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN`)
+- [x] Cek produksi: pesan uji sampai ke wingmanclutch@gmail.com, kiriman ke-6 dalam satu jam ditolak, statistik tampil di lembar detail
