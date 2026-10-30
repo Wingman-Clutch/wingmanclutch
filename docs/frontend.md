@@ -76,6 +76,15 @@ Goyangan tangan memakai benih dari id sketsa, jadi gambarnya sama setiap kali di
 | `node apps/web/scripts/buat-logo.mjs` | Logo brand di `docs/brand/` berubah |
 | `node apps/web/scripts/buat-gambar.mjs` | Tampilan berubah dan gambar README atau OG perlu diperbarui |
 
+### Diagram arsitektur
+
+Diagram dibuat dengan [Archify](https://github.com/tt-a1i/archify) dari [`arsitektur.archify.json`](arsitektur.archify.json). Versi interaktifnya (`docs/arsitektur.html`) dipublikasikan GitHub Pages dari folder `docs/` (ada `docs/.nojekyll`) di <https://wingman-clutch.github.io/wingmanclutch/arsitektur.html>, dan setiap bagian menaut ke baris kode di commit `meta.repository.revision`. Setelah arsitektur berubah (misalnya `api/` sudah dibuat Bintang):
+
+1. Perbarui komponen, sumber baris, dan `meta.repository.revision` ke commit yang sudah di-push.
+2. Jalankan `node <archify>/bin/archify.mjs finalize architecture docs/arsitektur.archify.json .archify/arsitektur.html --repo-root . --quality showcase` (folder `.archify/` di-ignore).
+3. Salin `.archify/arsitektur.html` ke `docs/arsitektur.html`.
+4. Ekspor PNG terang dan gelap lewat tombol Ekspor (Gambar tanpa kompresi), lalu simpan sebagai WebP 2400 px: `cwebp -q 92 -resize 2400 0 <png> -o docs/gambar/arsitektur-terang.webp`, begitu juga `arsitektur-gelap.webp`.
+
 ## Test
 
 | Perintah | Isi |
@@ -93,18 +102,18 @@ Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build
 
 ### Rilis 1
 
-- [ ] Mesin pensil: path SVG, goyangan tangan, arsiran, kuas butiran, tulisan tangan dan judul
-- [ ] Kertas, tanggal, noda kopi, tema terang dan gelap tersimpan
-- [ ] Logo pensil dari logo brand, kepakan sayap saat diketuk
-- [ ] Empat perangkat dengan tiga layar yang berganti dan gerak diam
-- [ ] Catatan: tentang kami, tim kami, kontak, rumus FE + BE, kopi, petunjuk, kilau
-- [ ] Tata letak potret dan lanskap, muat tanpa scroll dari 320 px
-- [ ] Lima pensil untuk corat-coret dan penghapus yang menggambar ulang halaman
-- [ ] Sudut halaman dikupas ke Matrix dan kembali
-- [ ] Dialog detail aplikasi, tentang, tim (foto jadi sketsa pensil), kontak
-- [ ] Form kontak dengan validasi, mock API, dan cadangan email
-- [ ] Unit test dan E2E di tiga perangkat
-- [ ] Gambar README dan gambar OG dari build produksi
+- [x] Mesin pensil: path SVG, goyangan tangan, arsiran, kuas butiran, tulisan tangan dan judul
+- [x] Kertas, tanggal, noda kopi, tema terang dan gelap tersimpan
+- [x] Logo pensil dari logo brand, kepakan sayap saat diketuk
+- [x] Empat perangkat dengan tiga layar yang berganti dan gerak diam
+- [x] Catatan: tentang kami, tim kami, kontak, rumus FE + BE, kopi, petunjuk, kilau
+- [x] Tata letak potret dan lanskap, muat tanpa scroll dari 320 px
+- [x] Lima pensil untuk corat-coret dan penghapus yang menggambar ulang halaman
+- [x] Sudut halaman dikupas ke Matrix dan kembali
+- [x] Dialog detail aplikasi, tentang, tim (foto jadi sketsa pensil), kontak
+- [x] Form kontak dengan validasi, mock API, dan cadangan email
+- [x] Unit test dan E2E di tiga perangkat
+- [x] Gambar README, gambar OG, dan diagram arsitektur Archify
 - [ ] Lighthouse mobile ≥ 95 di keempat kategori, axe 0 pelanggaran di halaman dan semua dialog
 - [ ] Deploy Vercel bersama Bintang, cek alur kontak dan statistik di produksi
 - [ ] Ganti mock dengan backend sungguhan di E2E produksi (smoke test), setelah `api/` jadi

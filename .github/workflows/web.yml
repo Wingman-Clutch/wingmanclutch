@@ -1,0 +1,61 @@
+name: Web
+
+# Cek rahasia, lint, typecheck, unit test, build, dan E2E untuk apps/web.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: web
+    # Dikunci ke 24.04 seperti PostPocket: di ubuntu-26.04 beberapa tes WebKit pernah selalu habis waktu.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Uji cek rahasia
+        run: scripts/test-check-secrets.sh
+
+      # Hook pre-commit hanya jalan di mesin yang memasangnya; di sini semua berkas teks yang
+      # di-track dicek ulang, termasuk dari commit yang dibuat tanpa hook.
+      - name: Tidak ada rahasia di repo
+        run: git ls-files -z | xargs -0 grep -Il --null '' | xargs -0 scripts/check-secrets.sh --files
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit test
+        run: pnpm test
+
+      - name: Pasang browser Playwright
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: E2E (build produksi, desktop, Android, iPhone)
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: apps/web/test-results
+          retention-days: 7
