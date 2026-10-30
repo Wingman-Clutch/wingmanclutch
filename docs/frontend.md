@@ -41,7 +41,8 @@ data/              isi halaman (proyek.ts), font.json dan logo.json hasil skrip
 ### Satuan
 
 - **Satuan gambar.** Setiap sketsa perangkat dirancang di kotak 200 x 200, dengan label nama di garis dasar y = 236. Logo memakai koordinat logo brand (872 lebar).
-- **Satuan adegan.** Seluruh halaman: lanskap 1700 x 1000, potret 1000 x 2180. Garis kotak buku berjarak 46 satuan. `baris: n` di tata letak menaruh garis dasar tulisan sketsa tepat di garis buku ke-n.
+- **Satuan adegan.** Seluruh halaman: lanskap 1700 x 1112, potret 1000 x 2273. Garis kotak buku berjarak 46 satuan. `baris: n` di tata letak menaruh garis dasar tulisan sketsa tepat di garis buku ke-n.
+- **Tiga pita.** Header di atas berisi stiker Tentang kami, kolom tanggal, dan saklar tema. Kaki halaman ada di bawah. Sisanya (logo, empat aplikasi, kontak, tim, catatan, pensil, penghapus) berada di tengah, dengan jarak ke header dan ke kaki halaman yang kurang lebih sama. Adegan lebih tinggi dari referensi (1000 dan 2180) supaya ketiga pita itu terpisah jelas. Kalau isi tengah digeser, `garis0` ikut digeser kelipatan 46 supaya garis tanggal tetap di garis buku, dan posisi `y` mutlak ditambah selisih yang sama.
 - **Piksel.** Adegan diskalakan supaya muat di layar (`k` piksel per satuan adegan), lalu setiap sketsa diskalakan lagi dengan `s`.
 
 ### Menggambar sketsa

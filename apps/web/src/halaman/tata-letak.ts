@@ -41,30 +41,30 @@ export interface TataLetak {
 }
 
 const PENSIL_LANSKAP: Pensil[] = [
-  { c: 'w', x: 420, y: 786, panjang: 270, r: -94 },
-  { c: 'r', x: 484, y: 800, panjang: 226, r: -86 },
-  { c: 'b', x: 548, y: 792, panjang: 244, r: -92 },
-  { c: 'g', x: 612, y: 804, panjang: 214, r: -88 },
-  { c: 'p', x: 676, y: 796, panjang: 232, r: -93 },
+  { c: 'w', x: 420, y: 878, panjang: 270, r: -94 },
+  { c: 'r', x: 484, y: 892, panjang: 226, r: -86 },
+  { c: 'b', x: 548, y: 884, panjang: 244, r: -92 },
+  { c: 'g', x: 612, y: 896, panjang: 214, r: -88 },
+  { c: 'p', x: 676, y: 888, panjang: 232, r: -93 },
 ]
 
 export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
   potret: {
     W: 1000,
-    H: 2180,
-    garis0: 150,
+    H: 2273,
+    garis0: 196,
     tanggal: { x0: 566, x1: 962, y: 104 },
-    noda: [[880, 1520, 70, 3]],
-    kaki: 2060,
+    noda: [[880, 1566, 70, 3]],
+    kaki: 2153,
     tebalPensil: 122,
     pensil: [
-      { c: 'w', x: 162, y: 1880, panjang: 300, r: -95 },
-      { c: 'r', x: 286, y: 1894, panjang: 248, r: -85 },
-      { c: 'b', x: 410, y: 1886, panjang: 268, r: -93 },
-      { c: 'g', x: 534, y: 1900, panjang: 236, r: -87 },
-      { c: 'p', x: 658, y: 1892, panjang: 254, r: -94 },
+      { c: 'w', x: 162, y: 1926, panjang: 300, r: -95 },
+      { c: 'r', x: 286, y: 1940, panjang: 248, r: -85 },
+      { c: 'b', x: 410, y: 1932, panjang: 268, r: -93 },
+      { c: 'g', x: 534, y: 1946, panjang: 236, r: -87 },
+      { c: 'p', x: 658, y: 1938, panjang: 254, r: -94 },
     ],
-    penghapus: { x: 858, y: 1940, w: 196, h: 84, r: -9 },
+    penghapus: { x: 858, y: 1986, w: 196, h: 84, r: -9 },
     item: {
       tentang: { x: 96, y: 14, s: 0.74, r: -5 },
       tanggal: { x: 664, y: 104, s: 0.86 },
@@ -75,8 +75,8 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
       gorute: { x: 556, baris: 16.6, s: 1.45, r: 2 },
       tikoem: { x: 100, baris: 25.4, s: 1.45, r: 2 },
       tookthel: { x: 548, baris: 25.4, s: 1.45, r: -2 },
-      kilau1: { x: 456, y: 700, s: 1 },
-      kilau2: { x: 452, y: 1120, s: 1.1, r: 20 },
+      kilau1: { x: 456, y: 746, s: 1 },
+      kilau2: { x: 452, y: 1166, s: 1.1, r: 20 },
       tim: { x: 385, baris: 29.6, s: 1.15, r: 1 },
       kontak: { x: 278, baris: 32.4, s: 0.852, r: -1 },
       petunjukPensil: { x: 690, baris: 35.3, s: 0.9, r: -2 },
@@ -84,16 +84,16 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
   },
   lanskap: {
     W: 1700,
-    H: 1000,
-    garis0: 120,
+    H: 1112,
+    garis0: 212,
     // kolom tanggal dan saklar sengaja jauh di kanan supaya kepakan logo yang terakhir tidak
     // menimpa tulisan TANGGAL; saklar tetap di luar sudut yang terlipat
     tanggal: { x0: 1204, x1: 1494, y: 74 },
-    noda: [[1562, 908, 60, 7]],
-    kaki: 958,
+    noda: [[1562, 1000, 60, 7]],
+    kaki: 1070,
     tebalPensil: 60,
     pensil: PENSIL_LANSKAP,
-    penghapus: { x: 866, y: 880, w: 196, h: 84, r: -6 },
+    penghapus: { x: 866, y: 962, w: 196, h: 84, r: -6 },
     item: {
       tentang: { x: 352, y: 22, s: 0.72, r: -6 },
       tanggal: { x: 1242, y: 74, s: 0.8 },
@@ -107,9 +107,9 @@ export const TATA: Record<'potret' | 'lanskap', TataLetak> = {
       kontak: { x: 628, baris: 10, s: 0.852, r: -1 },
       tim: { x: 1094, baris: 10, s: 1, r: 2 },
       petunjukPensil: { x: 748, baris: 14, s: 1, r: -2 },
-      kopi: { x: 1050, y: 760, s: 0.8, r: 3 },
+      kopi: { x: 1050, y: 852, s: 0.8, r: 3 },
       rumus: { x: 396, baris: 10, s: 0.8, r: 2 },
-      kilau1: { x: 470, y: 616, s: 1.1, r: 10 },
+      kilau1: { x: 470, y: 708, s: 1.1, r: 10 },
     },
   },
 }

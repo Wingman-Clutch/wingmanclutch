@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#f7f6f1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'sha256-dpUZIIOBFPQIVZHQ6pUefCZ0hV1LVtQUCcCFRxmY194='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' 'sha256-PK6xKkFQwjIAH0x7ZyFS9zIYu6ZH/DPCIfzSfZwMLIA='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Wingman Clutch" />
@@ -46,12 +46,12 @@
         var h = innerHeight
         var potret = w / h < 0.92
         var W = potret ? 1000 : 1700
-        var H = potret ? 2180 : 1000
+        var H = potret ? 2273 : 1112
         var k = Math.min(w / W, h / H)
         var atas = Math.min((h - H * k) * 0.25, 40)
         akar.dataset.tata = potret ? 'potret' : 'lanskap'
         akar.style.setProperty('--u', k + 'px')
-        akar.style.setProperty('--kaki', atas + ((potret ? 2060 : 958) - 14) * k + 'px')
+        akar.style.setProperty('--kaki', atas + ((potret ? 2153 : 1070) - 14) * k + 'px')
       })()
     </script>
   </head>
