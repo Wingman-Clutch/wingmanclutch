@@ -1,5 +1,6 @@
 // Satu requestAnimationFrame untuk semua yang bergerak: sketsa yang sedang digambar, penghapus,
-// remah, dan hujan Matrix. Loop berhenti sendiri kalau tidak ada kerjaan.
+// remah, dan hujan Matrix. Loop berhenti sendiri kalau tidak ada kerjaan. Kerja berat yang bukan
+// animasi (kompilasi sketsa) dicicil lewat cicil() supaya main thread tidak terkunci lama.
 
 export const GERAK_DIKURANGI =
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -67,4 +68,20 @@ export function kaitkan(h: (t: number, dt: number) => boolean | void) {
   pengait.add(h)
   tendang()
   return () => pengait.delete(h)
+}
+
+/**
+ * Jalankan kerja satu per satu di tugas terpisah, mulai setelah tugas pemanggil selesai. Satu
+ * tugas berhenti mengambil kerja berikutnya setelah lewat `anggaran` ms, jadi browser sempat
+ * melukis dan menjawab ketukan di antaranya.
+ */
+export function cicil(kerja: (() => void)[], anggaran = 8, jam = () => performance.now()) {
+  const antre = [...kerja]
+  const lanjut = () => {
+    const mulai = jam()
+    do antre.shift()!()
+    while (antre.length && jam() - mulai < anggaran)
+    if (antre.length) setTimeout(lanjut)
+  }
+  if (antre.length) setTimeout(lanjut)
 }

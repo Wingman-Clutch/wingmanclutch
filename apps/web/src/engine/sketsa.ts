@@ -1,5 +1,7 @@
 // Sketsa = satu gambar di kanvasnya sendiri. Bisa digambar sedikit demi sedikit (progres 0..1),
 // digambar ulang penuh setelah tema atau ukuran berubah, dan punya layar yang berganti-ganti.
+// Goresannya baru dikompilasi saat dibutuhkan (siapkan), karena mengompilasi semua sketsa
+// sekaligus mengunci main thread saat halaman dibuka.
 
 import { batasGoresan, kompilasi, type Goresan, type Op } from './goresan'
 import { hashTeks } from './acak'
@@ -63,26 +65,30 @@ export class Sketsa {
   readonly el: HTMLElement
   readonly kanvas: HTMLCanvasElement
   readonly ctx: CanvasRenderingContext2D
-  private dasar: Lapisan
+  private buatOps: () => Op[]
+  private buatLayar: (() => Op[])[]
+  private dasar?: Lapisan
   private daftarLayar: Lapisan[] = []
+  private kotak = { x: 0, y: 0, w: 0, h: 0 }
+  /** tempatkan() dipanggil sebelum goresan siap; diterapkan begitu siapkan() selesai */
+  private tertunda = false
   private layarKanvas?: HTMLCanvasElement
   private layarCtx?: CanvasRenderingContext2D
   layarAktif = -1
-  batas: { x: number; y: number; w: number; h: number }
   tempat: Penempatan = { x: 0, y: 0, skala: 1, r: 0 }
   progres = 0
   private tema: Tema = 'terang'
 
-  constructor(id: string, ops: Op[], layar: Op[][] = [], el?: HTMLElement) {
+  constructor(id: string, ops: () => Op[], layar: (() => Op[])[] = [], el?: HTMLElement) {
     this.id = id
-    const benih = hashTeks(id)
-    this.dasar = lapisan(ops, benih)
-    this.daftarLayar = layar.map((l, i) => lapisan(l, benih + 101 * (i + 1)))
-    const semua = [...this.dasar.goresan, ...this.daftarLayar.flatMap((l) => l.goresan)]
-    this.batas = batasGoresan(semua)
+    this.buatOps = ops
+    this.buatLayar = layar
     this.el = el ?? document.createElement('div')
     this.el.classList.add('sketsa')
     this.el.dataset.sketsa = id
+    // tersembunyi sampai pertama kali ditempatkan, supaya kanvas kosong yang belum punya ukuran
+    // tidak tampil lalu bergeser (layout shift)
+    this.el.style.visibility = 'hidden'
     this.kanvas = document.createElement('canvas')
     this.kanvas.setAttribute('aria-hidden', 'true')
     this.el.appendChild(this.kanvas)
@@ -97,19 +103,47 @@ export class Sketsa {
   }
 
   get jumlahLayar() {
-    return this.daftarLayar.length
+    return this.buatLayar.length
+  }
+
+  get siap() {
+    return this.dasar !== undefined
+  }
+
+  /** kompilasi goresan dasar dan semua layar, sekali saja */
+  siapkan() {
+    if (this.dasar) return
+    const benih = hashTeks(this.id)
+    this.dasar = lapisan(this.buatOps(), benih)
+    this.daftarLayar = this.buatLayar.map((l, i) => lapisan(l(), benih + 101 * (i + 1)))
+    const semua = [...this.dasar.goresan, ...this.daftarLayar.flatMap((l) => l.goresan)]
+    this.kotak = batasGoresan(semua)
+    if (this.tertunda) {
+      this.tertunda = false
+      this.tempatkan(this.tempat, this.tema)
+    }
+  }
+
+  /** kotak semua goresan dalam satuan gambar */
+  get batas() {
+    this.siapkan()
+    return this.kotak
   }
 
   private kanvasInfo(ctx: CanvasRenderingContext2D): Kanvas {
-    return { ctx, skala: this.tempat.skala * DPR(), x0: this.batas.x, y0: this.batas.y }
+    return { ctx, skala: this.tempat.skala * DPR(), x0: this.kotak.x, y0: this.kotak.y }
   }
 
   /** pasang posisi dan ukuran; kanvas dibuat ulang dan isinya digambar lagi sampai progresnya */
   tempatkan(t: Penempatan, tema: Tema) {
     this.tempat = t
     this.tema = tema
-    const lebar = this.batas.w * t.skala
-    const tinggi = this.batas.h * t.skala
+    if (!this.dasar) {
+      this.tertunda = true
+      return
+    }
+    const lebar = this.kotak.w * t.skala
+    const tinggi = this.kotak.h * t.skala
     const dpr = DPR()
     for (const c of [this.kanvas, this.layarKanvas]) {
       if (!c) continue
@@ -119,11 +153,12 @@ export class Sketsa {
       c.style.height = tinggi + 'px'
     }
     Object.assign(this.el.style, {
-      left: t.x + this.batas.x * t.skala + 'px',
-      top: t.y + this.batas.y * t.skala + 'px',
+      left: t.x + this.kotak.x * t.skala + 'px',
+      top: t.y + this.kotak.y * t.skala + 'px',
       width: lebar + 'px',
       height: tinggi + 'px',
       rotate: t.r + 'deg',
+      visibility: '',
     })
     this.gambarUlang()
   }
@@ -131,13 +166,13 @@ export class Sketsa {
   /** ganti tema tanpa mengubah posisi */
   warnai(tema: Tema) {
     this.tema = tema
-    this.gambarUlang()
+    if (this.dasar) this.gambarUlang()
   }
 
   private gambarUlang() {
     this.ctx.clearRect(0, 0, this.kanvas.width, this.kanvas.height)
     const p = this.progres
-    kosongkan(this.dasar)
+    kosongkan(this.dasar!)
     this.progres = 0
     if (p > 0) this.gambar(p)
     if (this.layarCtx && this.layarAktif >= 0) {
@@ -152,14 +187,16 @@ export class Sketsa {
   /** gambar sampai progres p (0..1); hanya bagian yang belum tergambar yang ditambahkan */
   gambar(p: number) {
     if (p <= this.progres) return
+    this.siapkan()
     this.progres = p
-    gambarLapisanSampai(this.dasar, this.dasar.total * p, this.kanvasInfo(this.ctx), this.tema)
+    const dasar = this.dasar!
+    gambarLapisanSampai(dasar, dasar.total * p, this.kanvasInfo(this.ctx), this.tema)
   }
 
   /** kosongkan kanvas dan mulai dari nol */
   ulang() {
     this.progres = 0
-    kosongkan(this.dasar)
+    if (this.dasar) kosongkan(this.dasar)
     this.ctx.clearRect(0, 0, this.kanvas.width, this.kanvas.height)
     this.hapusLayar()
     this.layarAktif = -1
@@ -173,6 +210,7 @@ export class Sketsa {
 
   /** mulai layar ke-i dari nol; kembalikan fungsi progres untuk digambar bertahap */
   pilihLayar(i: number) {
+    this.siapkan()
     this.hapusLayar()
     this.layarAktif = i
     const l = this.daftarLayar[i]
@@ -185,10 +223,11 @@ export class Sketsa {
   /** ubah titik layar (piksel CSS relatif papan) ke koordinat piksel kanvas sketsa */
   keKanvas(x: number, y: number): [number, number] {
     const t = this.tempat
-    const kiri = t.x + this.batas.x * t.skala
-    const atas = t.y + this.batas.y * t.skala
-    const w = this.batas.w * t.skala
-    const h = this.batas.h * t.skala
+    const b = this.batas
+    const kiri = t.x + b.x * t.skala
+    const atas = t.y + b.y * t.skala
+    const w = b.w * t.skala
+    const h = b.h * t.skala
     const dx = x - (kiri + w / 2)
     const dy = y - (atas + h / 2)
     const a = (-t.r * Math.PI) / 180

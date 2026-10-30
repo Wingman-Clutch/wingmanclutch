@@ -135,6 +135,11 @@ export function hitungUkuran(lebar: number, tinggi: number): Ukuran {
   return { kunci, L, k, kiri, atas }
 }
 
+/** posisi atas teks kaki halaman dalam piksel; skrip di <head> index.html menghitung yang sama */
+export function atasKaki(u: Ukuran) {
+  return u.atas + (u.L.kaki - 14) * u.k
+}
+
 /** posisi atas item dalam satuan adegan; `dasar` = garis dasar tulisan item dalam satuan gambar */
 export function atasItem(L: TataLetak, t: TempatItem, dasar: number) {
   if (t.baris !== undefined) return L.garis0 + t.baris * KOTAK - dasar * t.s

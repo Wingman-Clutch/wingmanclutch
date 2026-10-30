@@ -1,7 +1,7 @@
 // Papan: semua sketsa di halaman, posisinya, urutan menggambarnya, layar yang berganti, dan
 // kepakan logo setiap kali diketuk.
 
-import { batalkan, GERAK_DIKURANGI, jadwalkan, type Tugas } from '../engine/animasi'
+import { batalkan, cicil, GERAK_DIKURANGI, jadwalkan, type Tugas } from '../engine/animasi'
 import type { Op } from '../engine/goresan'
 import type { Tema } from '../engine/kuas'
 import { Sketsa } from '../engine/sketsa'
@@ -175,12 +175,17 @@ export class Papan {
         wadah = document.createElement('div')
         wadah.setAttribute('aria-hidden', 'true')
       }
-      const s = new Sketsa(d.id, d.ops(), d.layar?.map((l) => l()) ?? [], wadah)
+      const s = new Sketsa(d.id, d.ops, d.layar ?? [], wadah)
       if (d.kelas) s.el.classList.add(...d.kelas.split(' '))
       s.el.hidden = true
       el.appendChild(s.el)
       this.sketsa.set(d.id, s)
     }
+    // Kompilasi dicicil mengikuti urutan menggambar, di luar tugas yang membuka halaman. Sketsa
+    // yang belum siap saat gilirannya digambar dikompilasi saat itu juga.
+    const urut = [...URUTAN].sort((a, b) => a[1] - b[1]).map(([id]) => id)
+    const semua = [...new Set([...urut, ...this.sketsa.keys()])]
+    cicil(semua.map((id) => () => this.sketsa.get(id)!.siapkan()))
   }
 
   /** tempatkan semua sketsa untuk ukuran layar dan tema ini */

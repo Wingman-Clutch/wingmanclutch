@@ -107,7 +107,8 @@ export class Lipatan {
   }
 
   atur() {
-    this.hujan.atur(14)
+    // saat diam, hujan hanya kelihatan di segitiga sudut yang terlipat
+    this.hujan.atur(14, this.istirahat())
     this.lipat(this.posisiIstirahat())
   }
 

@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#f7f6f1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'sha256-TiYOeANLpFbHEvwJuvO9AofrJF4D5wXdOG/9nA/l1Pk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' 'sha256-dpUZIIOBFPQIVZHQ6pUefCZ0hV1LVtQUCcCFRxmY194='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Wingman Clutch" />
@@ -29,22 +29,35 @@
     <link rel="icon" href="/ikon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script>
-      // Pilih kertas terang atau gelap sebelum halaman pertama kali dicat.
+      // Pilih kertas terang atau gelap dan hitung tata letak sebelum halaman pertama kali dicat.
       ;(function () {
+        var akar = document.documentElement
         var t = null
         try {
           t = localStorage.getItem('wc-tema')
         } catch (e) {}
         if (t !== 'terang' && t !== 'gelap')
           t = matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang'
-        document.documentElement.dataset.tema = t
+        akar.dataset.tema = t
         if (t === 'gelap') document.querySelector('meta[name="theme-color"]').content = '#161922'
+        // Sama dengan hitungUkuran() dan atasKaki() di src/halaman/tata-letak.ts (dijaga
+        // test/tata-letak.test.ts), supaya kaki halaman tidak melompat saat skrip utama jalan.
+        var w = innerWidth
+        var h = innerHeight
+        var potret = w / h < 0.92
+        var W = potret ? 1000 : 1700
+        var H = potret ? 2180 : 1000
+        var k = Math.min(w / W, h / H)
+        var atas = Math.min((h - H * k) * 0.25, 40)
+        akar.dataset.tata = potret ? 'potret' : 'lanskap'
+        akar.style.setProperty('--u', k + 'px')
+        akar.style.setProperty('--kaki', atas + ((potret ? 2060 : 958) - 14) * k + 'px')
       })()
     </script>
   </head>
   <body>
-    <h1 class="sr">Wingman Clutch, tim dua orang yang bikin aplikasi web</h1>
-    <div id="app">
+    <main id="app">
+      <h1 class="sr">Wingman Clutch, tim dua orang yang bikin aplikasi web</h1>
       <canvas id="kertas" aria-hidden="true"></canvas>
       <canvas id="noda" aria-hidden="true"></canvas>
       <canvas id="hujan" aria-hidden="true"></canvas>
@@ -66,7 +79,7 @@
           >
         </p>
       </div>
-    </div>
+    </main>
 
     <div id="lipatan" aria-hidden="true">
       <div class="bawah"><canvas class="hujan-sudut"></canvas></div>
