@@ -55,10 +55,10 @@ Rilis 1 meniru kracked.studio 1:1 dari sisi tata letak, urutan menggambar, dan i
 | Kolom DATE berisi tanggal hari ini | Kolom TANGGAL, nama bulan Indonesia | Kall |
 | Bulan dan matahari untuk tema terang dan gelap | Sama, pilihan disimpan di perangkat | Kall |
 | Sudut kanan atas bisa dikupas ke Matrix | Sama | Kall |
-| Empat kategori (Games, Websites, Apps, Art) dengan layar yang berganti | Empat aplikasi, masing-masing satu perangkat dengan tiga layar fitur yang berganti: PostPocket (amplop dan kartu foil), goRute (papan halte dan bus), Tikoem (HP dengan peta), Tookthel (struk dan koin) | Kall |
-| Lembar proyek saat sketsa diketuk | Lembar detail aplikasi: tiga fitur bergambar, deskripsi, peran kami, tumpukan teknologi, statistik hidup, tautan aplikasi dan kode | Kall (tampilan), Bintang (statistik) |
+| Empat kategori (Games, Websites, Apps, Art) dengan layar yang berganti | Empat aplikasi, masing-masing satu figur berwarna: PostPocket (amplop dan kartu foil), goRute (halte dan bus TransJakarta), Tikoem (HP dengan peta di dudukan), Tookthel (printer struk dan koin) | Kall |
+| Lembar proyek saat sketsa diketuk | Lembar detail aplikasi: figur interaktif yang bisa diputar dan dicoba, deskripsi, tiga fitur, peran kami, tumpukan teknologi, statistik hidup, tautan aplikasi dan kode | Kall (tampilan), Bintang (statistik) |
 | Kertas tempel ABOUT US | TENTANG KAMI, dialog dengan tiga langkah kerja kami | Kall |
-| THE TEAM dengan lima orang | TIM KAMI: dua orang tos. Dialog berisi polaroid sketsa pensil dari foto profil GitHub | Kall |
+| THE TEAM dengan lima orang | TIM KAMI: figur dua orang tos. Dialog berisi kartu nama berlanyard dengan foto sketsa pensil dari profil GitHub | Kall |
 | Kotak DO NOT ERASE, GOT AN IDEA? LET'S KRACK IT | JANGAN DIHAPUS, PUNYA IDE? LET'S CLUTCH IT, membuka form kontak | Kall (form), Bintang (pengiriman) |
 | ART + CODE = ♥ | FE + BE = ♥ | Kall |
 | TODAY: tally kopi | HARI INI: tally kopi | Kall |
@@ -70,8 +70,8 @@ Rilis 1 meniru kracked.studio 1:1 dari sisi tata letak, urutan menggambar, dan i
 
 ### 4.2 Alur pengunjung
 
-1. Halaman terbuka. Tanggal, logo, lalu keempat perangkat digambar pensil berurutan dalam ±3 detik. Layar setiap perangkat mulai berganti.
-2. Pengunjung mengetuk sebuah perangkat. Lembar detail aplikasinya ditempel di atas halaman. Dari sana pengunjung membuka aplikasinya atau kodenya di tab baru.
+1. Halaman terbuka. Tanggal dan logo digambar pensil, lalu keempat figur aplikasi diarsir masuk berurutan dalam ±3 detik.
+2. Pengunjung mengetuk sebuah figur. Lembar detail aplikasinya ditempel di atas halaman, dengan figur yang bisa diputar dan dicoba. Dari sana pengunjung membuka aplikasinya atau kodenya di tab baru.
 3. Pengunjung mengetuk TENTANG KAMI, lalu "kenalan sama tim", lalu "ajak kerja bareng". Form kontak terbuka.
 4. Pengunjung mengisi nama, email, dan pesannya, lalu mengirim. Pesan terkirim, atau kalau server gagal, email dengan isi yang sama sudah disiapkan.
 5. Kapan saja, pengunjung bisa mengambil pensil dan mencoret halaman, menghapus semuanya, mengganti tema, atau mengupas sudut halaman.
@@ -79,7 +79,7 @@ Rilis 1 meniru kracked.studio 1:1 dari sisi tata letak, urutan menggambar, dan i
 ### 4.3 Persyaratan frontend (Kall)
 
 - Halaman satu layar tanpa scroll. Dua tata letak: potret (HP, rasio lebar/tinggi < 0,92) dan lanskap. Semua muat dari 320 px sampai 4K.
-- Semua gambar digambar oleh mesin pensil di `<canvas>`, bukan gambar statis, dan selalu tampak sama setiap digambar ulang (benih acak per sketsa).
+- Logo, tulisan, dan catatan digambar oleh mesin pensil di `<canvas>`, bukan gambar statis, dan selalu tampak sama setiap digambar ulang (benih acak per sketsa). Figur aplikasi dan tim adalah gambar Colorfigures yang dilukis ke kanvas dengan coretan krayon, jadi ikut terhapus penghapus.
 - Tema terang, gelap, dan Matrix. Tema terang atau gelap mengikuti sistem sampai pengunjung memilih sendiri.
 - Aksesibilitas: setiap sketsa yang bisa diketuk adalah `<button>` berlabel, dialog memakai `<dialog>` dengan judul, fokus kembali ke sketsa asal setelah dialog ditutup, dan Escape menutup dialog serta keluar dari mode corat-coret. `prefers-reduced-motion` menggambar semuanya seketika tanpa gerak diam.
 - Form kontak memeriksa kolom di browser dengan aturan yang sama dengan backend, menampilkan galat per kolom, dan punya cadangan email (mailto berisi pesan yang sama, plus tombol salin).

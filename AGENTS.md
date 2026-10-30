@@ -84,7 +84,7 @@ Setiap mulai sesi, termasuk sesi AI agent:
 
 | Area | Pemilik | Isi |
 | --- | --- | --- |
-| `apps/web/` | Kall | Halaman buku catatan: mesin pensil, sketsa, tata letak, pensil dan penghapus, tema, dialog, mock API |
+| `apps/web/` | Kall | Halaman buku catatan: mesin pensil, sketsa, figur, tata letak, pensil dan penghapus, tema, dialog, mock API |
 | `api/` | Bintang | Vercel Functions `kontak` dan `proyek`, beserta test-nya |
 | `docs/api/openapi.yaml` | Bintang menulis, Kall me-review | Kontrak antara halaman dan backend |
 | `vercel.json` | Berdua | Build, header keamanan, dan rute Functions |
@@ -112,6 +112,7 @@ Butuh Node 24 (`.nvmrc`) dan pnpm 9. Semua perintah dijalankan dari root repo.
 | `pnpm check` | `lint`, `typecheck`, dan `test` sekaligus |
 | `pnpm --filter @wingmanclutch/web font` | Buat ulang data font pensil (`src/data/font.json`) |
 | `node apps/web/scripts/buat-logo.mjs` | Buat ulang logo pensil dari `docs/brand/wingman-clutch-logo.svg` |
+| `pnpm --filter @wingmanclutch/web figur` | Buat ulang halaman figur dan gambar diamnya di `apps/web/public/figur/` dari `apps/web/figur/` (butuh `python3` dan Chrome Playwright) |
 | `node apps/web/scripts/buat-gambar.mjs` | Buat ulang gambar README dan gambar OG dari build produksi (butuh Chrome Playwright) |
 | `scripts/check-no-ai.sh --revs origin/main..HEAD` | Cek atribusi AI di commit yang belum masuk `main` |
 | `scripts/test-check-no-ai.sh` | Uji pola cek atribusi AI, wajib lolos setelah polanya diubah |
@@ -134,9 +135,11 @@ Perintah backend (dipakai setelah `api/` dibuat, lihat [docs/backend.md](docs/ba
 ```text
 apps/web/               halaman buku catatan (Vite + TypeScript tanpa framework), dipegang Kall
   src/engine/           mesin pensil: path SVG, goyangan tangan, arsiran, kuas, sketsa, animasi
-  src/sketsa/           gambar setiap aplikasi, logo, dan catatan kecil di halaman
+  src/sketsa/           logo, catatan kecil, dan letak figur di halaman
   src/halaman/          tata letak, kertas, papan, baki pensil, tema, lipatan sudut, dialog, kontak
-  src/data/             isi halaman (proyek.ts) dan data font serta logo hasil skrip
+  src/data/             isi halaman (proyek.ts) dan data font, logo, serta ukuran figur hasil skrip
+  figur/                sumber lima figur, penyesuaian lembar detail, dan engine Colorfigures
+  public/figur/         hasil skrip: halaman figur interaktif dan gambar diam, di-commit
   mock/                 mock /api sesuai kontrak (hanya development dan E2E)
   test/, e2e/           unit test Vitest dan skenario Playwright
 api/                    Vercel Functions, dipegang Bintang (lihat docs/backend.md)
@@ -161,6 +164,7 @@ scripts/                cek atribusi AI dan rahasia (dipakai hook dan CI) besert
 - Kode, gambar, logo, dan foto dari web referensi tidak boleh disalin ke repo. Kita menulis ulang mesin pensil dan menggambar sketsa sendiri; yang ditiru hanya cara kerja dan rasanya. Catat sumber dan lisensi setiap aset di `docs/assets.md`.
 - Isi halaman (nama aplikasi, teks, tautan, tim) ada di `apps/web/src/data/proyek.ts`, bukan di dalam sketsa atau komponen.
 - Warna pensil dan kertas per tema ada di `apps/web/src/engine/kuas.ts` dan `apps/web/src/halaman/kertas.ts`. Jangan menulis warna baru langsung di sketsa; pakai kode warna pensil (`w`, `k`, `e`, `y`, `p`, `b`, `g`, `o`, `r`, `n`).
+- Figur aplikasi dan tim dimodelkan di `apps/web/figur/`. Setelah mengubahnya, jalankan `pnpm --filter @wingmanclutch/web figur` dan commit hasilnya, karena build produksi tidak menjalankan Python. Engine di `figur/colorfigures/` tidak diubah langsung; penyesuaian masuk `figur/sematan.css` dan `figur/sematan.js`.
 - Halaman harus muat di satu layar tanpa scroll, dari HP 320 px sampai desktop lebar. Unit test tata letak menjaga semua sketsa tetap di dalam halaman dan tidak saling tindih.
 - Bukan target rilis 1: CMS, blog, multi-bahasa, analitik pihak ketiga, akun pengunjung.
 
