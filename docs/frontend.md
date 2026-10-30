@@ -76,6 +76,15 @@ Goyangan tangan memakai benih dari id sketsa, jadi gambarnya sama setiap kali di
 | `node apps/web/scripts/buat-logo.mjs` | Logo brand di `docs/brand/` berubah |
 | `node apps/web/scripts/buat-gambar.mjs` | Tampilan berubah dan gambar README atau OG perlu diperbarui |
 
+### Diagram arsitektur
+
+Diagram dibuat dengan [Archify](https://github.com/tt-a1i/archify) dari [`arsitektur.archify.json`](arsitektur.archify.json). Versi interaktifnya (`docs/arsitektur.html`) dipublikasikan GitHub Pages dari folder `docs/` (ada `docs/.nojekyll`) di <https://wingman-clutch.github.io/wingmanclutch/arsitektur.html>, dan setiap bagian menaut ke baris kode di commit `meta.repository.revision`. Setelah arsitektur berubah (misalnya `api/` sudah dibuat Bintang):
+
+1. Perbarui komponen, sumber baris, dan `meta.repository.revision` ke commit yang sudah di-push.
+2. Jalankan `node <archify>/bin/archify.mjs finalize architecture docs/arsitektur.archify.json .archify/arsitektur.html --repo-root . --quality showcase` (folder `.archify/` di-ignore).
+3. Salin `.archify/arsitektur.html` ke `docs/arsitektur.html`.
+4. Ekspor PNG terang dan gelap lewat tombol Ekspor (Gambar tanpa kompresi), lalu simpan sebagai WebP 2400 px: `cwebp -q 92 -resize 2400 0 <png> -o docs/gambar/arsitektur-terang.webp`, begitu juga `arsitektur-gelap.webp`.
+
 ## Test
 
 | Perintah | Isi |
@@ -104,7 +113,7 @@ Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build
 - [x] Dialog detail aplikasi, tentang, tim (foto jadi sketsa pensil), kontak
 - [x] Form kontak dengan validasi, mock API, dan cadangan email
 - [x] Unit test dan E2E di tiga perangkat
-- [ ] Gambar README dan gambar OG dari build produksi
+- [x] Gambar README, gambar OG, dan diagram arsitektur Archify
 - [ ] Lighthouse mobile ≥ 95 di keempat kategori, axe 0 pelanggaran di halaman dan semua dialog
 - [ ] Deploy Vercel bersama Bintang, cek alur kontak dan statistik di produksi
 - [ ] Ganti mock dengan backend sungguhan di E2E produksi (smoke test), setelah `api/` jadi
