@@ -74,7 +74,9 @@ for (const tema of ['light', 'dark']) {
   await simpan(p, 'hp-2-detail.webp')
   await p.keyboard.press('Escape')
   await p.getByRole('button', { name: /Kenalan sama tim/ }).click({ force: true })
-  await p.waitForTimeout(1200)
+  // kartu nama berlanyard dimuat lalu masuk sambil berayun; tunggu sampai tenang
+  await p.getByRole('button', { name: /^Kartu nama Kall/ }).waitFor()
+  await p.waitForTimeout(3500)
   await simpan(p, 'hp-3-tim.webp')
   await p.keyboard.press('Escape')
   await p.getByRole('button', { name: /Hubungi kami/ }).click({ force: true })

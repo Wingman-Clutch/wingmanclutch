@@ -12,7 +12,11 @@ export default defineConfig(({ command, isPreview }) => {
   const pakaiMock = !proxy && command === 'serve' && (!isPreview || !!process.env.MOCK_API)
   return {
     plugins: pakaiMock ? [mockApi()] : [],
-    build: { target: 'es2022' },
+    build: {
+      target: 'es2022',
+      // komentar lisensi (/*! ... */) ikut ke bundle, misalnya atribusi MIT di halaman/lanyard.ts
+      rolldownOptions: { output: { comments: { legal: true } } },
+    },
     server: { port: 5180, proxy: proxy ? { '/api': proxy } : undefined },
     preview: { port: 4180 },
   }

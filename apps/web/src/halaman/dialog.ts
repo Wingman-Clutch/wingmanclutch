@@ -3,10 +3,12 @@
 import { ambilStatistik } from '../api/klien'
 import type { StatistikProyek } from '../api/kontrak'
 import { judul } from '../engine/huruf'
-import type { Tema } from '../engine/kuas'
+import { kilau } from '../engine/jalur'
+import { PENSIL, type Tema } from '../engine/kuas'
 import { gambarKe } from '../engine/sketsa'
 import { PROYEK, TIM, type IdProyek } from '../data/proyek'
 import { sketsaFoto } from './foto-sketsa'
+import type { Lanyard } from './lanyard'
 
 export type NamaDialog = 'proyek' | 'tentang' | 'tim' | 'kontak'
 
@@ -45,9 +47,32 @@ const KATA_STATUS: Record<StatistikProyek['status'], string> = {
   tidak_diketahui: '',
 }
 
+/** elemen svg kecil berisi kilau khas halaman, untuk hiasan kartu nama */
+function svgKilau(titik: [number, number, number][]) {
+  const ns = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(ns, 'svg')
+  svg.setAttribute('viewBox', '0 0 100 100')
+  svg.setAttribute('aria-hidden', 'true')
+  for (const [x, y, r] of titik) {
+    const p = document.createElementNS(ns, 'path')
+    p.setAttribute('d', kilau(x, y, r))
+    svg.append(p)
+  }
+  return svg
+}
+
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, kelas: string, teks?: string) {
+  const e = document.createElement(tag)
+  e.className = kelas
+  if (teks) e.textContent = teks
+  return e
+}
+
 export class Dialog {
   private sumber: HTMLElement | null = null
   private tema: () => Tema
+  /** modul lanyard baru dimuat saat dialog tim pertama kali dibuka */
+  private lanyard?: Promise<Lanyard>
 
   constructor(tema: () => Tema) {
     this.tema = tema
@@ -57,6 +82,7 @@ export class Dialog {
         if (e.target === d) d.close()
       })
       d.addEventListener('close', () => {
+        if (d.id === 'dlg-tim') void this.lanyard?.then((l) => l.berhenti())
         this.sumber?.focus({ preventScroll: true })
         this.sumber = null
       })
@@ -80,7 +106,7 @@ export class Dialog {
     if (kanvas?.dataset.judul)
       gambarJudul(kanvas, kanvas.dataset.judul, this.tema(), (kanvas.dataset.warna as 'r') || 'r')
     if (nama === 'proyek') this.gambarFitur(d)
-    if (nama === 'tim') this.gambarFotoTim()
+    if (nama === 'tim') this.bukaTim()
     d.scrollTop = 0
   }
 
@@ -92,6 +118,7 @@ export class Dialog {
     if (kanvas?.dataset.judul)
       gambarJudul(kanvas, kanvas.dataset.judul, this.tema(), (kanvas.dataset.warna as 'r') || 'r')
     if (d.id === 'dlg-proyek') this.gambarFitur(d)
+    if (d.id === 'dlg-tim') void this.lanyard?.then((l) => l.warnai(this.gayaTali()))
   }
 
   private isiProyek(d: HTMLDialogElement, id: IdProyek) {
@@ -156,48 +183,130 @@ export class Dialog {
     })
   }
 
+  /** kartu nama berlanyard untuk setiap anggota tim, dan tautan GitHub di bawah panggung */
   private isiTim() {
-    const daftar = $('#tm-daftar')
-    daftar.replaceChildren(
-      ...TIM.map((a, i) => {
-        const li = document.createElement('li')
-        li.style.setProperty('--miring', `${i % 2 ? 2.5 : -2}deg`)
-        const fig = document.createElement('figure')
-        const c = document.createElement('canvas')
-        c.className = 'foto'
-        c.dataset.foto = a.foto ?? ''
-        c.dataset.inisial = a.panggilan[0]
-        c.setAttribute('role', 'img')
-        c.setAttribute('aria-label', `Sketsa pensil ${a.panggilan}`)
-        const cap = document.createElement('figcaption')
-        const nama = document.createElement('a')
-        nama.href = a.github
-        nama.target = '_blank'
-        nama.rel = 'noopener'
-        nama.className = 'nama'
-        nama.textContent = a.panggilan
-        const lengkap = document.createElement('span')
-        lengkap.className = 'lengkap'
-        lengkap.textContent = a.nama
-        const peran = document.createElement('span')
-        peran.className = 'peran'
-        peran.textContent = a.peran
-        cap.append(nama, lengkap, peran)
-        fig.append(c, cap)
-        li.append(fig)
-        return li
+    const kartu = TIM.map((a) => {
+      const k = el('div', 'badge')
+      // tombol transparan di atas kartu: kartunya sendiri bukan tombol, supaya teks di kartu
+      // tidak bertabrakan dengan nama tombol
+      const tombol = el('button', 'balik')
+      tombol.type = 'button'
+      tombol.setAttribute('aria-pressed', 'false')
+      tombol.setAttribute(
+        'aria-label',
+        `Kartu nama ${a.panggilan}, ${a.nama}, ${a.peran}. Tekan untuk membalik`,
+      )
+
+      const depan = el('div', 'muka depan')
+      const pita = el('div', 'pita')
+      pita.append(
+        el('span', 'merek', 'Wingman Clutch'),
+        svgKilau([
+          [74, 52, 24],
+          [93, 20, 9],
+        ]),
+      )
+      const foto = el('canvas', 'foto')
+      foto.dataset.foto = a.foto ?? ''
+      foto.dataset.inisial = a.panggilan[0]
+      const nama = el('canvas', 'nama')
+      nama.dataset.nama = a.panggilan
+      depan.append(pita, foto, nama, el('span', 'jabatan', a.peran))
+
+      const belakang = el('div', 'muka belakang')
+      const bawah = el('div', 'pita-bawah')
+      bawah.append(
+        svgKilau([
+          [24, 24, 11],
+          [70, 40, 25],
+          [92, 12, 7],
+        ]),
+        el('span', 'semboyan', 'two is enough to win.'),
+      )
+      belakang.append(
+        el('span', 'merek', 'Wingman Clutch · Tim'),
+        el('strong', 'lengkap', a.nama),
+        el('span', 'jabatan', a.peran),
+        el('span', 'akun', a.github.replace(/^https:\/\//, '')),
+        bawah,
+      )
+      // isi kartu sudah dibacakan lewat aria-label
+      for (const m of [depan, belakang]) {
+        m.setAttribute('aria-hidden', 'true')
+        m.append(el('span', 'lubang'), el('span', 'kilap'))
+      }
+      const isi = el('div', 'isi')
+      isi.append(depan, belakang)
+      k.append(el('span', 'jepit'), tombol, isi)
+      return k
+    })
+    $('#tm-daftar').replaceChildren(...kartu)
+
+    $('#tm-github').replaceChildren(
+      'GitHub: ',
+      ...TIM.flatMap((a, i) => {
+        const t = document.createElement('a')
+        t.href = a.github
+        t.target = '_blank'
+        t.rel = 'noopener'
+        t.textContent = a.panggilan
+        const panah = el('span', '', ' ↗')
+        panah.setAttribute('aria-hidden', 'true')
+        t.append(panah)
+        return i ? [' · ', t] : [t]
       }),
     )
   }
 
-  private gambarFotoTim() {
+  /** gambar foto dan nama di kartu (sekali saja), lalu jalankan lanyard selama dialog terbuka */
+  private bukaTim() {
+    // ukuran kanvas kartu diatur CSS mengikuti lebar kartu, bukan oleh gambarKe
+    const lepasUkuran = (c: HTMLCanvasElement) => {
+      c.style.removeProperty('width')
+      c.style.removeProperty('height')
+    }
     for (const c of document.querySelectorAll<HTMLCanvasElement>('#tm-daftar canvas.foto')) {
       if (c.dataset.siap) continue
       c.dataset.siap = '1'
-      const inisial = () =>
+      const inisial = () => {
         gambarKe(c, judul(c.dataset.inisial!, 0, 60, 60, { bayang: 'r' }), 'inisial', 'terang')
+        lepasUkuran(c)
+      }
       if (!c.dataset.foto) inisial()
       else sketsaFoto(c.dataset.foto, c).catch(inisial)
+    }
+    for (const c of document.querySelectorAll<HTMLCanvasElement>('#tm-daftar canvas.nama')) {
+      if (c.dataset.siap) continue
+      c.dataset.siap = '1'
+      const ops = judul(c.dataset.nama!, 0, 46, 46, { bayang: 'r' })
+      gambarKe(c, ops, 'nama-' + c.dataset.nama, 'terang', 260)
+      lepasUkuran(c)
+    }
+    const panggung = $('#tm-daftar')
+    this.lanyard ??= import('./lanyard').then(
+      ({ Lanyard }) =>
+        new Lanyard(
+          panggung,
+          [...panggung.querySelectorAll<HTMLElement>('.badge')],
+          this.gayaTali(),
+        ),
+    )
+    void this.lanyard.then((l) => {
+      // dialognya bisa saja sudah ditutup lagi sebelum modulnya termuat
+      if (!panggung.closest('dialog')!.open) return
+      l.warnai(this.gayaTali())
+      l.mulai()
+    })
+  }
+
+  /** tali grafit bercetak kuning di kertas terang; di kertas gelap dibalik supaya tetap terlihat */
+  private gayaTali() {
+    const terang = this.tema() === 'terang'
+    return {
+      warna: terang ? PENSIL.w : PENSIL.y,
+      tinta: terang ? PENSIL.y : PENSIL.w,
+      teks: 'two is enough to win',
+      label: 'WINGMAN CLUTCH',
     }
   }
 }

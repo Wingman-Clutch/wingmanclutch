@@ -305,76 +305,259 @@ dialog :focus-visible {
   }
 }
 
-/* ---------- tim ---------- */
+/* ---------- tim: kartu nama berlanyard (src/halaman/lanyard.ts) ---------- */
 
-.polaroid {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 18px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 26px;
-}
-
-.polaroid li {
-  rotate: var(--miring, 0deg);
-}
-
-.polaroid figure {
+.lanyard {
+  /* --kw, --kt, --cincin, --jepit diisi lanyard.ts dari ukuran panggung */
+  --kartu: #f1e9d6;
+  --tali: #22252f;
+  --cetak: #efb21a;
   position: relative;
+  height: clamp(330px, 52vh, 470px);
+  margin: 0 0 4px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.lanyard .tali {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.selotip-tali {
+  position: absolute;
+  top: -7px;
+  z-index: 1;
+  height: 24px;
+  background: rgba(236, 222, 170, 0.85);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: var(--kw);
+  height: calc(var(--kt) + var(--cincin) + var(--jepit));
+  transform-origin: 50% 0;
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+  font-family: 'Special Elite', 'Courier New', ui-monospace, monospace;
+}
+
+.lanyard:not(.siap) .badge {
+  visibility: hidden;
+}
+
+.badge.ditarik {
+  z-index: 3;
+  cursor: grabbing;
+}
+
+/* tombol balik menutupi kartu, jadi garis fokusnya ikut berayun bersama kartu */
+.badge .balik {
+  position: absolute;
+  top: calc(var(--cincin) + var(--jepit) * 0.6);
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: var(--kt);
   margin: 0;
-  width: 200px;
-  padding: 12px 12px 14px;
-  background: #fdfcf8;
-  color: #22252f;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--kw) * 0.06);
+  background: transparent;
+  cursor: inherit;
+}
+
+.badge .jepit {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  width: calc(var(--kw) * 0.075);
+  height: calc(var(--jepit) + var(--kw) * 0.05);
+  translate: -50% 0;
+  border-radius: calc(var(--kw) * 0.02);
+  background: linear-gradient(90deg, #f4efe4, #a8a090 50%, #ece6da);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.badge .isi {
+  position: absolute;
+  top: calc(var(--cincin) + var(--jepit) * 0.6);
+  left: 0;
+  right: 0;
+  height: var(--kt);
+  transform-style: preserve-3d;
+}
+
+.badge .muka {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: calc(var(--kw) * 0.06);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--kartu);
+  color: var(--tali);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.15),
-    0 10px 22px rgba(0, 0, 0, 0.18);
+    0 12px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: calc(var(--kw) * 0.062);
+  line-height: 1.3;
   text-align: center;
 }
 
-.polaroid figure::before {
-  content: '';
+.badge .belakang {
+  transform: rotateY(180deg);
+  padding: calc(var(--kw) * 0.17) calc(var(--kw) * 0.1) 0;
+  text-align: left;
+}
+
+.badge .lubang {
   position: absolute;
-  top: -10px;
-  left: calc(50% - 30px);
-  width: 60px;
-  height: 20px;
-  background: rgba(236, 222, 170, 0.8);
-  rotate: -3deg;
+  top: calc(var(--kw) * 0.05);
+  left: 50%;
+  width: calc(var(--kw) * 0.2);
+  height: calc(var(--kw) * 0.035);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.polaroid canvas {
+.badge .kilap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%)
+      var(--kilap, 50%) 0 / 250% 100% no-repeat,
+    rgba(0, 0, 0, var(--redup, 0));
+}
+
+.badge svg {
+  position: absolute;
+  fill: currentColor;
+}
+
+.badge .pita {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: calc(var(--kw) * 0.3);
+  padding-bottom: calc(var(--kw) * 0.04);
+  background: var(--tali);
+  color: var(--cetak);
+}
+
+.badge .pita svg {
+  top: 0;
+  right: calc(var(--kw) * -0.03);
+  width: calc(var(--kw) * 0.34);
+  opacity: 0.75;
+}
+
+.badge .merek {
   display: block;
-  width: 176px;
-  height: 176px;
-  background: #f1efe8;
+  font-size: calc(var(--kw) * 0.056);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.polaroid figcaption {
+.badge .foto {
+  display: block;
+  width: calc(var(--kw) * 0.64);
+  height: auto;
+  margin: calc(var(--kw) * 0.07) auto 0;
+  border: 1px solid rgba(34, 37, 47, 0.3);
+  background: #f7f3ea;
+}
+
+.badge canvas.nama {
+  display: block;
+  width: auto;
+  height: calc(var(--kw) * 0.15);
+  max-width: calc(var(--kw) * 0.84);
+  margin: calc(var(--kw) * 0.06) auto 0;
+}
+
+.badge .jabatan {
+  display: block;
+  margin-top: calc(var(--kw) * 0.03);
+  padding: 0 calc(var(--kw) * 0.08);
+  color: #4b5060;
+}
+
+.badge .belakang .merek {
+  color: var(--tali);
+}
+
+.badge .lengkap {
+  display: block;
+  margin-top: calc(var(--kw) * 0.07);
+  font-size: calc(var(--kw) * 0.088);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.badge .belakang .jabatan {
+  padding: 0;
+}
+
+.badge .akun {
+  display: block;
+  margin-top: calc(var(--kw) * 0.05);
+  font-size: calc(var(--kw) * 0.05);
+  color: #4b5060;
+  overflow-wrap: anywhere;
+}
+
+.badge .pita-bawah {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38%;
+  border-top-left-radius: calc(var(--kw) * 0.2);
+  background: var(--tali);
+  color: var(--cetak);
+}
+
+.badge .pita-bawah svg {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+}
+
+.badge .semboyan {
+  position: absolute;
+  left: calc(var(--kw) * 0.1);
+  bottom: calc(var(--kw) * 0.08);
+  font-family: 'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive;
+  font-size: calc(var(--kw) * 0.078);
+}
+
+.tm-bawah {
   display: flex;
   flex-direction: column;
-  margin-top: 8px;
+  gap: 2px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--tinta-lembut);
 }
 
-.polaroid .nama {
-  font-size: 19px;
+.tm-bawah a {
   color: inherit;
-  text-decoration: none;
-}
-
-.polaroid .nama:hover {
-  color: #d8432f;
-}
-
-.polaroid .lengkap {
-  font-size: 12px;
-}
-
-.polaroid .peran {
-  font-size: 12px;
-  color: #5d6271;
 }
 
 /* ---------- kontak ---------- */

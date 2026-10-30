@@ -89,8 +89,59 @@ test('tentang kami, lalu tim, lalu kontak', async ({ page }) => {
     'https://github.com/bintangfabian',
   )
   await expect.poll(() => pikselTinta(page, '#tm-daftar canvas.foto')).toBeGreaterThan(10_000)
+  await expect.poll(() => pikselTinta(page, '#tm-daftar canvas.tali')).toBeGreaterThan(5_000)
   await tim.getByRole('button', { name: 'ajak kerja bareng →' }).click()
   await expect(page.getByRole('dialog', { name: 'Hubungi Wingman Clutch' })).toBeVisible()
+})
+
+test('kartu nama tim: dibalik dengan Enter atau ketukan, diseret tanpa terbalik', async ({
+  page,
+}) => {
+  // gerak dikurangi: kartu langsung tergantung diam tanpa ayunan masuk, jadi bisa dipegang
+  // di titik yang pasti
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const galat = await bukaHalaman(page)
+  await page.getByRole('button', { name: /^Kenalan sama tim/ }).click({ force: true })
+  const tim = page.getByRole('dialog', { name: 'Tim kami' })
+  const kall = tim.getByRole('button', { name: /^Kartu nama Kall/ })
+  const bintang = tim.getByRole('button', { name: /^Kartu nama Bintang/ })
+  // modul lanyard dimuat saat dialog pertama kali dibuka; kartu terlihat setelah tergantung
+  await expect(kall).toBeVisible()
+  await expect(kall).toHaveAttribute('aria-pressed', 'false')
+  await expect(bintang).toHaveAttribute('aria-pressed', 'false')
+
+  await kall.focus()
+  await page.keyboard.press('Enter')
+  await expect(kall).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press(' ')
+  await expect(kall).toHaveAttribute('aria-pressed', 'false')
+
+  // ketukan tanpa geser membalik kartu
+  const k = (await bintang.boundingBox())!
+  await page.mouse.click(k.x + k.width / 2, k.y + k.height * 0.7)
+  await expect(bintang).toHaveAttribute('aria-pressed', 'true')
+
+  // diseret: titik gantung kartu ikut pindah (kotaknya bisa miring), dan kartu tidak terbalik
+  const gantung = () =>
+    kall.evaluate((b) => parseFloat(b.closest<HTMLElement>('.badge')!.style.transform.slice(12)))
+  const awal = (await kall.boundingBox())!
+  const x0 = await gantung()
+  await page.mouse.move(awal.x + awal.width / 2, awal.y + awal.height * 0.6)
+  await page.mouse.down()
+  await page.mouse.move(awal.x + awal.width / 2 + 60, awal.y + awal.height * 0.6 + 30, {
+    steps: 8,
+  })
+  await expect.poll(gantung).toBeGreaterThan(x0 + 40)
+  await page.mouse.up()
+  await expect(kall).toHaveAttribute('aria-pressed', 'false')
+
+  // lanyard berhenti saat dialog ditutup dan jalan lagi saat dibuka
+  await page.keyboard.press('Escape')
+  await expect(tim).toBeHidden()
+  await page.getByRole('button', { name: /^Kenalan sama tim/ }).click({ force: true })
+  await expect(bintang).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(() => pikselTinta(page, '#tm-daftar canvas.tali')).toBeGreaterThan(5_000)
+  expect(galat).toEqual([])
 })
 
 test('form kontak: cek kolom, terkirim, lalu cadangan email saat backend gagal', async ({
