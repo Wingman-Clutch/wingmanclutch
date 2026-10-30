@@ -1,13 +1,13 @@
 name: Backend
 
 # Lint, typecheck, dan unit test untuk api/, plus lint kontrak API dengan Redocly.
+# Sengaja tanpa filter paths: check yang tidak jalan di sebuah PR akan ditunggu selamanya
+# kalau dijadikan required, dan job ini cuma sekitar 30 detik.
 
 on:
   push:
     branches: [main]
-    paths: [api/**, docs/api/**, pnpm-lock.yaml, .github/workflows/backend.yml]
   pull_request:
-    paths: [api/**, docs/api/**, pnpm-lock.yaml, .github/workflows/backend.yml]
   workflow_dispatch:
 
 permissions:

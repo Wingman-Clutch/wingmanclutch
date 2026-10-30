@@ -33,3 +33,21 @@ describe('pembatasUpstash', () => {
     expect(await pembatasBawaan().cek('x')).toMatchObject({ boleh: false })
   })
 })
+
+describe('kunciIp', () => {
+  it('memperingatkan sekali kalau GARAM_IP kosong di production', async () => {
+    const { kunciIp } = await import('../_lib/batas.js')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    kunciIp('203.0.113.7', '')
+    expect(warn).not.toHaveBeenCalled()
+    vi.stubEnv('VERCEL_ENV', 'production')
+    kunciIp('203.0.113.7', 'garam')
+    expect(warn).not.toHaveBeenCalled()
+    kunciIp('203.0.113.7', '')
+    kunciIp('203.0.113.8', '')
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('203.0.113')
+    warn.mockRestore()
+  })
+})

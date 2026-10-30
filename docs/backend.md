@@ -54,7 +54,7 @@ Urutannya:
 3. Baca body maksimal 16 KB, lebih dari itu `413`. JSON rusak `400 INPUT_TIDAK_VALID`.
 4. Kalau `situs` terisi, jawab `202` dan berhenti tanpa mengirim apa pun.
 5. Validasi dengan aturan kontrak (pangkas spasi dulu): `nama` 1 sampai 80, `email` maksimal 254 dan berformat email, `pesan` 10 sampai 2000. Kolom yang salah dijawab `400` dengan daftar `kolom` berisi `{ kolom, alasan }`, alasan salah satu dari `wajib`, `terlalu_pendek`, `terlalu_panjang`, `format`. Urutan dan kalimatnya bisa disamakan dengan `periksaKontak` di `apps/web/src/api/kontrak.ts`.
-6. Batas kirim: kunci `sha256(GARAM_IP + ip)`, 5 pesan per jam (jendela geser). Ambil IP dari header `x-forwarded-for` paling kiri yang diisi Vercel. Kalau habis, `429 TERLALU_SERING` dengan `cobaLagiDetik` dan header `Retry-After` yang sama.
+6. Batas kirim: kunci `sha256(GARAM_IP + ip)` (Function mencatat peringatan sekali kalau `GARAM_IP` kosong di production), 5 pesan per jam (jendela geser). Ambil IP dari header `x-forwarded-for` paling kiri yang diisi Vercel. Kalau habis, `429 TERLALU_SERING` dengan `cobaLagiDetik` dan header `Retry-After` yang sama.
 7. Kirim email lewat Resend:
    - `from`: `KONTAK_PENGIRIM`, `to`: `KONTAK_TUJUAN`, `reply_to`: email pengirim.
    - Subjek `Ide dari <nama>` (nama dipotong 60 karakter, tanpa baris baru).
@@ -66,10 +66,12 @@ Yang tidak boleh: menyimpan isi pesan, mencatat isi pesan atau email atau IP men
 
 ### `GET /api/proyek`
 
+Daftar repo dan URL ada di `api/_lib/github.ts` (`APLIKASI`). Test membandingkannya dengan `apps/web/src/data/proyek.ts`, jadi kalau Kall mengganti URL aplikasi, test backend ikut merah sampai daftarnya disamakan.
+
 1. Untuk keempat repo (`Wingman-Clutch/PostPocket`, `tikoem`, `goRute`, `tookthel`), ambil `stargazers_count` dan `pushed_at` dari `GET https://api.github.com/repos/{owner}/{repo}`, dengan header `Authorization: Bearer $GITHUB_TOKEN` kalau token ada.
 2. Bersamaan, kirim `HEAD` ke URL produksi setiap aplikasi (lihat `apps/web/src/data/proyek.ts`) dengan batas 5 detik. 2xx atau 3xx berarti `online`, galat atau lewat waktu berarti `gangguan`, dan kalau pengecekan tidak bisa dilakukan sama sekali `tidak_diketahui`.
 3. Jawab `200` dengan `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`, supaya CDN Vercel yang menahan beban dan GitHub jarang dipanggil.
-4. Kalau GitHub gagal untuk semua repo, `503 LAYANAN_GAGAL` tanpa cache. Kalau hanya sebagian, kirim data yang ada dan isi yang gagal dengan nilai terakhir yang wajar (misalnya `bintang: 0`, `status: tidak_diketahui`). Urutan id mengikuti enum di kontrak.
+4. Kalau GitHub gagal untuk semua repo, `503 LAYANAN_GAGAL` tanpa cache. Kalau hanya sebagian, kirim data yang ada dengan cache lima menit (`s-maxage=300`) supaya cepat pulih. Repo yang gagal diisi nilai terakhir yang berhasil di instance itu, atau `bintang: 0` dan `terakhirDiperbarui` sama dengan `diperbarui` kalau belum pernah berhasil. Status tetap dari cek HEAD, karena tidak bergantung pada GitHub. Urutan id mengikuti enum di kontrak.
 
 ## Keamanan
 
@@ -92,7 +94,7 @@ Test handler tanpa jaringan: panggil handler dengan `Request` buatan, dan ganti 
 
 ## CI
 
-Workflow `Backend` (`.github/workflows/backend.yml`) jalan kalau `api/` atau `docs/api/` berubah: `lint`, `typecheck`, `test` package `@wingmanclutch/api`, dan `npx @redocly/cli@1 lint docs/api/openapi.yaml` dengan aturan di `redocly.yaml`. Setelah stabil, tambahkan job-nya ke required checks `main`.
+Workflow `Backend` (`.github/workflows/backend.yml`) jalan di setiap PR dan push ke `main`, tanpa filter `paths` supaya aman dijadikan required check: `lint`, `typecheck`, `test` package `@wingmanclutch/api`, dan `npx @redocly/cli@1 lint docs/api/openapi.yaml` dengan aturan di `redocly.yaml`. Setelah stabil, tambahkan job `backend` ke required checks `main`. Jangan pasang filter `paths` lagi setelah itu, karena PR yang tidak memicu workflow akan menunggu check-nya selamanya.
 
 ## Checklist
 
@@ -103,8 +105,8 @@ Workflow `Backend` (`.github/workflows/backend.yml`) jalan kalau `api/` atau `do
 - [x] `POST /api/kontak`: metode, content type, ukuran body, JSON, jebakan bot, validasi kolom
 - [x] Batas kirim 5 per jam per jaringan dengan IP di-hash, `429` dan `Retry-After`
 - [x] Kirim email lewat Resend dengan `reply_to`, `503` saat gagal atau lewat 8 detik
-- [ ] `GET /api/proyek`: GitHub dan cek status bersamaan, cache CDN, galat sebagian dan total
-- [ ] Unit test semua jalur di atas, jawaban divalidasi dengan skema kontrak
+- [x] `GET /api/proyek`: GitHub dan cek status bersamaan, cache CDN, galat sebagian dan total
+- [x] Unit test semua jalur di atas, jawaban divalidasi dengan skema kontrak
 - [x] Workflow `Backend` di CI dan lint kontrak dengan Redocly
 - [ ] Env produksi di Vercel (`RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN`)
 - [ ] Cek produksi: pesan uji sampai ke wingmanclutch@gmail.com, kiriman ke-6 dalam satu jam ditolak, statistik tampil di lembar detail

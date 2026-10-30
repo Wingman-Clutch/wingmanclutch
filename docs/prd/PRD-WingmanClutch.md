@@ -5,7 +5,7 @@
 | Pemilik produk | Kall dan Bintang |
 | Frontend | Kall ([@HaikalFaruq](https://github.com/HaikalFaruq)) |
 | Backend | Bintang ([@bintangfabian](https://github.com/bintangfabian)) |
-| Status | Halaman live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026. Backend dimulai: `POST /api/kontak` sudah ada, `GET /api/proyek` menyusul |
+| Status | Halaman live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026. Backend: `POST /api/kontak` live (menunggu env Resend dan Upstash), `GET /api/proyek` sudah ada |
 | Referensi | [kracked.studio](https://kracked.studio), catatan di [docs/referensi/kracked-studio.md](../referensi/kracked-studio.md) |
 | Terakhir diubah | 30 Oktober 2026 |
 
