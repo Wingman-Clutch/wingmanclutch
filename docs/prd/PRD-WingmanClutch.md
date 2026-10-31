@@ -166,7 +166,7 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 | --- | --- | --- | --- |
 | Domain | `wingmanclutch.vercel.app` atau beli domain | Diputuskan: `wingmanclutch.web.id`, berlaku sampai 28 Oktober 2027. `wingmanclutch.vercel.app` dialihkan permanen ke sana | Berdua |
 | Penyimpanan batas kirim | Upstash Redis atau di memori per instance | Diputuskan: Upstash, di memori hanya cadangan lokal ([backend.md](../backend.md#keputusan)) | Bintang |
-| Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
+| Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `kontak@wingmanclutch.web.id` sejak 31 Oktober 2026, sebelumnya `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
 | Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Kode MIT, tapi logo, foto tim, dan isi tetap milik Wingman Clutch | Berdua |
 | Foto tim | Foto profil GitHub sekarang, atau foto khusus | Foto profil GitHub dulu | Berdua |
 | Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Statis di rilis 1 | Berdua |
