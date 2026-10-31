@@ -162,7 +162,7 @@ describe('sudut terlipat saat diam', () => {
 function skripAwal(
   lebar: number,
   tinggi: number,
-  { sesi = null as string | null, kurangi = false } = {},
+  { sesi = null as string | null, kurangi = false, suara = null as string | null } = {},
 ) {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
   const skrip = html.match(/<script>([\s\S]*?)<\/script>/)![1]
@@ -185,7 +185,7 @@ function skripAwal(
     { documentElement: akar, querySelector: () => ({}) },
     lebar,
     tinggi,
-    { getItem: () => null },
+    { getItem: (k: string) => (k === 'wc-suara' ? suara : null) },
     { getItem: () => sesi },
     (q: string) => ({ matches: kurangi && q.includes('reduced-motion') }),
   )
@@ -194,8 +194,21 @@ function skripAwal(
     u: gaya.get('--u')!,
     kaki: gaya.get('--kaki')!,
     pembuka: kelas.has('pembuka'),
+    suara: akar.dataset.suara,
   }
 }
+
+describe('tombol suara sebelum skrip utama jalan', () => {
+  it('suara yang pernah dimatikan sudah tertulis mati di kaki halaman', () => {
+    expect(skripAwal(390, 844, { suara: '{"nyala":false,"volume":0.7}' }).suara).toBe('mati')
+  })
+
+  it('belum pernah memilih, atau isinya rusak: tetap nyala', () => {
+    expect(skripAwal(390, 844).suara).toBeUndefined()
+    expect(skripAwal(390, 844, { suara: '{rusak' }).suara).toBeUndefined()
+    expect(skripAwal(390, 844, { suara: '{"nyala":true}' }).suara).toBeUndefined()
+  })
+})
 
 describe('layar pembuka', () => {
   it('tampil di kunjungan pertama sebuah sesi', () => {

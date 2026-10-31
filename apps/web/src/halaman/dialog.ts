@@ -9,6 +9,7 @@ import { PROYEK, TIM, type IdProyek } from '../data/proyek'
 import { sketsaFoto } from './foto-sketsa'
 import type { Lanyard } from './lanyard'
 import { svgLogo } from './merek'
+import { BUNYI, suara } from './suara'
 
 export type NamaDialog = 'proyek' | 'tentang' | 'tim' | 'kontak'
 
@@ -74,6 +75,8 @@ export class Dialog {
         if (d.id === 'dlg-tim') void this.lanyard?.then((l) => l.berhenti())
         // close dikirim belakangan: lembar yang sudah dibuka lagi jangan ikut dikosongkan
         if (d.id === 'dlg-proyek' && !d.open) $('#pr-figur', d).replaceChildren()
+        // pindah lembar lewat tombol di dalamnya: cukup bunyi lembar baru yang terbuka
+        if (!document.querySelector('dialog[open]')) suara.mainkan(BUNYI.tutupLembar)
         this.sumber?.focus({ preventScroll: true })
         this.sumber = null
       })
@@ -92,6 +95,7 @@ export class Dialog {
     const d = $<HTMLDialogElement>(`#dlg-${nama}`)
     if (nama === 'proyek' && id) this.isiProyek(d, id)
     d.showModal()
+    suara.mainkan(BUNYI.bukaLembar)
     this.sumber = sumber
     const kanvas = d.querySelector<HTMLCanvasElement>('canvas.judul-sketsa')
     if (kanvas?.dataset.judul)
