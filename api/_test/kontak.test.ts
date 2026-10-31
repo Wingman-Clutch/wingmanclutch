@@ -149,15 +149,15 @@ describe('POST /api/kontak', () => {
     const kunci: string[] = []
     const pembatas: Pembatas = { cek: async (k) => (kunci.push(k), { boleh: true }) }
     const { panggil, terkirim } = siapkan({ pembatas })
-    const ditolak = [
-      minta(undefined, { method: 'GET' }),
-      minta('halo', { tipe: 'text/plain' }),
-      minta({ ...valid, pesan: 'x'.repeat(BODY_MAKS) }),
-      minta('{rusak'),
-      minta({ nama: '', email: '', pesan: '', situs: '' }),
-      minta({ ...valid, situs: 'http://spam' }),
+    const ditolak: [Request, number][] = [
+      [minta(undefined, { method: 'GET' }), 405],
+      [minta('halo', { tipe: 'text/plain' }), 415],
+      [minta({ ...valid, pesan: 'x'.repeat(BODY_MAKS) }), 413],
+      [minta('{rusak'), 400],
+      [minta({ nama: '', email: '', pesan: '', situs: '' }), 400],
+      [minta({ ...valid, situs: 'http://spam' }), 202],
     ]
-    for (const req of ditolak) expect((await panggil(req)).status).not.toBe(429)
+    for (const [req, status] of ditolak) expect((await panggil(req)).status).toBe(status)
     expect(kunci).toEqual([])
     expect(terkirim).toEqual([])
   })
