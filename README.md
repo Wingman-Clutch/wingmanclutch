@@ -97,6 +97,7 @@ Pesan kontak yang memuat `#gagal` dijawab 503 dan `#sering` dijawab 429 oleh moc
 | `pnpm typecheck` | Cek tipe |
 | `pnpm test` | Unit test Vitest |
 | `pnpm test:e2e` | E2E Playwright di build produksi (desktop, Android, iPhone) |
+| `pnpm test:produksi` | Smoke test ke produksi: halaman dan backend sungguhan tanpa mock, tanpa mengirim email |
 | `pnpm check` | `lint`, `typecheck`, dan `test` sekaligus |
 
 Pertama kali menjalankan E2E di mesin baru: `pnpm --filter @wingmanclutch/web exec playwright install chromium webkit`. Perintah backend ada di [AGENTS.md](AGENTS.md#6-perintah).
@@ -114,6 +115,7 @@ wingmanclutch/
 │   ├── public/figur/      # hasil skrip: halaman figur interaktif dan gambar diam
 │   ├── mock/              # mock /api sesuai kontrak (dev dan E2E saja)
 │   ├── test/, e2e/        # Vitest dan Playwright
+│   ├── e2e-produksi/      # smoke test ke produksi tanpa mock
 │   └── scripts/           # pembuat data font, logo, figur, gambar README dan OG
 ├── api/                   # Vercel Functions kontak dan proyek (Bintang)
 ├── docs/                  # PRD, panduan, desain, aset, kontrak API, diagram, gambar README
