@@ -1,0 +1,48 @@
+name: Produksi
+
+# Smoke test ke halaman dan backend produksi, tanpa mock dan tanpa mengirim email. Jalan setiap
+# hari, bisa dijalankan manual, dan di PR yang mengubah smoke test-nya sendiri.
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # 08.00 WIB
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - apps/web/e2e-produksi/**
+      - apps/web/playwright.produksi.config.ts
+      - .github/workflows/produksi.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: produksi
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Pasang browser Playwright
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Smoke test produksi (desktop, iPhone, API)
+        run: pnpm test:produksi
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces-produksi
+          path: apps/web/test-results
+          retention-days: 7

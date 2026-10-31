@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:produksi": "playwright test -c playwright.produksi.config.ts",
     "font": "node scripts/buat-font.mjs",
     "figur": "node scripts/buat-figur.mjs",
     "foto-tim": "node scripts/buat-foto-tim.mjs"
