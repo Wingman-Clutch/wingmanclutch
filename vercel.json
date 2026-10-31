@@ -5,9 +5,9 @@
   "outputDirectory": "apps/web/dist",
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/:path(.*)",
       "has": [{ "type": "host", "value": "wingmanclutch.vercel.app" }],
-      "destination": "https://wingmanclutch.web.id/:path*",
+      "destination": "https://wingmanclutch.web.id/:path",
       "permanent": true
     }
   ],
