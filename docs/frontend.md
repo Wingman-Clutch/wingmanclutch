@@ -132,7 +132,7 @@ Sketsa yang sedang bergerak diam (melayang, mengayun) membuat Playwright mengang
 
 ## Deploy
 
-Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build`, hasil `apps/web/dist`, dan Functions dari `api/`. Proyeknya `wingmanclutch` di akun Kall (`haikalfaruqs-projects`), terhubung ke repo GitHub ini, dan tampil di <https://wingmanclutch.web.id>. Alamat `wingmanclutch.vercel.app` dialihkan permanen (308) ke domain itu lewat `redirects` di `vercel.json`. Host-nya dicocokkan persis, jadi URL preview (`wingmanclutch-git-…vercel.app`) tidak ikut dialihkan; `test/domain.test.ts` menjaganya. Frontend tidak butuh env apa pun.
+Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build`, hasil `apps/web/dist`, dan Functions dari `api/`. Proyeknya `wingmanclutch` di akun Kall (`haikalfaruqs-projects`), terhubung ke repo GitHub ini, dan tampil di <https://wingmanclutch.web.id>. Alamat `wingmanclutch.vercel.app` dialihkan permanen (308) ke domain itu lewat `redirects` di `vercel.json`, halaman utamanya juga. Host-nya dicocokkan persis, jadi URL preview (`wingmanclutch-git-…vercel.app`) tidak ikut dialihkan. Pola path-nya `/:path(.*)`, bukan `/:path*`: Vercel mencocokkan `source` secara ketat, jadi `/:path*` melewatkan `/` dan path yang berakhiran `/`. `test/domain.test.ts` menjaga keduanya dengan library routing Vercel sendiri (`@vercel/routing-utils`). Frontend tidak butuh env apa pun.
 
 Kalau perlu memakai Vercel CLI, jalankan `vercel link` di folder sementara, karena perintah itu menulis `.env.local` berisi token. Kalau `/api/proyek` gagal, lembar detail menyembunyikan statistik; kalau `/api/kontak` gagal, form kontak menawarkan email.
 
