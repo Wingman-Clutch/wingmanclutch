@@ -5,6 +5,7 @@ import { batasi } from '../engine/acak'
 import { GERAK_DIKURANGI, kaitkan } from '../engine/animasi'
 import type { Titik } from '../engine/jalur'
 import { Hujan } from './hujan'
+import { BUNYI, suara } from './suara'
 
 /** bagian poligon yang memenuhi f(q) >= 0 */
 export function potongPoligon(poligon: Titik[], f: (q: Titik) => number): Titik[] {
@@ -182,6 +183,7 @@ export class Lipatan {
   /** kupas sampai lepas, ganti dunia, lalu sudut baru kembali terlipat sedikit */
   kupasPenuh() {
     if (this.sibuk || !this.boleh()) return
+    suara.mainkan(BUNYI.kupasSudut)
     this.animasi([-this.W * 1.1, this.H * 2.2], 900, () => {
       this.kupas()
       this.hujan.berhenti()

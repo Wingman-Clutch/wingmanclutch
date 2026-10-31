@@ -33,6 +33,7 @@
     "yaml": "^2.9.1"
   },
   "dependencies": {
-    "@fontsource/special-elite": "^5.3.0"
+    "@fontsource/special-elite": "^5.3.0",
+    "uisfx": "^0.4.0"
   }
 }

@@ -8,6 +8,7 @@ import { sampelUlang, type Garis } from '../engine/jalur'
 import { gambarRentang, PENSIL, TINTA, type Tema } from '../engine/kuas'
 import { DPR } from '../engine/sketsa'
 import type { Papan } from './papan'
+import { BUNYI, suara } from './suara'
 import type { Pensil, Ukuran } from './tata-letak'
 
 const NAMA_PENSIL: Record<Pensil['c'], string> = {
@@ -180,14 +181,23 @@ export class Baki {
       b.setAttribute('aria-label', `Corat-coret pakai ${NAMA_PENSIL[c]}`)
       b.setAttribute('aria-pressed', 'false')
       b.innerHTML = '<span class="tampak"></span>'
-      b.addEventListener('click', () => this.pilih(this.mencoret === c ? null : c))
+      b.addEventListener('click', () => {
+        const pilihan = this.mencoret === c ? null : c
+        this.pilih(pilihan)
+        suara.mainkan(pilihan ? BUNYI.pilihPensil : BUNYI.letakkanPensil)
+      })
       baki.insertBefore(b, penghapus)
       this.pensilEl.push(b)
     }
     penghapus.addEventListener('click', () => this.hapusHalaman())
-    bar.querySelector('button')!.addEventListener('click', () => this.pilih(null))
+    // pilih(null) juga dipanggil penghapus, jadi bunyinya di sini, bukan di pilih()
+    const letakkan = () => {
+      this.pilih(null)
+      suara.mainkan(BUNYI.letakkanPensil)
+    }
+    bar.querySelector('button')!.addEventListener('click', letakkan)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.mencoret) this.pilih(null)
+      if (e.key === 'Escape' && this.mencoret) letakkan()
     })
     this.pasangCoretan()
   }
@@ -391,6 +401,8 @@ export class Baki {
     const el = this.penghapus
     el.classList.add('menghapus')
     el.style.rotate = '0deg'
+    // gosokan yang terlihat diiringi loop; dengan gerak dikurangi halamannya langsung bersih
+    if (!GERAK_DIKURANGI) suara.mulaiLoop('hapus', BUNYI.menghapus)
     const noda = this.kanvasNoda.getContext('2d')!
     const coret = this.ctxCoret
     const dpr = DPR()
@@ -487,6 +499,8 @@ export class Baki {
       for (const s of this.papan.sketsa.values()) s.ulang()
       this.coretan = []
       coret.clearRect(0, 0, this.kanvasCoret.width, this.kanvasCoret.height)
+      suara.hentikanLoop('hapus')
+      suara.mainkan(BUNYI.halamanBersih)
       el.classList.remove('menghapus')
       el.classList.add('pulang')
       el.style.transform = ''

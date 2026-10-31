@@ -1,11 +1,21 @@
 // Form kontak: dicek dulu di browser, dikirim ke /api/kontak, dan kalau backend tidak bisa
 // dihubungi, pesannya disiapkan untuk dikirim lewat email.
 
-import { kirimKontak } from '../api/klien'
+import type { CueName } from 'uisfx'
+import { kirimKontak, type HasilKontak } from '../api/klien'
 import { kalimatGalat, periksaKontak, type GalatKolom, type PesanKontak } from '../api/kontrak'
 import { STUDIO } from '../data/proyek'
+import { BUNYI, suara, TUNDA_LOOP } from './suara'
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T
+
+/** bunyi setiap hasil kiriman, dimainkan setelah jawabannya sampai */
+export const BUNYI_HASIL = {
+  terkirim: BUNYI.terkirim,
+  tidak_valid: BUNYI.isianSalah,
+  terlalu_sering: BUNYI.kebanyakanKirim,
+  gagal: BUNYI.gagalKirim,
+} as const satisfies Record<HasilKontak['jenis'], CueName>
 
 async function salin(
   teks: string,
@@ -28,11 +38,13 @@ async function salin(
     }
   }
   tombol.textContent = berhasil ? 'tersalin!' : 'sudah dipilih, salin manual'
+  suara.mainkan(berhasil ? BUNYI.tersalin : BUNYI.salinManual)
   setTimeout(() => (tombol.textContent = label), 1800)
 }
 
 export function pasangKontak() {
   const form = $<HTMLFormElement>('#form-kontak')
+  const dialog = $<HTMLDialogElement>('#dlg-kontak')
   const galatEl = $('#kt-galat')
   const terkirim = $('#kt-terkirim')
   const cadangan = $('#kt-cadangan')
@@ -66,14 +78,17 @@ export function pasangKontak() {
     }
     const galat = periksaKontak(data)
     tandai(galat)
-    if (galat.length) return
+    if (galat.length) return void suara.mainkan(BUNYI.isianSalah)
     const tombol = form.querySelector<HTMLButtonElement>('[type="submit"]')!
     tombol.disabled = true
     tombol.textContent = 'mengirim…'
     cadangan.hidden = true
-    const hasil = await kirimKontak(data)
+    // loop baru berbunyi kalau kirimnya lama, dan berhenti begitu ada jawaban atau dialog ditutup
+    const hasil = await suara.proses('kirim', BUNYI.mengirim, () => kirimKontak(data), TUNDA_LOOP)
     tombol.disabled = false
     tombol.textContent = 'kirim →'
+    // dialog sudah ditutup: tidak ada yang terlihat berubah, jadi tidak berbunyi juga
+    if (dialog.open) suara.mainkan(BUNYI_HASIL[hasil.jenis])
     if (hasil.jenis === 'terkirim') {
       form.reset()
       form.hidden = true
@@ -100,7 +115,8 @@ export function pasangKontak() {
   )
 
   // dialog dibuka lagi setelah terkirim: tampilkan form kosong
-  $('#dlg-kontak').addEventListener('close', () => {
+  dialog.addEventListener('close', () => {
+    suara.hentikanLoop('kirim')
     if (!terkirim.hidden) {
       terkirim.hidden = true
       form.hidden = false

@@ -669,6 +669,44 @@ button.sketsa:active {
   color: var(--merah-teks);
 }
 
+/* tombol suara di kaki halaman tampil seperti tautan di sebelahnya */
+#suara {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--tinta) 40%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+/* di HP hurufnya ikut mengecil bersama halaman, jadi bidang ketuknya diperluas tanpa menggeser
+   teks; ke kiri hanya sedikit supaya tidak menutupi tautan di sebelahnya */
+#suara::after {
+  content: '';
+  position: absolute;
+  inset: -12px -12px -12px -3px;
+}
+
+#suara:hover {
+  color: var(--merah-teks);
+}
+
+#suara:focus-visible {
+  outline: 2px dashed var(--fokus);
+  outline-offset: 2px;
+}
+
+/* data-suara dipasang skrip di <head>, lalu diperbarui src/halaman/suara.ts */
+:root[data-suara='mati'] #suara .nyala,
+:root:not([data-suara='mati']) #suara .mati {
+  display: none;
+}
+
 /* di potret, tautan pindah ke baris kedua */
 :root[data-tata='potret'] #kaki .tautan {
   display: block;

@@ -12,6 +12,7 @@ import { Lampu } from './halaman/lampu'
 import { Lipatan } from './halaman/lipatan'
 import { Papan } from './halaman/papan'
 import { Pembuka } from './halaman/pembuka'
+import { BUNYI, suara } from './halaman/suara'
 import { atasKaki, hitungUkuran, type Ukuran } from './halaman/tata-letak'
 import { kepakkan } from './sketsa/logo'
 
@@ -40,7 +41,10 @@ const papan = new Papan($('#papan'), (a, sumber) => {
   else dialog.buka(a.jenis, sumber)
 })
 
-const lampu = new Lampu($('#lampu'), () => gantiKertas())
+const lampu = new Lampu($('#lampu'), () => {
+  gantiKertas()
+  suara.mainkan(kertas === 'terang' ? BUNYI.lampuNyala : BUNYI.lampuPadam)
+})
 
 const baki = new Baki(
   $('#baki'),
@@ -113,6 +117,7 @@ function tata() {
   lipatan.atur()
 }
 
+suara.pasang($<HTMLButtonElement>('#suara'))
 pasangKontak()
 tata()
 lampu.warnai(kertas === 'terang')

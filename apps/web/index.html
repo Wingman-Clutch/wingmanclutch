@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#f7f6f1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'sha256-7nyT7mJ0nywKkUMpF2Z6GJ+/m2vZP1RbO7i1YfVj1hY='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' 'sha256-tYh7MI790JbXPyKZTYNf83H7TKvCynI3LhLYZ+uBv6M='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Wingman Clutch" />
@@ -40,6 +40,12 @@
           t = matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang'
         akar.dataset.tema = t
         if (t === 'gelap') document.querySelector('meta[name="theme-color"]').content = '#161922'
+        // suara yang pernah dimatikan langsung tertulis mati di kaki halaman (src/halaman/suara.ts)
+        var suara = null
+        try {
+          suara = JSON.parse(localStorage.getItem('wc-suara'))
+        } catch (e) {}
+        if (suara && suara.nyala === false) akar.dataset.suara = 'mati'
         // layar pembuka sekali per sesi, tidak pernah kalau pengguna memilih gerak dikurangi
         var pembuka = null
         try {
@@ -90,7 +96,12 @@
             ><span class="pisah" aria-hidden="true"> · </span
             ><a href="https://sociabuzz.com/wingmanclutch/tribe" target="_blank" rel="noopener"
               >Traktir kopi</a
-            ></span
+            ><span class="pisah" aria-hidden="true"> · </span
+            ><button type="button" id="suara" aria-pressed="true">
+              suara<span class="keadaan" aria-hidden="true"
+                ><span class="nyala">: nyala</span><span class="mati">: mati</span></span
+              >
+            </button></span
           >
         </p>
       </div>

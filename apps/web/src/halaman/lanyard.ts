@@ -33,6 +33,7 @@
 import { GERAK_DIKURANGI, kaitkan } from '../engine/animasi'
 import { DPR } from '../engine/sketsa'
 import { isiLambang, RASIO_LAMBANG } from './merek'
+import { BUNYI, suara } from './suara'
 import {
   langkahPutar,
   langkahVerlet,
@@ -574,6 +575,7 @@ export class Lanyard {
     k.addEventListener('click', () => {
       if (performance.now() - g.diseretPada < 400) return
       this.balik(i())
+      suara.mainkan(BUNYI.balikKartu)
     })
   }
 }
