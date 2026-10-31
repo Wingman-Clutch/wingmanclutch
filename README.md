@@ -14,10 +14,10 @@
 Satu halaman buku catatan yang memperlihatkan empat aplikasi Wingman Clutch.<br />
 Tulisannya dicoret pensil langsung di layar, bendanya bisa diputar dan dicoba, dan pengunjung boleh ikut corat-coret.
 
-### [Buka wingmanclutch.vercel.app](https://wingmanclutch.vercel.app)
+### [Buka wingmanclutch.web.id](https://wingmanclutch.web.id)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Wingman-Clutch/wingmanclutch/web.yml?branch=main&style=flat-square&label=CI&labelColor=101828)](https://github.com/Wingman-Clutch/wingmanclutch/actions/workflows/web.yml)
-[![Live](https://img.shields.io/badge/halaman-live-EFB21A?style=flat-square&labelColor=101828)](https://wingmanclutch.vercel.app)
+[![Live](https://img.shields.io/badge/halaman-live-EFB21A?style=flat-square&labelColor=101828)](https://wingmanclutch.web.id)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=101828)](https://vite.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-tanpa_framework-3178C6?style=flat-square&logo=typescript&logoColor=white&labelColor=101828)](https://www.typescriptlang.org)
 [![Canvas](https://img.shields.io/badge/canvas-mesin_pensil_sendiri-E4589C?style=flat-square&labelColor=101828)](#cara-kerja)
@@ -26,7 +26,7 @@ Tulisannya dicoret pensil langsung di layar, bendanya bisa diputar dan dicoba, d
 </div>
 
 > [!NOTE]
-> **Halamannya sudah live di [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app) sejak 30 Oktober 2026**, dan Vercel men-deploy `main` ke produksi. Backend buatan Bintang (`/api/kontak` dan `/api/proyek`) juga sudah live mengikuti [kontrak](docs/api/openapi.yaml): pesan dari form kontak sampai ke email tim lewat Resend dengan batas kirim di Upstash, dan lembar detail menampilkan statistik GitHub. Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
+> **Halamannya live sejak 30 Oktober 2026 dan sekarang beralamat di [wingmanclutch.web.id](https://wingmanclutch.web.id)**. Alamat lama `wingmanclutch.vercel.app` dialihkan ke sana, dan Vercel men-deploy `main` ke produksi. Backend buatan Bintang (`/api/kontak` dan `/api/proyek`) juga sudah live mengikuti [kontrak](docs/api/openapi.yaml): pesan dari form kontak sampai ke email tim lewat Resend dengan batas kirim di Upstash, dan lembar detail menampilkan statistik GitHub. Progresnya ada di checklist [frontend](docs/frontend.md#checklist) dan [backend](docs/backend.md#checklist).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/gambar/halaman-gelap.webp" />
@@ -142,7 +142,8 @@ Unit test ikut menjaga desain: semua sketsa harus berada di dalam halaman dan ti
 
 | Bagian | Di mana | Catatan |
 | --- | --- | --- |
-| Halaman | Vercel (`haikalfaruqs-projects`), dari `main` | [wingmanclutch.vercel.app](https://wingmanclutch.vercel.app). `pnpm build`, hasil `apps/web/dist` ([`vercel.json`](vercel.json)). Tanpa env |
+| Halaman | Vercel (`haikalfaruqs-projects`), dari `main` | [wingmanclutch.web.id](https://wingmanclutch.web.id). `pnpm build`, hasil `apps/web/dist` ([`vercel.json`](vercel.json)). Tanpa env |
+| Domain | `wingmanclutch.web.id`, DNS di indo.domains (dipegang Bintang) | Berlaku sampai 28 Oktober 2027. `www` dan `wingmanclutch.vercel.app` dialihkan permanen ke domain ini; URL preview tidak |
 | Functions | Vercel, folder `api/` | Env `RESEND_API_KEY`, `KONTAK_TUJUAN`, `KONTAK_PENGIRIM`, `UPSTASH_*`, `GARAM_IP`, opsional `GITHUB_TOKEN` ([contoh](.env.example)) |
 | Diagram arsitektur | GitHub Pages dari `main` `/docs` | [wingman-clutch.github.io/wingmanclutch/arsitektur.html](https://wingman-clutch.github.io/wingmanclutch/arsitektur.html) |
 

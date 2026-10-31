@@ -131,7 +131,7 @@ Sketsa yang sedang bergerak diam (melayang, mengayun) membuat Playwright mengang
 
 ## Deploy
 
-Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build`, hasil `apps/web/dist`, dan Functions dari `api/`. Proyeknya `wingmanclutch` di akun Kall (`haikalfaruqs-projects`), terhubung ke repo GitHub ini, dan tampil di <https://wingmanclutch.vercel.app>. Frontend tidak butuh env apa pun.
+Vercel men-deploy `main` dari root repo memakai `vercel.json`: build `pnpm build`, hasil `apps/web/dist`, dan Functions dari `api/`. Proyeknya `wingmanclutch` di akun Kall (`haikalfaruqs-projects`), terhubung ke repo GitHub ini, dan tampil di <https://wingmanclutch.web.id>. Alamat `wingmanclutch.vercel.app` dialihkan permanen (308) ke domain itu lewat `redirects` di `vercel.json`. Host-nya dicocokkan persis, jadi URL preview (`wingmanclutch-git-…vercel.app`) tidak ikut dialihkan; `test/domain.test.ts` menjaganya. Frontend tidak butuh env apa pun.
 
 Kalau perlu memakai Vercel CLI, jalankan `vercel link` di folder sementara, karena perintah itu menulis `.env.local` berisi token. Kalau `/api/proyek` gagal, lembar detail menyembunyikan statistik; kalau `/api/kontak` gagal, form kontak menawarkan email.
 
@@ -156,6 +156,7 @@ Lighthouse mobile 30 Oktober 2026 (Lighthouse 13.6, build produksi lokal, CPU di
 - [x] Unit test dan E2E di tiga perangkat
 - [x] Gambar README, gambar OG, dan diagram arsitektur Archify
 - [x] Deploy halaman ke Vercel (`wingmanclutch.vercel.app`), terhubung ke repo
+- [x] Domain `wingmanclutch.web.id`: canonical dan gambar OG pindah ke sana, `wingmanclutch.vercel.app` dialihkan permanen
 - [x] Lighthouse mobile ≥ 95 di keempat kategori (baseline di bagian Deploy), axe 0 pelanggaran di halaman dan semua dialog
 - [x] Cek alur kontak dan statistik di produksi bersama Bintang, setelah `api/` jadi
 - [ ] Ganti mock dengan backend sungguhan di E2E produksi (smoke test), setelah `api/` jadi

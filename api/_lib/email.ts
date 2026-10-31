@@ -29,7 +29,7 @@ export async function kirimEmail(kontak: Kontak, env = process.env): Promise<voi
         to: [KONTAK_TUJUAN],
         reply_to: kontak.email,
         subject: subjek(kontak.nama),
-        text: `${kontak.pesan}\n\n--\n${kontak.nama}\n${kontak.email}\n\nDikirim dari form kontak wingmanclutch.vercel.app`,
+        text: `${kontak.pesan}\n\n--\n${kontak.nama}\n${kontak.email}\n\nDikirim dari form kontak wingmanclutch.web.id`,
       }),
       signal: AbortSignal.timeout(BATAS_WAKTU_MS),
     })
