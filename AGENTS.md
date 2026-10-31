@@ -109,6 +109,7 @@ Butuh Node 24 (`.nvmrc`) dan pnpm 9. Semua perintah dijalankan dari root repo.
 | `pnpm typecheck` | Cek tipe semua package |
 | `pnpm test` | Unit test Vitest semua package |
 | `pnpm test:e2e` | E2E Playwright di build produksi (desktop, Android, iPhone) |
+| `pnpm test:produksi` | Smoke test ke produksi: halaman dan backend sungguhan tanpa mock, tanpa mengirim email |
 | `pnpm check` | `lint`, `typecheck`, dan `test` sekaligus |
 | `pnpm --filter @wingmanclutch/web font` | Buat ulang data font pensil (`src/data/font.json`) |
 | `node apps/web/scripts/buat-logo.mjs` | Buat ulang data logo (tulisan WINGMAN CLUTCH di halaman, lambang di kartu nama) dari `docs/brand/wingman-clutch-logo.svg` |
@@ -142,6 +143,7 @@ apps/web/               halaman buku catatan (Vite + TypeScript tanpa framework)
   public/figur/         hasil skrip: halaman figur interaktif dan gambar diam, di-commit
   mock/                 mock /api sesuai kontrak (hanya development dan E2E)
   test/, e2e/           unit test Vitest dan skenario Playwright
+  e2e-produksi/         smoke test ke produksi (halaman dan backend sungguhan)
 api/                    Vercel Functions, dipegang Bintang (lihat docs/backend.md)
 docs/prd/               PRD
 docs/frontend.md        panduan frontend
@@ -155,7 +157,7 @@ docs/gambar/            gambar README
 docs/arsitektur.*       diagram arsitektur Archify: sumber JSON dan HTML interaktif (GitHub Pages)
 scripts/                cek atribusi AI dan rahasia (dipakai hook dan CI) beserta ujinya
 .githooks/              hook pre-commit, commit-msg, dan pre-push
-.github/                workflow CI (Web, No AI attribution) dan template PR
+.github/                workflow CI (Web, Backend, No AI attribution), smoke test harian (Produksi), dan template PR
 ```
 
 ## 8. Aturan produk

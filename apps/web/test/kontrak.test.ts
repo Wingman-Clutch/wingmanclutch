@@ -1,21 +1,10 @@
-import { readFileSync } from 'node:fs'
 import { EventEmitter } from 'node:events'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import Ajv2020 from 'ajv/dist/2020'
 import { describe, expect, it } from 'vitest'
-import { parse } from 'yaml'
 import { jawabMock, STATISTIK_MOCK } from '../mock/api'
 import { periksaKontak } from '../src/api/kontrak'
 import { PROYEK } from '../src/data/proyek'
-
-const kontrak = parse(
-  readFileSync(new URL('../../../docs/api/openapi.yaml', import.meta.url), 'utf8'),
-)
-const ajv = new Ajv2020({ strict: false, allErrors: true })
-ajv.addFormat('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/)
-ajv.addFormat('date-time', (s: string) => !Number.isNaN(Date.parse(s)))
-ajv.addSchema({ $id: 'kontrak', components: kontrak.components })
-const skema = (nama: string) => ajv.getSchema(`kontrak#/components/schemas/${nama}`)!
+import { kontrak, skema } from './skema'
 
 /** jalankan mock seperti server sungguhan dan kembalikan status, header, dan body */
 async function panggil(method: string, url: string, body?: unknown, tipe = 'application/json') {
