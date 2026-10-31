@@ -64,7 +64,7 @@ export const PROYEK: Proyek[] = [
     fitur: [
       {
         judul: 'Tiga pilihan rute',
-        teks: 'Urutkan dari yang paling cepat, paling murah, atau paling sedikit transit.',
+        teks: 'Urutkan dari yang paling cepat, paling murah, atau paling sedikit transit dan jalan kaki.',
       },
       {
         judul: 'Jalan kaki beneran',
@@ -72,7 +72,7 @@ export const PROYEK: Proyek[] = [
       },
       {
         judul: 'Tarif yang pas',
-        teks: 'Rp3.500, Rp2.000 sebelum jam 7, dan satu tiket berlaku tiga jam buat transfer.',
+        teks: 'Rp3.500, Rp2.000 jam 5 sampai 7 pagi, dan satu tiket berlaku tiga jam buat transfer.',
       },
     ],
   },
@@ -126,7 +126,7 @@ export const PROYEK: Proyek[] = [
       },
       {
         judul: 'Struk buat grup',
-        teks: 'Hasilnya dicetak jadi struk. Nomor rekening si tumbal ikut tercantum, jadi teman bisa langsung transfer.',
+        teks: 'Hasilnya dicetak jadi struk. Rekening atau e-wallet si tumbal ikut tercantum, jadi teman bisa langsung transfer.',
       },
     ],
   },
