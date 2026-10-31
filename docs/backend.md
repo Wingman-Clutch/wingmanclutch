@@ -54,7 +54,7 @@ Urutannya:
 3. Baca body maksimal 16 KB, lebih dari itu `413`. JSON rusak `400 INPUT_TIDAK_VALID`.
 4. Kalau `situs` terisi, jawab `202` dan berhenti tanpa mengirim apa pun.
 5. Validasi dengan aturan kontrak (pangkas spasi dulu): `nama` 1 sampai 80, `email` maksimal 254 dan berformat email, `pesan` 10 sampai 2000. Kolom yang salah dijawab `400` dengan daftar `kolom` berisi `{ kolom, alasan }`, alasan salah satu dari `wajib`, `terlalu_pendek`, `terlalu_panjang`, `format`. Urutan dan kalimatnya bisa disamakan dengan `periksaKontak` di `apps/web/src/api/kontrak.ts`.
-6. Batas kirim: kunci `sha256(GARAM_IP + ip)` (Function mencatat peringatan sekali kalau `GARAM_IP` kosong di production), 5 pesan per jam (jendela geser). Ambil IP dari header `x-forwarded-for` paling kiri yang diisi Vercel. Kalau habis, `429 TERLALU_SERING` dengan `cobaLagiDetik` dan header `Retry-After` yang sama.
+6. Batas kirim: kunci `sha256(GARAM_IP + ip)` (Function mencatat peringatan sekali kalau `GARAM_IP` kosong di production), 5 pesan per jam (jendela geser). Ambil IP dari header `x-forwarded-for` paling kiri yang diisi Vercel. Kalau habis, `429 TERLALU_SERING` dengan `cobaLagiDetik` dan header `Retry-After` yang sama. Langkah 1 sampai 5 harus tetap di depan langkah ini: smoke test produksi (`pnpm test:produksi`) mengirim kiriman salah setiap hari dan tidak boleh memakai kuota; test `kiriman yang ditolak tidak memakai kuota batas kirim` menjaganya.
 7. Kirim email lewat Resend:
    - `from`: `KONTAK_PENGIRIM`, `to`: `KONTAK_TUJUAN`, `reply_to`: email pengirim.
    - Subjek `Ide dari <nama>` (nama dipotong 60 karakter, tanpa baris baru).

@@ -144,6 +144,24 @@ describe('POST /api/kontak', () => {
     expect(kunciIp('203.0.113.7', 'a')).not.toBe(kunciIp('203.0.113.7', 'b'))
   })
 
+  it('kiriman yang ditolak tidak memakai kuota batas kirim', async () => {
+    // smoke test produksi (apps/web/e2e-produksi) mengandalkan urutan ini setiap hari
+    const kunci: string[] = []
+    const pembatas: Pembatas = { cek: async (k) => (kunci.push(k), { boleh: true }) }
+    const { panggil, terkirim } = siapkan({ pembatas })
+    const ditolak = [
+      minta(undefined, { method: 'GET' }),
+      minta('halo', { tipe: 'text/plain' }),
+      minta({ ...valid, pesan: 'x'.repeat(BODY_MAKS) }),
+      minta('{rusak'),
+      minta({ nama: '', email: '', pesan: '', situs: '' }),
+      minta({ ...valid, situs: 'http://spam' }),
+    ]
+    for (const req of ditolak) expect((await panggil(req)).status).not.toBe(429)
+    expect(kunci).toEqual([])
+    expect(terkirim).toEqual([])
+  })
+
   it('tetap mengirim kalau penyimpanan batas kirim mati', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     const pembatas: Pembatas = { cek: () => Promise.reject(new Error('upstash mati')) }
