@@ -65,7 +65,8 @@ Rilis 1 berangkat dari kracked.studio: tata letak, urutan menggambar, dan intera
 | TODAY: tally kopi | KOPI HARI INI: tally kopi di samping figur mug | Kall |
 | Lima pensil untuk corat-coret | Sama, dengan stempel WINGMAN CLUTCH | Kall |
 | Penghapus menggosok seluruh halaman lalu semuanya digambar ulang | Sama, termasuk remah dan bekas gosokan | Kall |
-| Kaki halaman | © 2026 Wingman Clutch, tautan GitHub dan Traktir kopi (Sociabuzz) | Kall |
+| Kaki halaman | © 2026 Wingman Clutch, tautan GitHub dan Traktir kopi (Sociabuzz), dan tombol suara | Kall |
+| (tidak ada) | Bunyi antarmuka dari UI SFX pack zen (lipatan kertas, kuas, kayu) saat lembar dibuka dan ditutup, lampu ditarik, sudut dikupas, kartu dibalik, pensil dipilih, halaman dihapus, dan pesan dikirim. Nyala sampai pengunjung mematikannya; pilihannya disimpan di perangkat | Kall |
 | `POST /api/contact` | `POST /api/kontak` | Bintang |
 | (tidak ada) | `GET /api/proyek`: star GitHub, push terakhir, status online setiap aplikasi | Bintang |
 
@@ -83,6 +84,7 @@ Rilis 1 berangkat dari kracked.studio: tata letak, urutan menggambar, dan intera
 - Logo, tulisan, dan catatan digambar oleh mesin pensil di `<canvas>`, bukan gambar statis, dan selalu tampak sama setiap digambar ulang (benih acak per sketsa). Figur aplikasi dan tim adalah gambar Colorfigures yang dilukis ke kanvas dengan coretan krayon, jadi ikut terhapus penghapus.
 - Tema terang, gelap, dan Matrix. Tema terang atau gelap mengikuti sistem sampai pengunjung memilih sendiri.
 - Aksesibilitas: setiap sketsa yang bisa diketuk adalah `<button>` berlabel, dialog memakai `<dialog>` dengan judul, fokus kembali ke sketsa asal setelah dialog ditutup, dan Escape menutup dialog serta keluar dari mode corat-coret. `prefers-reduced-motion` menggambar semuanya seketika tanpa gerak diam.
+- Suara hanya menguatkan tanda yang terlihat, tidak pernah satu-satunya tanda. Tidak ada yang berbunyi sebelum pengunjung mengetuk atau menekan tombol, dan tombol suara di kaki halaman mematikannya seketika.
 - Form kontak memeriksa kolom di browser dengan aturan yang sama dengan backend, menampilkan galat per kolom, dan punya cadangan email (mailto berisi pesan yang sama, plus tombol salin).
 - Tidak ada cookie, analitik pihak ketiga, atau permintaan ke domain lain kecuali font yang di-bundle sendiri.
 

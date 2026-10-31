@@ -52,6 +52,7 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 - **Lembar detail.** Ketuk sebuah figur: putar bendanya, tekan tombolnya (buka amplop, panggil bus, cari titik tengah, cetak struk, bahkan lihat isi printernya), lalu baca fitur, peran kami, tumpukan teknologi, statistik GitHub, dan tautan ke aplikasi serta kodenya.
 - **Ambil pensil.** Lima pensil di baki untuk corat-coret di mana saja di halaman. Penghapusnya menggosok seluruh halaman, meninggalkan remah dan bekas abu-abu, lalu semuanya digambar ulang.
 - **Tarik tali lampunya.** Lampu gantung di atas halaman: tarik talinya buat mematikan lampu (kertas gelap seperti kapur di papan tulis) atau menyalakannya lagi. Kupas sudut kanan atas halaman untuk masuk ke Matrix.
+- **Bunyi kertas.** Membuka lembar, menarik tali lampu, mengupas sudut, membalik kartu nama, memilih pensil, menghapus halaman, dan mengirim pesan diiringi bunyi pelan dari [UI SFX](https://uisfx.com) pack zen: lipatan kertas, sapuan kuas, dan kayu kering. Baru berbunyi setelah pengunjung mengetuk atau menekan tombol, dan bisa dimatikan lewat tombol suara di kaki halaman.
 - **Lambang yang mengepak.** Setiap ketukan di lambang mengepakkan sayapnya dan menambah satu garis kepak.
 - **Let's clutch it.** Form kontak yang dicek di browser, dikirim ke `/api/kontak`, dan jatuh ke email berisi pesan yang sama kalau server gagal.
 - **Satu layar di mana saja.** Tata letak potret dan lanskap, muat tanpa scroll dari HP 320 px sampai monitor lebar. `prefers-reduced-motion` menggambar semuanya seketika, tanpa layar pembuka.
@@ -71,10 +72,10 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 
 - **Mesin pensil sendiri.** Path SVG diurai jadi polyline, diberi goyangan tangan dan ujung kebablasan, lalu digambar sedikit demi sedikit dengan kuas bertekstur butiran yang menempel ke kertas ([`engine/`](apps/web/src/engine)). Benih acak per sketsa membuat gambarnya selalu sama.
 - **Figur yang bisa dicoba.** Model 3D ditulis sebagai kode di [`figur/`](apps/web/figur) dengan engine [Colorfigures](https://april-zhu.com/colorfigures). Skrip membuat dua hasil: gambar diam untuk halaman, dan halaman interaktif yang dimuat di iframe hanya saat lembarnya dibuka.
-- **Tanpa framework.** Vite dan TypeScript saja; seluruh JavaScript sekitar 51 KB gzip. Sketsa adalah kode ([`sketsa/`](apps/web/src/sketsa)), dan isi halaman ada di satu file ([`data/proyek.ts`](apps/web/src/data/proyek.ts)).
+- **Tanpa framework.** Vite dan TypeScript saja; JavaScript halaman sekitar 52 KB gzip, sedangkan modul suara (12 KB) dan kartu nama lanyard dimuat belakangan. Sketsa adalah kode ([`sketsa/`](apps/web/src/sketsa)), dan isi halaman ada di satu file ([`data/proyek.ts`](apps/web/src/data/proyek.ts)).
 - **Kontrak dulu.** Halaman dan backend bertemu di [`docs/api/openapi.yaml`](docs/api/openapi.yaml). Halaman jalan dengan mock dari kontrak itu, dan unit test memvalidasi jawaban mock dengan skemanya, jadi Kall dan Bintang tidak saling menunggu.
 - **Tetap jalan tanpa backend.** Kalau `/api/proyek` gagal, baris statistik disembunyikan; kalau `/api/kontak` gagal, pengunjung diarahkan ke email.
-- **Tanpa pelacak.** Tidak ada cookie, analitik, atau domain luar. Tema disimpan di localStorage, dan coretan tidak dikirim ke mana pun.
+- **Tanpa pelacak.** Tidak ada cookie, analitik, atau domain luar. Tema dan pilihan suara disimpan di localStorage, dan coretan tidak dikirim ke mana pun.
 
 ## Mulai lokal
 
@@ -109,7 +110,7 @@ wingmanclutch/
 ├── apps/web/              # halaman buku catatan (Kall)
 │   ├── src/engine/        # mesin pensil: path, goresan, arsiran, kuas, tulisan, animasi
 │   ├── src/sketsa/        # logo, catatan kecil, letak figur
-│   ├── src/halaman/       # tata letak, kertas, papan, pensil dan penghapus, tema, dialog, kontak
+│   ├── src/halaman/       # tata letak, kertas, papan, pensil dan penghapus, tema, dialog, kontak, suara
 │   ├── src/data/          # isi halaman, data font, logo, dan ukuran figur hasil skrip
 │   ├── figur/             # sumber figur dan engine Colorfigures
 │   ├── public/figur/      # hasil skrip: halaman figur interaktif dan gambar diam
