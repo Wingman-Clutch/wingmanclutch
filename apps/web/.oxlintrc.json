@@ -11,5 +11,12 @@
     "unicorn/consistent-function-scoping": "off",
     "unicorn/no-array-sort": "off"
   },
-  "ignorePatterns": ["dist", "src/data/*.json", "figur/colorfigures", "public/figur"]
+  "ignorePatterns": [
+    "dist",
+    "src/data/*.json",
+    "figur/colorfigures",
+    "public/figur",
+    "src/stiker/fun.ts",
+    "src/stiker/motions.ts"
+  ]
 }
