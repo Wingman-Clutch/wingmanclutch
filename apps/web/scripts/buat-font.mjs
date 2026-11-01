@@ -14,7 +14,11 @@ import opentype from 'opentype.js'
 
 const require = createRequire(import.meta.url)
 const akar = dirname(dirname(fileURLToPath(import.meta.url)))
-const KARAKTER = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('')
+// Data font ikut ke bundle JS (target PRD: semua JS ≤ 60 KB gzip), jadi hanya karakter yang ditulis
+// di halaman yang disimpan. Teks baru memakai karakter lain? Tambahkan di sini lalu jalankan skrip
+// ini; test/font.test.ts gagal selama glyph-nya belum ada. `?` wajib ada: itu glyph cadangan.
+const KARAKTER_TANGAN = ' ABDEFGHIJKLMNOPRSTUVWY0123456789!&+.:=?'
+const KARAKTER_JUDUL = " ABCEGHIKLMNOPRSTU!'?"
 
 const bulat = (n) => Math.round(n * 10) / 10
 
@@ -40,7 +44,7 @@ function fontTangan() {
       .replace('&quot;', '"')
       .replace('&lt;', '<')
       .replace('&gt;', '>')
-    if (!kode || kode.length !== 1 || !KARAKTER.includes(kode)) continue
+    if (!kode || kode.length !== 1 || !KARAKTER_TANGAN.includes(kode)) continue
     glyph[kode] = [bulat(+attr['horiz-adv-x']), attr.d ? balikY(attr.d) : '']
   }
   return glyph
@@ -52,7 +56,7 @@ function fontJudul() {
   const font = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength))
   const skala = 1000 / font.unitsPerEm
   const glyph = {}
-  for (const k of KARAKTER) {
+  for (const k of KARAKTER_JUDUL) {
     const g = font.charToGlyph(k)
     if (!g || g.index === 0) continue
     const path = g.getPath(0, 0, 1000)
