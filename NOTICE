@@ -23,8 +23,8 @@ Figures, sketches, illustrations, stickers / Figur, sketsa, ilustrasi, stiker
   apps/web/public/figur/*.html
   apps/web/public/figur/*.webp
   apps/web/src/sketsa/
-  apps/web/src/halaman/baki.ts
-  apps/web/src/halaman/lampu.ts
+  apps/web/src/halaman/baki.ts (the drawings only)
+  apps/web/src/halaman/lampu.ts (the drawings only)
   apps/web/src/stiker/ikon.ts
 
 Images / Gambar
@@ -36,11 +36,13 @@ Page content and copy / Isi dan teks halaman
   apps/web/index.html
   apps/web/404.html
   README.md
-  docs/
+  docs/ (except docs/api/openapi.yaml, MIT, and docs/lisensi/)
 
 Third-party assets keep their own licenses. The full list, with sources, is in
-docs/assets.md. Aset pihak ketiga tetap memakai lisensinya masing-masing; daftar
-lengkap dan sumbernya ada di docs/assets.md.
+docs/assets.md, and the full Apache-2.0 and OFL-1.1 texts are in docs/lisensi/.
+Aset pihak ketiga tetap memakai lisensinya masing-masing; daftar lengkap dan
+sumbernya ada di docs/assets.md, dan teks lengkap Apache-2.0 serta OFL-1.1 ada
+di docs/lisensi/.
 
   EMS Tech, Bungee (fonts)              SIL Open Font License 1.1
   Special Elite (font)                  Apache License 2.0
@@ -49,5 +51,7 @@ lengkap dan sumbernya ada di docs/assets.md.
   fun-isometric sticker kit             MIT, apps/web/src/stiker/LICENSE
                                         (apps/web/src/stiker/fun.ts, motions.ts)
   UI SFX (uisfx)                        MIT code, CC0 1.0 audio
-  Archify (docs/arsitektur.html)        Apache License 2.0; embedded
-                                        JetBrains Mono, SIL OFL 1.1
+  Archify (docs/arsitektur.html)        Apache License 2.0
+                                        Copyright (c) 2026 tt-a1i (Archify),
+                                        Copyright (c) 2025 Cocoon AI;
+                                        embedded JetBrains Mono, SIL OFL 1.1

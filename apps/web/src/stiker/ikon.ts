@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+// Lisensi di atas untuk kit-nya. Gambar stikernya milik Wingman Clutch, lihat NOTICE.
 // Stiker Wingman Clutch, digambar dengan kit fun-isometric (fun.ts dan motions.ts, tidak diubah).
 // Warna memakai slot palet, jadi warnanya datang dari warna.ts. Cara menambah stiker ada di
 // docs/frontend.md.
