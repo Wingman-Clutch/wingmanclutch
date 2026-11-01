@@ -379,6 +379,16 @@ test('layar pembuka bisa dilewati dan tidak tampil lagi di sesi yang sama', asyn
   await expect(page.locator('#pembuka')).toBeHidden()
 })
 
+test('layar pembuka tidak tertahan kalau gambar pose sayap tidak pernah sampai', async ({
+  page,
+}) => {
+  await page.route(/logo-(naik|turun)\.webp/, () => {})
+  await page.goto('/')
+  await expect(page.locator('html')).toHaveClass(/pembuka/)
+  await expect(page.locator('html')).not.toHaveClass(/pembuka/, { timeout: 6000 })
+  await expect(page.locator('[data-sketsa="kepak"]')).toHaveClass(/selesai/, { timeout: 12_000 })
+})
+
 test('sudut halaman dikupas ke Matrix lalu kembali', async ({ page }) => {
   await bukaHalaman(page)
   await page.locator('#sudut').click()

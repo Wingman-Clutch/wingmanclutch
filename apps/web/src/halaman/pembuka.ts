@@ -6,6 +6,9 @@
 import { kepakkan } from '../sketsa/logo'
 import { BUNYI, suara } from './suara'
 
+/** kepakan paling lama sekian ms: gambar pose yang tersendat tidak boleh menahan halaman */
+const BATAS_KEPAK = 1500
+
 /** kunci sessionStorage: layar pembuka sudah tampil di sesi ini */
 export const KUNCI_PEMBUKA = 'wc-pembuka'
 
@@ -62,11 +65,19 @@ export class Pembuka {
     if (await paling(this.lambang.decode(), 1500)) {
       this.el.classList.add('muncul')
       await this.jeda(560)
-      if (!this.cepat)
-        await kepakkan((p) => {
-          this.lambang.src = p?.src ?? asli
-          this.el.classList.toggle('naik', p?.src.endsWith('-naik.webp') ?? false)
-        }, 2)
+      if (!this.cepat) {
+        let lewat = false
+        await Promise.race([
+          kepakkan((p) => {
+            // pose yang baru tiba setelah batasnya tidak boleh menimpa lambang yang sudah meluncur
+            if (lewat) return
+            this.lambang.src = p?.src ?? asli
+            this.el.classList.toggle('naik', p?.src.endsWith('-naik.webp') ?? false)
+          }, 2),
+          this.jeda(BATAS_KEPAK),
+        ])
+        lewat = true
+      }
       this.lambang.src = asli
       this.el.classList.remove('naik')
       await this.jeda(220)
