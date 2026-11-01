@@ -104,7 +104,7 @@ Butuh Node 24 (`.nvmrc`) dan pnpm 9. Semua perintah dijalankan dari root repo.
 | --- | --- |
 | `pnpm install` | Pasang dependensi dan aktifkan hook git |
 | `pnpm dev` | Server development halaman di http://localhost:5180, dengan mock API |
-| `pnpm build` | Build produksi ke `apps/web/dist` |
+| `pnpm build` | Build produksi ke `apps/web/dist`, termasuk halaman 404 |
 | `pnpm lint` | oxlint (warning dianggap gagal) dan Prettier |
 | `pnpm typecheck` | Cek tipe semua package |
 | `pnpm test` | Unit test Vitest semua package |
@@ -138,6 +138,7 @@ apps/web/               halaman buku catatan (Vite + TypeScript tanpa framework)
   src/engine/           mesin pensil: path SVG, goyangan tangan, arsiran, kuas, sketsa, animasi
   src/sketsa/           logo, catatan kecil, dan letak figur di halaman
   src/halaman/          tata letak, kertas, papan, baki pensil, lampu, layar pembuka, lipatan sudut, dialog, kontak, suara
+  src/stiker/           kit stiker fun-isometric (tidak diubah) dan stiker buatan kita
   src/data/             isi halaman (proyek.ts) dan data font, logo, serta ukuran figur hasil skrip
   figur/                sumber figur (aplikasi, tim, lambang, lampu, kopi), penyesuaian lembar detail, dan engine Colorfigures
   public/figur/         hasil skrip: halaman figur interaktif dan gambar diam, di-commit
@@ -167,6 +168,7 @@ scripts/                cek atribusi AI dan rahasia (dipakai hook dan CI) besert
 - Isi halaman (nama aplikasi, teks, tautan, tim) ada di `apps/web/src/data/proyek.ts`, bukan di dalam sketsa atau komponen.
 - Warna pensil dan kertas per tema ada di `apps/web/src/engine/kuas.ts` dan `apps/web/src/halaman/kertas.ts`. Jangan menulis warna baru langsung di sketsa; pakai kode warna pensil (`w`, `k`, `e`, `y`, `p`, `b`, `g`, `o`, `r`, `n`).
 - Semua figur dimodelkan di `apps/web/figur/`. Setelah mengubahnya, jalankan `pnpm --filter @wingmanclutch/web figur` dan commit hasilnya, karena build produksi tidak menjalankan Python. Engine di `figur/colorfigures/` tidak diubah langsung; penyesuaian masuk `figur/sematan.css` dan `figur/sematan.js`.
+- Figur untuk benda, stiker untuk momen. Stiker (`apps/web/src/stiker/`) dipakai untuk kejadian sesaat seperti halaman 404, bukan untuk benda di halaman utama. Kit `fun.ts` dan `motions.ts` tidak diubah langsung; stiker baru masuk `ikon.ts` dan wajib lolos `fi check`. Kalau muncul di halaman utama, stiker diekspor jadi video, karena kit-nya tidak muat di anggaran JS.
 - Bunyi antarmuka hanya lewat `BUNYI` dan `suara` di `apps/web/src/halaman/suara.ts` (uisfx, pack `zen`), tidak memanggil uisfx langsung. Bunyi hanya menguatkan perubahan yang terlihat, tidak berbunyi sebelum pengunjung bergerak, dan setiap loop wajib berhenti di semua jalan keluar. Cara menambahnya ada di [docs/frontend.md](docs/frontend.md#suara).
 - Halaman harus muat di satu layar tanpa scroll, dari HP 320 px sampai desktop lebar. Unit test tata letak menjaga semua sketsa tetap di dalam halaman dan tidak saling tindih.
 - Bukan target rilis 1: CMS, blog, multi-bahasa, analitik pihak ketiga, akun pengunjung.
