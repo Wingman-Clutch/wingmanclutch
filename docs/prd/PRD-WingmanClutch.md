@@ -166,7 +166,7 @@ Dicek ke produksi pada 1 November 2026. Kata "1:1" di kriteria kedua dihapus, ka
 | Ukuran | Target | Hasil di produksi |
 | --- | --- | --- |
 | Lighthouse mobile | Semua ≥ 95 | Performa median 98 dari enam run (95 sampai 98), Aksesibilitas, Best Practices, dan SEO 100, TBT median 75 ms, LCP 1,5 sampai 1,7 detik, CLS 0. Lighthouse 13.6, CPU diperlambat 9x |
-| JavaScript (gzip) | ≤ 60 KB | 57,7 KB untuk semua berkas JS, 53,2 KB di kunjungan yang tidak membuka dialog tim. `e2e/anggaran.spec.ts` menjaga totalnya |
+| JavaScript (gzip) | ≤ 60 KB | 58 KB untuk semua berkas JS, 53,5 KB di kunjungan yang tidak membuka dialog tim. `e2e/anggaran.spec.ts` menjaga totalnya |
 | Semua sketsa selesai digambar | ≤ 3,5 detik | 3,1 sampai 3,4 detik sejak lukisan pertama atau sejak layar pembuka selesai. Dihitung dari awal navigasi: 3,3 sampai 4,6 detik tergantung jaringan, dan 5,6 sampai 6,8 detik di kunjungan pertama setiap sesi karena layar pembuka |
 | Pesan kontak sampai | ≤ 1 menit | Masuk Inbox, bukan Spam, di menit yang sama dengan kirimannya (31 Oktober 2026, 20.06 WIB) |
 | Pelanggaran axe | 0 | 0 di halaman (terang, gelap, Matrix) dan semua dialog, di Chrome desktop, Pixel 7, dan iPhone 15 |
