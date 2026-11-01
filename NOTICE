@@ -1,0 +1,53 @@
+Wingman Clutch web porto
+Copyright (c) 2026 Wingman Clutch (Muhammad Haikal Faruq dan Bintang Fabian Putra)
+
+The MIT License in LICENSE covers the source code only. The following are not
+covered by it and remain the property of Wingman Clutch. They may not be reused
+without written permission.
+
+Lisensi MIT di LICENSE hanya berlaku untuk kode. Yang di bawah ini tidak
+termasuk lisensi itu, tetap milik Wingman Clutch, dan tidak boleh dipakai ulang
+tanpa izin tertulis.
+
+Name, logo, emblem, icons, avatars / Nama, logo, lambang, ikon, avatar
+  docs/brand/
+  apps/web/src/data/logo.json
+  apps/web/public/ikon.svg
+  apps/web/public/apple-touch-icon.png
+
+Team photos, owned by each person / Foto tim, milik masing-masing orang
+  apps/web/public/tim/
+
+Figures, sketches, illustrations, stickers / Figur, sketsa, ilustrasi, stiker
+  apps/web/figur/*.html
+  apps/web/public/figur/*.html
+  apps/web/public/figur/*.webp
+  apps/web/src/sketsa/
+  apps/web/src/halaman/baki.ts
+  apps/web/src/halaman/lampu.ts
+  apps/web/src/stiker/ikon.ts
+
+Images / Gambar
+  docs/gambar/
+  apps/web/public/og.jpg
+
+Page content and copy / Isi dan teks halaman
+  apps/web/src/data/proyek.ts
+  apps/web/index.html
+  apps/web/404.html
+  README.md
+  docs/
+
+Third-party assets keep their own licenses. The full list, with sources, is in
+docs/assets.md. Aset pihak ketiga tetap memakai lisensinya masing-masing; daftar
+lengkap dan sumbernya ada di docs/assets.md.
+
+  EMS Tech, Bungee (fonts)              SIL Open Font License 1.1
+  Special Elite (font)                  Apache License 2.0
+  Colorfigures engine                   MIT, apps/web/figur/colorfigures/LICENSE
+  Lanyard Badge                         MIT, header of apps/web/src/halaman/lanyard.ts
+  fun-isometric sticker kit             MIT, apps/web/src/stiker/LICENSE
+                                        (apps/web/src/stiker/fun.ts, motions.ts)
+  UI SFX (uisfx)                        MIT code, CC0 1.0 audio
+  Archify (docs/arsitektur.html)        Apache License 2.0; embedded
+                                        JetBrains Mono, SIL OFL 1.1

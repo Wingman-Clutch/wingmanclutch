@@ -184,3 +184,5 @@ Alur kerja lengkapnya ada di [`AGENTS.md`](AGENTS.md). Ringkasnya:
 </table>
 
 Tata letak dan interaksi rilis 1 terinspirasi [kracked.studio](https://kracked.studio); kode, sketsa, dan isinya milik Wingman Clutch. Figur digambar dengan engine [Colorfigures](https://april-zhu.com/colorfigures) karya April Zhu (MIT). Huruf dan aset pihak ketiga lainnya tercatat di [docs/assets.md](docs/assets.md).
+
+Kode berlisensi [MIT](LICENSE). Nama, logo, foto tim, figur, sketsa, stiker, gambar, dan isi halaman tetap milik Wingman Clutch dan tidak termasuk lisensi itu; daftar lengkapnya di [NOTICE](NOTICE).

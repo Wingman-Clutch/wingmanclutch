@@ -2,6 +2,9 @@ openapi: 3.1.0
 info:
   title: Wingman Clutch API
   version: 0.1.0
+  license:
+    name: MIT
+    identifier: MIT
   summary: Kontrak antara halaman (apps/web) dan backend (api/) web porto Wingman Clutch.
   description: |
     Kontrak dulu, kode kemudian. Bintang menulis dan mengimplementasikan kontrak ini sebagai
