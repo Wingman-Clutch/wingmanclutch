@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id" data-tema="terang">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Halaman tidak ditemukan · Wingman Clutch</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#f7f6f1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-nOJFP0N0a6WERj3QrmPODy6nY19kv3kedU8UHHkDdYs='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <link rel="icon" href="/ikon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      // Kertas terang atau gelap dipilih sebelum halaman pertama kali dicat, sama dengan index.html.
+      ;(function () {
+        var t = null
+        try {
+          t = localStorage.getItem('wc-tema')
+        } catch (e) {}
+        if (t !== 'terang' && t !== 'gelap')
+          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang'
+        document.documentElement.dataset.tema = t
+        if (t === 'gelap') document.querySelector('meta[name="theme-color"]').content = '#161922'
+      })()
+    </script>
+  </head>
+  <body>
+    <main id="app">
+      <h1 class="sr">Halaman tidak ditemukan</h1>
+      <canvas id="kertas" aria-hidden="true"></canvas>
+      <canvas id="noda" aria-hidden="true"></canvas>
+      <div id="papan" aria-hidden="true"></div>
+      <a id="merek" href="/" aria-label="Wingman Clutch, ke halaman utama">
+        <img src="/figur/logo.webp" alt="" width="720" height="433" />
+      </a>
+      <button
+        type="button"
+        id="stiker"
+        aria-label="Penghapus Wingman Clutch. Ketuk buat menggosok lagi"
+      >
+        <canvas aria-hidden="true"></canvas>
+      </button>
+      <div id="bawah">
+        <p>
+          Alamat ini nggak ada di buku catatan kami. Mungkin kegosok penghapus, mungkin belum pernah
+          digambar.
+        </p>
+        <a href="/">← balik ke halaman utama</a>
+      </div>
+    </main>
+    <script type="module" src="/src/nyasar.ts"></script>
+  </body>
+</html>

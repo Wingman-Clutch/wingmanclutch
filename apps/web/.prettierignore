@@ -3,6 +3,8 @@ src/data/font.json
 src/data/logo.json
 src/data/figur.json
 figur/colorfigures
+src/stiker/fun.ts
+src/stiker/motions.ts
 figur/*.html
 public/figur
 test-results

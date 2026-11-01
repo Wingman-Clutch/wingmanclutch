@@ -18,7 +18,7 @@ const akar = dirname(dirname(fileURLToPath(import.meta.url)))
 // di halaman yang disimpan. Teks baru memakai karakter lain? Tambahkan di sini lalu jalankan skrip
 // ini; test/font.test.ts gagal selama glyph-nya belum ada. `?` wajib ada: itu glyph cadangan.
 const KARAKTER_TANGAN = ' ABDEFGHIJKLMNOPRSTUVWY0123456789!&+.:=?'
-const KARAKTER_JUDUL = " ABCEGHIKLMNOPRSTU!'?"
+const KARAKTER_JUDUL = " 04ABCEGHIKLMNOPRSTU!'?"
 
 const bulat = (n) => Math.round(n * 10) / 10
 

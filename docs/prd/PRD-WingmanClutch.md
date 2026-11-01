@@ -67,6 +67,7 @@ Rilis 1 berangkat dari kracked.studio: tata letak, urutan menggambar, dan intera
 | Penghapus menggosok seluruh halaman lalu semuanya digambar ulang | Sama, termasuk remah dan bekas gosokan | Kall |
 | Kaki halaman | © 2026 Wingman Clutch, tautan GitHub dan Traktir kopi (Sociabuzz), dan tombol suara | Kall |
 | (tidak ada) | Bunyi antarmuka dari UI SFX pack zen (lipatan kertas, kuas, kayu) saat lembar dibuka dan ditutup, lampu ditarik, sudut dikupas, kartu dibalik dan diseret, pensil dipilih dan mencoret, halaman dihapus, tombol dan putaran figur, dan pesan dikirim. Logo yang diketuk beruntun nadanya naik sampai dapat hadiah. Nyala sampai pengunjung mematikannya; pilihannya disimpan di perangkat | Kall |
+| (tidak ada) | Halaman 404: angka pensil yang kegosok, dengan stiker penghapus yang menggosok lagi setiap diketuk, lalu tombol kembali ke halaman utama | Kall |
 | `POST /api/contact` | `POST /api/kontak` | Bintang |
 | (tidak ada) | `GET /api/proyek`: star GitHub, push terakhir, status online setiap aplikasi | Bintang |
 

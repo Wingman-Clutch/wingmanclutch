@@ -54,6 +54,7 @@ Wingman Clutch sudah merilis empat aplikasi, tapi belum ada satu tempat yang mem
 - **Tarik tali lampunya.** Lampu gantung di atas halaman: tarik talinya buat mematikan lampu (kertas gelap seperti kapur di papan tulis) atau menyalakannya lagi. Kupas sudut kanan atas halaman untuk masuk ke Matrix.
 - **Bunyi kertas.** Logo yang diketuk berkali-kali nadanya naik sampai dapat hadiah, pensil berdesis mengikuti coretan, dan setiap tombol di figur punya bunyinya sendiri. Membuka lembar, menarik tali lampu, mengupas sudut, menyeret kartu nama, menghapus halaman, dan mengirim pesan juga diiringi bunyi pelan dari [UI SFX](https://uisfx.com) pack zen: lipatan kertas, sapuan kuas, dan kayu kering. Baru berbunyi setelah pengunjung mengetuk atau menekan tombol, dan bisa dimatikan lewat tombol suara di kaki halaman.
 - **Lambang yang mengepak.** Setiap ketukan di lambang mengepakkan sayapnya dan menambah satu garis kepak.
+- **Halaman nyasar.** Alamat yang nggak ada dijawab halaman 404: angka pensil yang kegosok, dengan stiker penghapus yang menggosok lagi setiap diketuk.
 - **Let's clutch it.** Form kontak yang dicek di browser, dikirim ke `/api/kontak`, dan jatuh ke email berisi pesan yang sama kalau server gagal.
 - **Satu layar di mana saja.** Tata letak potret dan lanskap, muat tanpa scroll dari HP 320 px sampai monitor lebar. `prefers-reduced-motion` menggambar semuanya seketika, tanpa layar pembuka.
 

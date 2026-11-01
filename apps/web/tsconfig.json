@@ -23,6 +23,7 @@
     "e2e-produksi",
     "mock",
     "vite.config.ts",
+    "vite.nyasar.config.ts",
     "playwright.config.ts",
     "playwright.produksi.config.ts"
   ]

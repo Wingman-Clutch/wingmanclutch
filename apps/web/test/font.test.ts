@@ -5,6 +5,7 @@ import { TIM } from '../src/data/proyek'
 import { judul, tulis } from '../src/engine/huruf'
 import { daftarDef } from '../src/halaman/papan'
 import { teksTanggal } from '../src/sketsa/catatan'
+import { angka, keterangan } from '../src/sketsa/nyasar'
 
 const terpakai = vi.hoisted(() => ({ tangan: new Set<string>(), judul: new Set<string>() }))
 
@@ -29,6 +30,9 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 it('semua teks di halaman punya glyph di data font', () => {
   // semua sketsa di halaman, termasuk nama aplikasi
   for (const d of daftarDef()) d.ops()
+  // halaman 404
+  angka()
+  keterangan()
   // tanggal berganti setiap hari, jadi ambil semua angka dan semua nama bulan
   tulis('0123456789', 0, 0, 28)
   for (let bulan = 0; bulan < 12; bulan++) tulis(teksTanggal(new Date(2026, bulan, 1)), 0, 0, 28)
