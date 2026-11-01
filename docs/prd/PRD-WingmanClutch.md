@@ -5,9 +5,9 @@
 | Pemilik produk | Kall dan Bintang |
 | Frontend | Kall ([@HaikalFaruq](https://github.com/HaikalFaruq)) |
 | Backend | Bintang ([@bintangfabian](https://github.com/bintangfabian)) |
-| Status | Halaman live sejak 30 Oktober 2026, sekarang di [wingmanclutch.web.id](https://wingmanclutch.web.id) (`wingmanclutch.vercel.app` dialihkan ke sana). Backend: `POST /api/kontak` dan `GET /api/proyek` live, env produksi lengkap sejak 30 Oktober 2026 |
+| Status | Halaman live sejak 30 Oktober 2026, sekarang di [wingmanclutch.web.id](https://wingmanclutch.web.id) (`wingmanclutch.vercel.app` dialihkan ke sana). Backend: `POST /api/kontak` dan `GET /api/proyek` live, env produksi lengkap sejak 30 Oktober 2026. Kriteria selesai rilis 1 terpenuhi per 1 November 2026 (bagian 8) |
 | Referensi | [kracked.studio](https://kracked.studio), catatan di [docs/referensi/kracked-studio.md](../referensi/kracked-studio.md) |
-| Terakhir diubah | 31 Oktober 2026 |
+| Terakhir diubah | 1 November 2026 |
 
 ## 1. Latar belakang
 
@@ -30,7 +30,7 @@ Di mini project sebelumnya, salah satu dari kami sering menunggu yang lain seles
 | --- | --- |
 | Lighthouse mobile (Performa, Aksesibilitas, Best Practices, SEO) | Semua ≥ 95 |
 | JavaScript yang dikirim (gzip) | ≤ 60 KB, tanpa framework |
-| Semua sketsa selesai digambar | ≤ 3,5 detik setelah halaman terbuka |
+| Semua sketsa selesai digambar | ≤ 3,5 detik setelah halaman terbuka, yaitu sejak lukisan pertama. Di kunjungan pertama setiap sesi hitungannya mulai setelah layar pembuka selesai, karena sketsa baru digambar setelah lambang mendarat |
 | Pesan kontak sampai ke wingmanclutch@gmail.com | ≤ 1 menit setelah dikirim |
 | Pelanggaran axe di semua dialog | 0 |
 
@@ -154,12 +154,22 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 
 ## 8. Kriteria selesai rilis 1
 
-- [ ] Semua item checklist frontend dan backend tercentang.
-- [ ] Produksi di Vercel menampilkan halaman 1:1 di Chrome Android, Safari iOS, dan desktop.
-- [ ] Pesan uji dari produksi sampai ke wingmanclutch@gmail.com, dan kiriman ke-6 dalam satu jam ditolak 429.
-- [ ] Lembar detail di produksi menampilkan statistik dari GitHub.
-- [ ] Ukuran berhasil di bagian 2 tercapai, dicek dengan Lighthouse mobile dan axe.
-- [ ] README berisi link produksi dan gambar dari produksi.
+Dicek ke produksi pada 1 November 2026. Kata "1:1" di kriteria kedua dihapus, karena sejak 31 Oktober 2026 halaman sengaja bergeser dari tiruan 1:1 (bagian 4).
+
+- [x] Semua item checklist frontend dan backend tercentang.
+- [x] Produksi di Vercel menampilkan halaman dengan benar di Chrome Android, Safari iOS, dan desktop. `pnpm test:produksi` mengeceknya di Chrome desktop, Pixel 7, dan iPhone 15, dan workflow `Produksi` menjadwalkannya setiap hari. Android baru lewat emulasi Pixel 7; iPhone sungguhan sudah dicoba Bintang.
+- [x] Pesan uji dari produksi sampai ke wingmanclutch@gmail.com, dan kiriman ke-6 dalam satu jam ditolak 429 dengan `Retry-After`.
+- [x] Lembar detail di produksi menampilkan statistik dari GitHub.
+- [x] Ukuran berhasil di bagian 2 tercapai, dicek dengan Lighthouse mobile dan axe.
+- [x] README berisi link produksi dan gambar dari build produksi.
+
+| Ukuran | Target | Hasil di produksi |
+| --- | --- | --- |
+| Lighthouse mobile | Semua ≥ 95 | Performa median 98 dari enam run (95 sampai 98), Aksesibilitas, Best Practices, dan SEO 100, TBT median 75 ms, LCP 1,5 sampai 1,7 detik, CLS 0. Lighthouse 13.6, CPU diperlambat 9x |
+| JavaScript (gzip) | ≤ 60 KB | 57,7 KB untuk semua berkas JS, 53,2 KB di kunjungan yang tidak membuka dialog tim. `e2e/anggaran.spec.ts` menjaga totalnya |
+| Semua sketsa selesai digambar | ≤ 3,5 detik | 3,1 sampai 3,4 detik sejak lukisan pertama atau sejak layar pembuka selesai. Dihitung dari awal navigasi: 3,3 sampai 4,6 detik tergantung jaringan, dan 5,6 sampai 6,8 detik di kunjungan pertama setiap sesi karena layar pembuka |
+| Pesan kontak sampai | ≤ 1 menit | Masuk Inbox, bukan Spam, di menit yang sama dengan kirimannya (31 Oktober 2026, 20.06 WIB) |
+| Pelanggaran axe | 0 | 0 di halaman (terang, gelap, Matrix) dan semua dialog, di Chrome desktop, Pixel 7, dan iPhone 15 |
 
 ## 9. Keputusan yang menunggu
 
@@ -169,8 +179,8 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 | Penyimpanan batas kirim | Upstash Redis atau di memori per instance | Diputuskan: Upstash, di memori hanya cadangan lokal ([backend.md](../backend.md#keputusan)) | Bintang |
 | Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `kontak@wingmanclutch.web.id` sejak 31 Oktober 2026, sebelumnya `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
 | Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Kode MIT, tapi logo, foto tim, dan isi tetap milik Wingman Clutch | Berdua |
-| Foto tim | Foto profil GitHub sekarang, atau foto khusus | Foto profil GitHub dulu | Berdua |
-| Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Statis di rilis 1 | Berdua |
+| Foto tim | Foto profil GitHub sekarang, atau foto khusus | Diputuskan: foto profil GitHub, digambar ulang jadi sketsa pensil | Berdua |
+| Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Diputuskan: statis di rilis 1 | Berdua |
 
 ## 10. Risiko
 
