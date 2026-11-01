@@ -247,14 +247,19 @@ test('logo diketuk beruntun: nadanya naik, ketukan keempat dapat hadiah, jeda me
   await pasangAudioTiruan(page)
   await bukaHalaman(page)
   await bangunkan(page)
-  await page.getByRole('button', { name: /^Logo Wingman Clutch/ }).focus()
-  for (let i = 0; i < 4; i++) await page.keyboard.press('Enter')
+  const logo = page.getByRole('button', { name: /^Logo Wingman Clutch/ })
+  // jeda antar-ketukan dihitung sungguhan, jadi keempatnya dikirim dalam satu tugas: lewat press
+  // satu per satu, mesin yang sibuk bisa melewati JEDA_KOMBO dan hadiahnya tidak pernah berbunyi
+  await logo.evaluate((el: HTMLElement) => {
+    for (let i = 0; i < 4; i++) el.click()
+  })
   await expect.poll(() => bunyi(page)).toBe(5)
   const kepakan = (await rincian(page)).slice(0, 4).map((b) => b.laju)
   for (let i = 1; i < 4; i++) expect(kepakan[i]).toBeGreaterThan(kepakan[i - 1])
 
   // setelah berhenti sebentar, ketukan berikutnya mulai dari nada terbawah lagi
   await page.waitForTimeout(1000)
+  await logo.focus()
   await page.keyboard.press('Enter')
   await expect.poll(() => bunyi(page)).toBe(6)
   expect((await rincian(page)).at(-1)!.laju).toBe(kepakan[0])
@@ -432,17 +437,21 @@ test('layar pembuka: melewatinya berbunyi sekali, ketukan pertama sesudahnya tid
   page,
 }) => {
   await pasangAudioTiruan(page)
+  // Layar pembuka cuma tampil beberapa detik, dan di mesin sibuk tiap langkah Playwright bisa makan
+  // hampir sedetik, jadi urutannya dijalankan di dalam halaman. Click membangunkan pemutar tanpa
+  // melewati layar itu, yang hanya mendengar pointerdown dan keydown; begitu pemutarnya mulai
+  // menyintesis bunyi, tombol ditekan.
+  await page.addInitScript(() => {
+    addEventListener('DOMContentLoaded', () => {
+      dispatchEvent(new Event('click'))
+      const tunggu = setInterval(() => {
+        if (!(window as unknown as JendelaAudio).catatAudio.buffer) return
+        clearInterval(tunggu)
+        dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }))
+      }, 10)
+    })
+  })
   await page.goto('/')
-  await expect(page.locator('html')).toHaveClass(/pembuka/)
-  // modul suara dimuat saat browser senggang; sebelum itu belum ada yang bisa berbunyi
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        performance.getEntriesByType('resource').some((e) => /\/assets\/dist-/.test(e.name)),
-      ),
-    )
-    .toBe(true)
-  await page.keyboard.press('Shift')
   await expect.poll(() => bunyi(page)).toBe(1)
   await expect(page.locator('html')).not.toHaveClass(/pembuka/)
   await page.mouse.click(5, 5)
