@@ -558,12 +558,18 @@ export class Lanyard {
       const [x, y] = lokal(e)
       t.tx = x + t.ox
       t.ty = y + t.oy
-      if (Math.hypot(x - t.sx, y - t.sy) > 5) t.geser = true
+      if (!t.geser && Math.hypot(x - t.sx, y - t.sy) > 5) {
+        t.geser = true
+        suara.mainkan(BUNYI.pegang)
+      }
     })
     const lepas = (e: PointerEvent) => {
       const t = g.tarik
       if (!t || e.pointerId !== t.id) return
-      if (t.geser) g.diseretPada = performance.now()
+      if (t.geser) {
+        g.diseretPada = performance.now()
+        suara.mainkan(BUNYI.letakkanKartu)
+      }
       g.tarik = null
       g.simpul[g.iC].w = 0.8
       k.classList.remove('ditarik')

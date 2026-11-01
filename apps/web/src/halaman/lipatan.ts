@@ -141,7 +141,10 @@ export class Lipatan {
   private geserTarik(e: PointerEvent) {
     const t = this.tarik
     if (!t || t.id !== e.pointerId) return
-    if (Math.hypot(e.clientX - t.x0, e.clientY - t.y0) > 4) t.bergeser = true
+    if (!t.bergeser && Math.hypot(e.clientX - t.x0, e.clientY - t.y0) > 4) {
+      t.bergeser = true
+      suara.mainkan(BUNYI.pegang)
+    }
     if (!t.bergeser) return
     const x = Math.min(this.W - 2, e.clientX)
     const y = Math.max(2, e.clientY)
@@ -154,8 +157,9 @@ export class Lipatan {
     this.tarik = null
     if (!t.bergeser) return this.kupasPenuh()
     const ditarik = Math.hypot(this.W - this.P[0], this.P[1])
-    if (ditarik > this.istirahat() * 2.4 * Math.SQRT2) this.kupasPenuh()
-    else this.kembali()
+    if (ditarik > this.istirahat() * 2.4 * Math.SQRT2) return this.kupasPenuh()
+    suara.mainkan(BUNYI.sudutKembali)
+    this.kembali()
   }
 
   /** animasikan P dari posisi sekarang ke tujuan */

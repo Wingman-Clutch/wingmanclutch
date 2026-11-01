@@ -8,7 +8,7 @@ import { sampelUlang, type Garis } from '../engine/jalur'
 import { gambarRentang, PENSIL, TINTA, type Tema } from '../engine/kuas'
 import { DPR } from '../engine/sketsa'
 import type { Papan } from './papan'
-import { BUNYI, suara } from './suara'
+import { BERTUMPUK, BUNYI, Butiran, nada, pasangSorotan, suara } from './suara'
 import type { Pensil, Ukuran } from './tata-letak'
 
 const NAMA_PENSIL: Record<Pensil['c'], string> = {
@@ -26,6 +26,10 @@ function rona(hex: string, f: number) {
 }
 
 const TEBAL = 18
+
+/** satu butir bunyi setiap sepanjang ini (satuan adegan) dicoret, paling rapat sekian ms */
+const JARAK_GORES = 30
+const SELANG_GORES = 75
 
 /**
  * Tulisan cetak di batang pensil sebagai <image> kecil berisi SVG, bukan <text>: sebagai teks,
@@ -156,6 +160,7 @@ export class Baki {
   private mencoret: Pensil['c'] | null = null
   private coretan: Coret[] = []
   private aktif: Coret | null = null
+  private butirGores = new Butiran(JARAK_GORES, SELANG_GORES)
   private ctxCoret: CanvasRenderingContext2D
   private remah: Remah[] = []
   private remahJalan = false
@@ -173,7 +178,8 @@ export class Baki {
     private setelahBersih: () => void,
   ) {
     this.ctxCoret = kanvasCoret.getContext('2d')!
-    for (const c of ['w', 'r', 'b', 'g', 'p'] as const) {
+    // setiap warna punya nadanya sendiri, jadi deretan pensil terdengar seperti tangga nada
+    for (const [i, c] of (['w', 'r', 'b', 'g', 'p'] as const).entries()) {
       const b = document.createElement('button')
       b.type = 'button'
       b.className = 'pensil'
@@ -184,12 +190,14 @@ export class Baki {
       b.addEventListener('click', () => {
         const pilihan = this.mencoret === c ? null : c
         this.pilih(pilihan)
-        suara.mainkan(pilihan ? BUNYI.pilihPensil : BUNYI.letakkanPensil)
+        suara.mainkan(pilihan ? BUNYI.pilihPensil : BUNYI.letakkanPensil, { playbackRate: nada(i) })
       })
+      pasangSorotan(b)
       baki.insertBefore(b, penghapus)
       this.pensilEl.push(b)
     }
     penghapus.addEventListener('click', () => this.hapusHalaman())
+    pasangSorotan(penghapus)
     // pilih(null) juga dipanggil penghapus, jadi bunyinya di sini, bukan di pilih()
     const letakkan = () => {
       this.pilih(null)
@@ -298,6 +306,7 @@ export class Baki {
       this.aktif = { titik: [x, y, x + 0.01, y], kum: [0, 0.01], panjang: 0.01, c: this.mencoret }
       this.coretan.push(this.aktif)
       gambarRentang(this.kanvasInfo(), this.goresanDari(this.aktif), 0, 0.01, TINTA[this.tema])
+      suara.gores()
     })
     kc.addEventListener('pointermove', (e) => {
       const c = this.aktif
@@ -313,7 +322,7 @@ export class Baki {
         c.panjang += d
         c.kum.push(c.panjang)
       }
-      if (c.panjang > sebelum)
+      if (c.panjang > sebelum) {
         gambarRentang(
           this.kanvasInfo(),
           this.goresanDari(c),
@@ -321,6 +330,8 @@ export class Baki {
           c.panjang,
           TINTA[this.tema],
         )
+        if (this.butirGores.maju(c.panjang - sebelum)) suara.gores()
+      }
     })
     const selesai = () => {
       this.aktif = null
@@ -415,6 +426,7 @@ export class Baki {
     const layar = (q: number[]) => [kiri + q[0] * k, atas + q[1] * k]
     let mulai: number | null = null
     let idx = 0
+    let barisGosok = -1
     kaitkan((t) => {
       if (mulai === null) mulai = t + 260
       // penghapus diangkat dari baki ke titik awal
@@ -426,6 +438,12 @@ export class Baki {
         return
       }
       const e = batasi((t - mulai) / durasi, 0, 1)
+      // setiap kali penghapus berbalik arah terdengar satu gosokan, bolak-balik seperti tangan
+      const b = Math.floor(e * baris)
+      if (!GERAK_DIKURANGI && b > barisGosok && e < 1) {
+        barisGosok = b
+        suara.mainkan(BUNYI.gosokHapus, { ...BERTUMPUK, playbackRate: b % 2 ? 1.15 : 1 })
+      }
       const target = e * total
       let j = idx
       while (j < P.length - 1 && kum[j + 1] <= target) j++

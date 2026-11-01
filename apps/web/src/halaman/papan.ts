@@ -29,6 +29,7 @@ import {
   kepakTambahan,
   merek,
 } from '../sketsa/logo'
+import { Butiran, pasangSorotan, suara } from './suara'
 import { atasItem, type Ukuran } from './tata-letak'
 
 export type Aksi =
@@ -69,6 +70,11 @@ const URUTAN: [string, number, number][] = [
   ['kilau1', 2000, 400],
   ['kilau2', 2200, 400],
 ]
+
+/** sketsa terakhir selesai digambar setelah sekian ms */
+const AKHIR_URUTAN = Math.max(...URUTAN.map(([, tunda, durasi]) => tunda + durasi))
+/** selang terpendek antarbutir goresan saat halaman digambar, ms */
+const SELANG_GORES = 90
 
 export function daftarDef(): Def[] {
   const defs: Def[] = [
@@ -147,6 +153,7 @@ export class Papan {
   private defs = new Map<string, Def>()
   private tugas: Tugas[] = []
   private kepakan = 0
+  private butirGores = new Butiran(0, SELANG_GORES)
   sibuk = false
 
   constructor(el: HTMLElement, aksi: (a: Aksi, sumber: HTMLElement) => void) {
@@ -162,6 +169,7 @@ export class Papan {
         b.addEventListener('click', () => {
           if (!this.sibuk) aksi(a, b)
         })
+        pasangSorotan(b)
         wadah = b
       } else {
         wadah = document.createElement('div')
@@ -202,9 +210,11 @@ export class Papan {
 
   /**
    * Gambar semua sketsa dari awal sesuai URUTAN. `logoSiap` = lambang baru saja mendarat dari layar
-   * pembuka, jadi langsung tampil utuh tanpa krayon.
+   * pembuka, jadi langsung tampil utuh tanpa krayon. `selesai` dipanggil setelah sketsa terakhir
+   * selesai, dan tidak dipanggil kalau gambarnya dihentikan di tengah jalan. Goresannya berbunyi
+   * kalau pengunjung sudah pernah bergerak, misalnya saat halaman digambar ulang setelah dihapus.
    */
-  pembukaan({ logoSiap = false } = {}) {
+  pembukaan({ logoSiap = false, selesai }: { logoSiap?: boolean; selesai?: () => void } = {}) {
     this.hentikan()
     for (const s of this.sketsa.values()) {
       s.ulang()
@@ -223,8 +233,14 @@ export class Papan {
         jadwalkan(
           tunda,
           durasi,
-          (p) => s.gambar(p),
-          () => s.el.classList.add('selesai'),
+          (p) => {
+            s.gambar(p)
+            if (this.butirGores.maju(1)) suara.gores()
+          },
+          () => {
+            s.el.classList.add('selesai')
+            if (tunda + durasi === AKHIR_URUTAN) selesai?.()
+          },
         ),
       )
     }

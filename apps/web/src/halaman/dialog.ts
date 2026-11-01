@@ -1,5 +1,6 @@
 // Dialog berupa kertas yang ditempel selotip: detail aplikasi, tentang kami, tim, dan kontak.
 
+import type { CueName } from 'uisfx'
 import { ambilStatistik } from '../api/klien'
 import type { StatistikProyek } from '../api/kontrak'
 import { judul } from '../engine/huruf'
@@ -10,6 +11,7 @@ import { sketsaFoto } from './foto-sketsa'
 import type { Lanyard } from './lanyard'
 import { svgLogo } from './merek'
 import { BUNYI, suara } from './suara'
+import { pasangSuaraFigur } from './suara-figur'
 
 export type NamaDialog = 'proyek' | 'tentang' | 'tim' | 'kontak'
 
@@ -85,17 +87,22 @@ export class Dialog {
       b.addEventListener('click', () => {
         const asal = this.sumber
         b.closest('dialog')!.close()
-        this.buka(b.dataset.buka as NamaDialog, asal)
+        this.buka(b.dataset.buka as NamaDialog, asal, undefined, BUNYI.pindahLembar)
       })
     }
     this.isiTim()
   }
 
-  buka(nama: NamaDialog, sumber: HTMLElement | null, id?: IdProyek) {
+  buka(
+    nama: NamaDialog,
+    sumber: HTMLElement | null,
+    id?: IdProyek,
+    bunyi: CueName = BUNYI.bukaLembar,
+  ) {
     const d = $<HTMLDialogElement>(`#dlg-${nama}`)
     if (nama === 'proyek' && id) this.isiProyek(d, id)
     d.showModal()
-    suara.mainkan(BUNYI.bukaLembar)
+    suara.mainkan(bunyi)
     this.sumber = sumber
     const kanvas = d.querySelector<HTMLCanvasElement>('canvas.judul-sketsa')
     if (kanvas?.dataset.judul)
@@ -185,6 +192,7 @@ export class Dialog {
       const isi = bingkai.contentDocument
       if (!isi?.getElementById('fig')) return
       panggung.classList.add('siap')
+      pasangSuaraFigur(isi, id)
       // fokus di dalam iframe: Escape tidak sampai ke dialog di halaman induk
       bingkai.contentWindow!.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') d.close()
