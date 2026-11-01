@@ -157,7 +157,7 @@ Checklist rinci ada di [docs/frontend.md](../frontend.md#checklist) dan [docs/ba
 Dicek ke produksi pada 1 November 2026. Kata "1:1" di kriteria kedua dihapus, karena sejak 31 Oktober 2026 halaman sengaja bergeser dari tiruan 1:1 (bagian 4).
 
 - [x] Semua item checklist frontend dan backend tercentang.
-- [x] Produksi di Vercel menampilkan halaman dengan benar di Chrome Android, Safari iOS, dan desktop. `pnpm test:produksi` mengeceknya di Chrome desktop, Pixel 7, dan iPhone 15, dan workflow `Produksi` menjadwalkannya setiap hari. Android baru lewat emulasi Pixel 7; iPhone sungguhan sudah dicoba Bintang.
+- [x] Produksi di Vercel menampilkan halaman dengan benar di Chrome Android, Safari iOS, dan desktop. `pnpm test:produksi` mengeceknya di Chrome desktop, Pixel 7, dan iPhone 15, dan workflow `Produksi` menjadwalkannya setiap hari. Halamannya juga sudah dicoba di iPhone dan HP Android sungguhan.
 - [x] Pesan uji dari produksi sampai ke wingmanclutch@gmail.com, dan kiriman ke-6 dalam satu jam ditolak 429 dengan `Retry-After`.
 - [x] Lembar detail di produksi menampilkan statistik dari GitHub.
 - [x] Ukuran berhasil di bagian 2 tercapai, dicek dengan Lighthouse mobile dan axe.
