@@ -427,6 +427,7 @@ export class Baki {
     let mulai: number | null = null
     let idx = 0
     let barisGosok = -1
+    let balikGosok = false
     kaitkan((t) => {
       if (mulai === null) mulai = t + 260
       // penghapus diangkat dari baki ke titik awal
@@ -438,11 +439,13 @@ export class Baki {
         return
       }
       const e = batasi((t - mulai) / durasi, 0, 1)
-      // setiap kali penghapus berbalik arah terdengar satu gosokan, bolak-balik seperti tangan
+      // setiap kali penghapus berbalik arah terdengar satu gosokan, bolak-balik seperti tangan.
+      // Nadanya bergantian per gosokan, bukan per baris, karena frame yang patah bisa melewati baris
       const b = Math.floor(e * baris)
       if (!GERAK_DIKURANGI && b > barisGosok && e < 1) {
         barisGosok = b
-        suara.mainkan(BUNYI.gosokHapus, { ...BERTUMPUK, playbackRate: b % 2 ? 1.15 : 1 })
+        suara.mainkan(BUNYI.gosokHapus, { ...BERTUMPUK, playbackRate: balikGosok ? 1.15 : 1 })
+        balikGosok = !balikGosok
       }
       const target = e * total
       let j = idx
