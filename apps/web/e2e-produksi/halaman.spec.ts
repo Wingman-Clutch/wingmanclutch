@@ -17,3 +17,12 @@ test('halaman produksi terbuka dan lembar keempat aplikasi menampilkan statistik
   expect((await statistik).status()).toBe(200)
   expect(galat).toEqual([])
 })
+
+test('alamat yang tidak ada dijawab halaman 404, dan pengunjung bisa pulang', async ({ page }) => {
+  const jawaban = await page.goto('/alamat-yang-tidak-ada')
+  expect(jawaban?.status()).toBe(404)
+  await expect(page).toHaveTitle(/Halaman tidak ditemukan/)
+  await page.getByRole('link', { name: /balik ke halaman utama/ }).click()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Wingman Clutch')
+})
