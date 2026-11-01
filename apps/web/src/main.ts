@@ -27,10 +27,9 @@ let matrix = false
 const tema = (): Tema => (matrix ? 'matrix' : kertas)
 let ukuran: Ukuran
 
-// butiran kertas tidak dibutuhkan untuk lukisan pertama, jadi dibuat saat browser senggang
-const pasangButiran = () => akar.style.setProperty('--butiran', `url(${ubinButiran()})`)
-if ('requestIdleCallback' in window) requestIdleCallback(pasangButiran, { timeout: 1000 })
-else setTimeout(pasangButiran, 300)
+// butiran kertas tidak dibutuhkan untuk lukisan pertama, jadi dibuat sebentar setelahnya. Sengaja
+// bukan requestIdleCallback: di sana pekerjaan ini jadi tugas panjang di Lighthouse (docs/frontend.md)
+setTimeout(() => akar.style.setProperty('--butiran', `url(${ubinButiran()})`), 300)
 
 const dialog = new Dialog(tema)
 const hujan = new Hujan($<HTMLCanvasElement>('#hujan'))
