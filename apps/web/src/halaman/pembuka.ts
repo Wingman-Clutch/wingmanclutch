@@ -4,6 +4,7 @@
 // pengguna memilih gerak dikurangi. Ketukan atau tombol apa pun mempercepatnya.
 
 import { kepakkan } from '../sketsa/logo'
+import { BUNYI, suara } from './suara'
 
 /** kunci sessionStorage: layar pembuka sudah tampil di sesi ini */
 export const KUNCI_PEMBUKA = 'wc-pembuka'
@@ -31,6 +32,8 @@ export class Pembuka {
       // penyimpanan diblokir: layar pembuka tampil lagi di kunjungan berikutnya
     }
     const lewati = () => {
+      // pendengar ini juga menangkap ketukan pertama setelah layar pembuka selesai
+      if (!this.cepat && this.el.isConnected) suara.mainkan(BUNYI.lewatiPembuka)
       this.cepat = true
       this.percepat?.()
     }

@@ -5,6 +5,7 @@
 import UKURAN from '../data/figur.json'
 import { GERAK_DIKURANGI } from '../engine/animasi'
 import { langkahVerlet, tegangkan, type Sambungan, type Simpul } from '../engine/tali'
+import { BUNYI, suara } from './suara'
 import type { TataLetak, Ukuran } from './tata-letak'
 
 /** seberapa jauh tali bisa ditarik keluar dari saklar, dalam satuan adegan */
@@ -239,13 +240,17 @@ export class Lampu {
       const p = titik(e)
       s.x = p.x
       s.y = p.y
-      if (Math.hypot(p.x - s.x0, p.y - s.y0) > 4) s.bergeser = true
+      if (!s.bergeser && Math.hypot(p.x - s.x0, p.y - s.y0) > 4) {
+        s.bergeser = true
+        suara.mainkan(BUNYI.pegang)
+      }
     })
     const lepas = (e: PointerEvent) => {
       const s = this.seret
       if (!s || s.id !== e.pointerId) return
       this.seret = null
       this.abaikanKlik = s.berbunyi || (s.mouse && s.bergeser)
+      if (s.bergeser) suara.mainkan(BUNYI.lepasTali)
       this.mulai()
     }
     t.addEventListener('pointerup', lepas)

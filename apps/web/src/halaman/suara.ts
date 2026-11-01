@@ -7,7 +7,8 @@
 // Bunyinya disintesis uisfx di browser, jadi tidak ada berkas audio yang diunduh. Modulnya baru
 // dimuat saat browser senggang, dan konteks audio baru dibuat di gerakan pertama pengunjung.
 
-import type { CueName, PlayingSFX, UISFXPlayer } from 'uisfx'
+import type { CueName, PlayingSFX, PlayOptions, UISFXPlayer } from 'uisfx'
+import type { IdProyek } from '../data/proyek'
 
 export const PACK = 'zen'
 export const VOLUME = 0.7
@@ -18,14 +19,35 @@ export const KUNCI_SUARA = 'wc-suara'
 export const BUNYI = {
   bukaLembar: 'open',
   tutupLembar: 'close',
+  pindahLembar: 'forward',
+  sorot: 'hover',
+  lewatiPembuka: 'swipe',
+  kepakLogo: 'drag-start',
   lampuNyala: 'toggle-on',
   lampuPadam: 'toggle-off',
+  pegang: 'drag-start',
+  lepasTali: 'release',
   kupasSudut: 'swipe',
+  sudutKembali: 'collapse',
+  masukMatrix: 'connect',
+  keluarMatrix: 'disconnect',
   balikKartu: 'swipe',
+  letakkanKartu: 'drop',
   pilihPensil: 'select',
   letakkanPensil: 'deselect',
+  goresPensil: 'swipe',
   menghapus: 'processing',
+  gosokHapus: 'swipe',
   halamanBersih: 'delete',
+  halamanUtuh: 'complete',
+  tombolFigur: 'press',
+  perbesarFigur: 'expand',
+  perkecilFigur: 'collapse',
+  ukuranFigur: 'back',
+  pilihanNyala: 'toggle-on',
+  pilihanMati: 'toggle-off',
+  putarFigur: 'typing',
+  lepasFigur: 'release',
   mengirim: 'loading',
   terkirim: 'send',
   isianSalah: 'error',
@@ -36,11 +58,85 @@ export const BUNYI = {
   suaraNyala: 'toggle-on',
 } as const satisfies Record<string, CueName>
 
+/** hadiah ketukan logo beruntun, menurut ketukan ke berapa */
+export const HADIAH_KEPAK: Readonly<Record<number, CueName>> = {
+  4: 'streak',
+  8: 'level-up',
+  12: 'streak',
+  16: 'achievement',
+}
+
+/** tombol langkah di figur interaktif; labelnya sama persis dengan di figur/<id>.html */
+export const BUNYI_LANGKAH = {
+  postpocket: { 'Buka amplop': 'expand', 'Tarik kartu': 'badge', 'Putar kartu': 'swipe' },
+  gorute: { 'Cari rute': 'seek', 'Panggil bus': 'notification', 'Buka pintu': 'unlock' },
+  tikoem: { 'Tambah teman': 'add-to-cart', 'Cari titik tengah': 'checkpoint', Ulangi: 'undo' },
+  tookthel: { 'Cetak struk': 'checkout', 'Sobek struk': 'swipe', 'Bagi rata': 'coupon' },
+} as const satisfies Record<IdProyek, Record<string, CueName>>
+
 /** semua cue di atas, disintesis lebih dulu setelah pemutar dibuat */
-const DIPAKAI = [...new Set(Object.values(BUNYI))]
+const DIPAKAI = [
+  ...new Set<CueName>([
+    ...Object.values(BUNYI),
+    ...Object.values(HADIAH_KEPAK),
+    ...Object.values(BUNYI_LANGKAH).flatMap((l) => Object.values(l)),
+  ]),
+]
 
 /** loop baru berbunyi kalau prosesnya lebih lama dari ini, supaya kiriman cepat cukup satu bunyi */
 export const TUNDA_LOOP = 700
+
+/** untuk bunyi yang boleh bertumpuk tanpa jeda: ketukan cepat dan gerakan menerus */
+export const BERTUMPUK = { retrigger: 'overlap', cooldownMs: 0 } as const satisfies PlayOptions
+
+/** tangga nada pentatonik dalam semiton, jadi ketukan beruntun naik tanpa pernah terdengar sumbang */
+const TANGGA = [0, 2, 4, 7, 9, 12, 14, 16]
+/** laju putar untuk anak tangga ke-i; setelah puncak, tangganya mulai lagi dari bawah */
+export const nada = (i: number) => 2 ** (TANGGA[i % TANGGA.length] / 12)
+
+/** jeda terlama antara dua ketukan yang masih dihitung beruntun */
+export const JEDA_KOMBO = 900
+
+/** hitungan ketukan beruntun; setelah `jeda` ms tanpa ketukan, atau lewat `siklus`, kembali ke 1 */
+export class Kombo {
+  private n = 0
+  private terakhir = -Infinity
+
+  constructor(
+    private readonly siklus = 16,
+    private readonly jeda = JEDA_KOMBO,
+    private readonly sekarang = () => performance.now(),
+  ) {}
+
+  ketuk() {
+    const t = this.sekarang()
+    this.n = t - this.terakhir > this.jeda || this.n >= this.siklus ? 1 : this.n + 1
+    this.terakhir = t
+    return this.n
+  }
+}
+
+/** butir bunyi di sepanjang gerakan menerus: satu butir setiap `jarak`, paling rapat `selang` ms */
+export class Butiran {
+  private tempuh = 0
+  private terakhir = -Infinity
+
+  constructor(
+    private readonly jarak: number,
+    private readonly selang: number,
+    private readonly sekarang = () => performance.now(),
+  ) {}
+
+  /** tambah jarak yang ditempuh; true kalau saatnya berbunyi */
+  maju(d: number) {
+    this.tempuh += d
+    const t = this.sekarang()
+    if (this.tempuh < this.jarak || t - this.terakhir < this.selang) return false
+    this.tempuh = 0
+    this.terakhir = t
+    return true
+  }
+}
 
 export interface Preferensi {
   nyala: boolean
@@ -183,9 +279,29 @@ export class Suara {
   }
 
   /** bunyikan satu cue, atau null kalau suara mati, belum boleh berbunyi, atau pemutar belum siap */
-  mainkan(cue: CueName): PlayingSFX | null {
+  mainkan(cue: CueName, opsi?: PlayOptions): PlayingSFX | null {
     if (!this.boleh()) return null
-    return this.pemutar!.play(cue)
+    return this.pemutar!.play(cue, opsi)
+  }
+
+  /** ketukan ke-n di logo: naik satu anak tangga, dan true kalau ketukan ini dapat hadiah */
+  kepak(n: number) {
+    this.mainkan(BUNYI.kepakLogo, { ...BERTUMPUK, playbackRate: nada(n - 1) })
+    const hadiah = HADIAH_KEPAK[n]
+    if (hadiah) this.mainkan(hadiah, BERTUMPUK)
+    return !!hadiah
+  }
+
+  /**
+   * Satu butir goresan pensil: lipatan kertas yang dipercepat jadi desis terang, dengan nada dan
+   * keras yang selalu sedikit berbeda supaya tidak terdengar seperti mesin.
+   */
+  gores() {
+    return this.mainkan(BUNYI.goresPensil, {
+      ...BERTUMPUK,
+      playbackRate: 1.8 + Math.random() * 0.6,
+      volume: 0.08 + Math.random() * 0.035,
+    })
   }
 
   /** mulai loop untuk proses `kunci`; memanggilnya lagi selama loop masih jalan tidak menumpuk */
@@ -308,3 +424,10 @@ export class Suara {
 
 /** satu pemutar untuk seluruh halaman */
 export const suara = new Suara()
+
+/** sorotan mouse di benda yang ikut bereaksi saat disorot; sentuhan tidak punya hover */
+export function pasangSorotan(el: HTMLElement) {
+  el.addEventListener('pointerenter', (e) => {
+    if (e.pointerType === 'mouse') suara.mainkan(BUNYI.sorot, { cooldownMs: 120 })
+  })
+}

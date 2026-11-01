@@ -1,10 +1,17 @@
-import { cueNames, getPlaybackMode, type CueName, type UISFXPlayer } from 'uisfx'
+import { readFileSync } from 'node:fs'
+import { cueNames, getPlaybackMode, type CueName, type PlayOptions, type UISFXPlayer } from 'uisfx'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BUNYI_HASIL } from '../src/halaman/kontak'
 import {
   bacaPreferensi,
+  BERTUMPUK,
   BUNYI,
+  BUNYI_LANGKAH,
+  Butiran,
+  HADIAH_KEPAK,
+  Kombo,
   KUNCI_SUARA,
+  nada,
   Suara,
   TUNDA_LOOP,
   type Dom,
@@ -18,7 +25,7 @@ function pemutarTiruan() {
   let nyala = true
   const pemutar = {
     unlock: vi.fn(async () => true),
-    play: vi.fn((cue: CueName) => {
+    play: vi.fn((cue: CueName, _opsi?: PlayOptions) => {
       if (!nyala) return null
       dimainkan.push(cue)
       berbunyi.add(cue)
@@ -126,6 +133,25 @@ describe('bunyi di halaman', () => {
     expect(loop.sort()).toEqual(['menghapus', 'mengirim'])
   })
 
+  it('hadiah logo dan tombol figur hanya memakai cue sekali bunyi dari katalog', () => {
+    const cue = [
+      ...Object.values(HADIAH_KEPAK),
+      ...Object.values(BUNYI_LANGKAH).flatMap((l) => Object.values<CueName>(l)),
+    ]
+    for (const c of cue) {
+      expect(cueNames).toContain(c)
+      expect(getPlaybackMode(c), c).toBe('one-shot')
+    }
+  })
+
+  it('label tombol langkah sama dengan tombol di halaman figur', () => {
+    for (const [id, langkah] of Object.entries(BUNYI_LANGKAH)) {
+      const html = readFileSync(new URL(`../figur/${id}.html`, import.meta.url), 'utf8')
+      const label = [...html.matchAll(/\{ label:'([^']+)', onClick/g)].map((m) => m[1])
+      expect(Object.keys(langkah).sort(), id).toEqual(label.sort())
+    }
+  })
+
   it('setiap hasil kiriman form kontak punya bunyinya sendiri', () => {
     expect(BUNYI_HASIL).toEqual({
       terkirim: 'send',
@@ -180,6 +206,102 @@ describe('pemutar suara', () => {
     s.atur.waktu = 1500
     expect(s.suara.mainkan('close')).toBeNull()
     expect(s.dimainkan).toEqual(['open', 'close'])
+  })
+})
+
+describe('ketukan beruntun', () => {
+  it('nada naik di setiap anak tangga, lalu mulai lagi dari bawah', () => {
+    const tangga = Array.from({ length: 8 }, (_, i) => nada(i))
+    expect(tangga[0]).toBe(1)
+    for (let i = 1; i < tangga.length; i++) expect(tangga[i]).toBeGreaterThan(tangga[i - 1])
+    expect(nada(8)).toBe(1)
+    // uisfx membatasi laju putar sampai 4 kali
+    expect(Math.max(...tangga)).toBeLessThan(4)
+  })
+
+  it('kombo menghitung ketukan beruntun, dan mulai lagi setelah jeda atau satu siklus', () => {
+    let t = 0
+    const kombo = new Kombo(3, 500, () => t)
+    expect(kombo.ketuk()).toBe(1)
+    t = 400
+    expect(kombo.ketuk()).toBe(2)
+    t = 800
+    expect(kombo.ketuk()).toBe(3)
+    // siklus habis
+    t = 900
+    expect(kombo.ketuk()).toBe(1)
+    t = 1000
+    expect(kombo.ketuk()).toBe(2)
+    // jeda kelamaan
+    t = 1501
+    expect(kombo.ketuk()).toBe(1)
+  })
+
+  it('setiap ketukan logo naik satu anak tangga, dan ketukan keempat dapat hadiah', async () => {
+    const s = await siap()
+    expect([1, 2, 3, 4].map((n) => s.suara.kepak(n))).toEqual([false, false, false, true])
+    expect(s.dimainkan).toEqual([...Array(4).fill(BUNYI.kepakLogo), 'streak'])
+    expect(s.pemutar.play.mock.calls.slice(0, 4).map(([, o]) => o?.playbackRate)).toEqual(
+      [0, 1, 2, 3].map(nada),
+    )
+    // ketukan cepat tidak boleh saling memotong atau tertahan cooldown
+    for (const [, o] of s.pemutar.play.mock.calls) expect(o).toMatchObject(BERTUMPUK)
+  })
+
+  it('hadiah menaik di ketukan 4, 8, 12, dan 16', async () => {
+    const s = await siap()
+    const hadiah = Array.from({ length: 16 }, (_, i) => i + 1).filter((n) => s.suara.kepak(n))
+    expect(hadiah).toEqual([4, 8, 12, 16])
+    expect(s.dimainkan.filter((c) => c !== BUNYI.kepakLogo)).toEqual([
+      'streak',
+      'level-up',
+      'streak',
+      'achievement',
+    ])
+  })
+
+  it('suara mati: hadiah tetap dilaporkan supaya kepakannya tetap terlihat', async () => {
+    const s = await siap()
+    s.klikTombol()
+    expect(s.suara.kepak(4)).toBe(true)
+    expect(s.dimainkan).toEqual([])
+  })
+})
+
+describe('gerakan menerus', () => {
+  it('butiran berbunyi setiap jarak tertentu, dan tidak pernah lebih rapat dari selangnya', () => {
+    let t = 0
+    const butiran = new Butiran(30, 75, () => t)
+    expect(butiran.maju(20)).toBe(false)
+    expect(butiran.maju(15)).toBe(true)
+    // jaraknya sudah cukup, tapi selangnya belum lewat
+    t = 50
+    expect(butiran.maju(40)).toBe(false)
+    t = 80
+    expect(butiran.maju(0)).toBe(true)
+    // gerakan pelan butuh waktu lebih lama untuk berbunyi lagi
+    t = 1000
+    expect(butiran.maju(10)).toBe(false)
+  })
+
+  it('goresan pensil bertumpuk, pelan, dan nada serta kerasnya selalu sedikit berbeda', async () => {
+    const s = await siap()
+    for (let i = 0; i < 40; i++) s.suara.gores()
+    const opsi = s.pemutar.play.mock.calls.map(([, o]) => o!)
+    expect(new Set(opsi.map((o) => o.playbackRate)).size).toBeGreaterThan(10)
+    expect(new Set(opsi.map((o) => o.volume)).size).toBeGreaterThan(10)
+    for (const o of opsi) {
+      expect(o).toMatchObject(BERTUMPUK)
+      expect(o.playbackRate).toBeGreaterThanOrEqual(1.8)
+      expect(o.playbackRate).toBeLessThan(2.4)
+      expect(o.volume).toBeLessThan(0.12)
+    }
+  })
+
+  it('opsi bunyi diteruskan ke pemutar apa adanya', async () => {
+    const s = await siap()
+    s.suara.mainkan('select', { playbackRate: 1.5 })
+    expect(s.pemutar.play).toHaveBeenLastCalledWith('select', { playbackRate: 1.5 })
   })
 })
 
