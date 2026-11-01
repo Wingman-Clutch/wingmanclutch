@@ -178,7 +178,7 @@ Dicek ke produksi pada 1 November 2026. Kata "1:1" di kriteria kedua dihapus, ka
 | Domain | `wingmanclutch.vercel.app` atau beli domain | Diputuskan: `wingmanclutch.web.id`, berlaku sampai 28 Oktober 2027. `wingmanclutch.vercel.app` dialihkan permanen ke sana | Berdua |
 | Penyimpanan batas kirim | Upstash Redis atau di memori per instance | Diputuskan: Upstash, di memori hanya cadangan lokal ([backend.md](../backend.md#keputusan)) | Bintang |
 | Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `kontak@wingmanclutch.web.id` sejak 31 Oktober 2026, sebelumnya `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
-| Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Kode MIT, tapi logo, foto tim, dan isi tetap milik Wingman Clutch | Berdua |
+| Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Diputuskan 1 November 2026: kode MIT ([LICENSE](../../LICENSE)), sedangkan nama, logo, foto tim, figur, sketsa, stiker, gambar, dan isi tetap milik Wingman Clutch ([NOTICE](../../NOTICE)) | Berdua |
 | Foto tim | Foto profil GitHub sekarang, atau foto khusus | Diputuskan: foto profil GitHub, digambar ulang jadi sketsa pensil | Berdua |
 | Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Diputuskan: statis di rilis 1 | Berdua |
 
