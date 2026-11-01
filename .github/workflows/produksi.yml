@@ -5,7 +5,8 @@ name: Produksi
 
 on:
   schedule:
-    - cron: '0 1 * * *' # 08.00 WIB
+    # GitHub bisa menunda atau membuang jadwal tepat di awal jam, jadi menitnya sengaja bukan 00
+    - cron: '17 1 * * *' # 08.17 WIB
   workflow_dispatch:
   pull_request:
     paths:
