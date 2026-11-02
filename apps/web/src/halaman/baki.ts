@@ -256,6 +256,7 @@ export class Baki {
   warnai(tema: Tema) {
     this.tema = tema
     this.gambarUlangCoretan()
+    if (this.mencoret) this.tulisNamaPensil(this.mencoret)
   }
 
   // ---------- corat-coret ----------
@@ -270,11 +271,16 @@ export class Baki {
     }
     this.bar.hidden = !c
     if (c) {
-      const nama = this.bar.querySelector<HTMLElement>('.nama-pensil')!
-      nama.textContent = NAMA_PENSIL[c]
-      nama.style.color = c === 'w' ? '' : TINTA[this.tema][c]
+      this.tulisNamaPensil(c)
       this.kanvasCoret.style.cursor = kursor(c)
     }
+  }
+
+  /** nama di bar memakai warna tinta tema sekarang, jadi tetap terbaca kalau tema berganti */
+  private tulisNamaPensil(c: Pensil['c']) {
+    const nama = this.bar.querySelector<HTMLElement>('.nama-pensil')!
+    nama.textContent = NAMA_PENSIL[c]
+    nama.style.color = c === 'w' ? '' : TINTA[this.tema][c]
   }
 
   private keAdegan(e: PointerEvent): [number, number] {
