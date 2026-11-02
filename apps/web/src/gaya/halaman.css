@@ -728,6 +728,13 @@ body.mencoret #coretan {
   z-index: 7;
 }
 
+/* seluruh kertas bisa dicoret, kecuali alatnya sendiri: ini tetap bisa langsung diketuk */
+body.mencoret .pensil,
+body.mencoret #penghapus,
+body.mencoret #lampu .tarik {
+  z-index: 8;
+}
+
 #bar-coret {
   position: fixed;
   left: 50%;
