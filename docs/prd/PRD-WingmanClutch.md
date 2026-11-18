@@ -59,7 +59,7 @@ Rilis 1 berangkat dari kracked.studio: tata letak, urutan menggambar, dan intera
 | Empat kategori (Games, Websites, Apps, Art) dengan layar yang berganti | Empat aplikasi, masing-masing satu figur berwarna: PostPocket (amplop dan kartu foil), goRute (halte dan bus TransJakarta), Tikoem (HP dengan peta di dudukan), Tookthel (printer struk dan koin) | Kall |
 | Lembar proyek saat sketsa diketuk | Lembar detail aplikasi: figur interaktif yang bisa diputar dan dicoba, deskripsi, tiga fitur, peran kami, tumpukan teknologi, statistik hidup, tautan aplikasi dan kode | Kall (tampilan), Bintang (statistik) |
 | Kertas tempel ABOUT US | TENTANG KAMI dengan nama Kall dan Bintang, dialog berisi siapa kami dan cara kami bagi kerja | Kall |
-| THE TEAM dengan lima orang | TIM KAMI: figur dua orang tos. Dialog berisi kartu nama berlanyard dengan foto sketsa pensil dari profil GitHub | Kall |
+| THE TEAM dengan lima orang | TIM KAMI: figur dua orang tos. Dialog berisi kartu nama berlanyard dengan foto sketsa pensil dari poster tim Summarevent | Kall |
 | Kotak DO NOT ERASE, GOT AN IDEA? LET'S KRACK IT | HUBUNGI KAMI, PUNYA IDE? LET'S CLUTCH IT, membuka form kontak | Kall (form), Bintang (pengiriman) |
 | ART + CODE = ♥ | FE + BE = ♥ | Kall |
 | TODAY: tally kopi | KOPI HARI INI: tally kopi di samping figur mug | Kall |
@@ -179,7 +179,7 @@ Dicek ke produksi pada 1 November 2026. Kata "1:1" di kriteria kedua dihapus, ka
 | Penyimpanan batas kirim | Upstash Redis atau di memori per instance | Diputuskan: Upstash, di memori hanya cadangan lokal ([backend.md](../backend.md#keputusan)) | Bintang |
 | Pengirim email | `onboarding@resend.dev` (hanya ke email pemilik akun Resend) atau domain sendiri | Diputuskan: akun Resend wingmanclutch@gmail.com, pengirim `kontak@wingmanclutch.web.id` sejak 31 Oktober 2026, sebelumnya `onboarding@resend.dev` ([backend.md](../backend.md#keputusan)) | Bintang |
 | Lisensi repo | MIT seperti Tikoem, atau tanpa lisensi | Diputuskan 1 November 2026: kode MIT ([LICENSE](../../LICENSE)), sedangkan nama, logo, foto tim, figur, sketsa, stiker, gambar, dan isi tetap milik Wingman Clutch ([NOTICE](../../NOTICE)) | Berdua |
-| Foto tim | Foto profil GitHub sekarang, atau foto khusus | Diputuskan: foto profil GitHub, digambar ulang jadi sketsa pensil | Berdua |
+| Foto tim | Foto profil GitHub sekarang, atau foto khusus | Diputuskan 18 November 2026: foto khusus dari poster tim Summarevent, digambar ulang jadi sketsa pensil. Sebelumnya foto profil GitHub | Berdua |
 | Tally KOPI HARI INI | Lelucon kopi statis seperti referensi, atau jumlah pengunjung hari ini dari backend | Diputuskan: statis di rilis 1 | Berdua |
 
 ## 10. Risiko
